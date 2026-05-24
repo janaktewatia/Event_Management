@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useQR } from "../../context/QRContext";
 import { ChromePicker } from "react-color";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
@@ -6,13 +6,20 @@ import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 const QRCustomizer = () => {
   const { qrData, updateQRData } = useQR();
 
-  const [showColorPicker, setShowColorPicker] = React.useState(null);
+  const [showColorPicker, setShowColorPicker] = useState(null);
+  const [pickerColor, setPickerColor] = useState(qrData.foregroundColor);
 
-  const [sections, setSections] = React.useState({
+  const [sections, setSections] = useState({
     colors: true,
-    style: true,
+    style: false,
     advanced: false,
   });
+
+  useEffect(() => {
+    if (showColorPicker) {
+      setPickerColor(qrData[showColorPicker] || "#000000");
+    }
+  }, [showColorPicker, qrData]);
 
   const toggleSection = (section) => {
     setSections((prev) => ({
@@ -240,7 +247,7 @@ const QRCustomizer = () => {
 
             <label className="form-label small fw-bold mb-2">Body Shape</label>
 
-            <div className="d-flex flex-wrap gap-2 mb-4">
+            <div className="d-flex flex-wrap gap-2 mb-3">
               {Object.entries(bodyShapePaths).map(([value, path]) => (
                 <button
                   key={value}
@@ -279,7 +286,7 @@ const QRCustomizer = () => {
               Eye Frame Shape
             </label>
 
-            <div className="d-flex flex-wrap gap-2 mb-4">
+            <div className="d-flex flex-wrap gap-2 mb-3">
               {Object.entries(eyeFramePaths).map(([value, path]) => (
                 <button
                   key={value}
@@ -318,7 +325,7 @@ const QRCustomizer = () => {
               Eye Ball Shape
             </label>
 
-            <div className="d-flex flex-wrap gap-2 mb-4">
+            <div className="d-flex flex-wrap gap-2 mb-3">
               {Object.entries(eyeBallPaths).map(([value, path]) => (
                 <button
                   key={value}
@@ -407,18 +414,32 @@ const QRCustomizer = () => {
 
       {showColorPicker && (
         <div
-          className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center"
-          style={{ zIndex: 9999 }}
+          className="color-picker-overlay"
           onClick={() => setShowColorPicker(null)}
         >
-          <div onClick={(e) => e.stopPropagation()}>
+          <div
+            className="color-picker-shell"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="color-picker-header">
+              <span className="fw-semibold">Choose color</span>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setShowColorPicker(null)}
+              >
+                Close
+              </button>
+            </div>
             <ChromePicker
-              color={qrData[showColorPicker]}
-              onChange={(color) =>
+              color={pickerColor}
+              onChange={(color) => setPickerColor(color.hex)}
+              onChangeComplete={(color) =>
                 updateQRData({
                   [showColorPicker]: color.hex,
                 })
               }
+              disableAlpha
             />
           </div>
         </div>

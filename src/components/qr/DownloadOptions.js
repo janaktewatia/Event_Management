@@ -10,6 +10,8 @@ import {
   FiCopy,
   FiShare2,
   FiPackage,
+  FiImage,
+  FiFileText,
 } from "react-icons/fi";
 
 const DownloadOptions = () => {
@@ -51,29 +53,6 @@ const DownloadOptions = () => {
     }
   };
 
-  const downloadAsSVG = async () => {
-    setActiveFormat("svg");
-    setDownloading(true);
-    try {
-      const qrElement = document.querySelector(".qr-canvas canvas");
-      if (qrElement) {
-        const svgData = new XMLSerializer().serializeToString(qrElement);
-        const svgBlob = new Blob([svgData], { type: "image/svg+xml" });
-        const url = URL.createObjectURL(svgBlob);
-        const link = document.createElement("a");
-        link.download = `qrcode-${Date.now()}.svg`;
-        link.href = url;
-        link.click();
-        URL.revokeObjectURL(url);
-        toast.success("QR Code downloaded as SVG!");
-      }
-    } catch (error) {
-      toast.error("Failed to download SVG");
-    } finally {
-      setDownloading(false);
-    }
-  };
-
   const downloadAsPDF = async () => {
     setDownloading(true);
     try {
@@ -98,59 +77,73 @@ const DownloadOptions = () => {
     }
   };
 
-  const downloadAllFormats = async () => {
-    setDownloading(true);
-    try {
-      await downloadAsPNG();
-      setTimeout(() => downloadAsJPG(), 500);
-      setTimeout(() => downloadAsSVG(), 1000);
-      setTimeout(() => downloadAsPDF(), 1500);
-      toast.info("Downloading all formats...");
-    } catch (error) {
-      toast.error("Failed to download all formats");
-    } finally {
-      setTimeout(() => setDownloading(false), 2000);
-    }
-  };
-
   const copyToClipboard = async () => {
     try {
       const canvas = await getQRCanvas();
-      canvas.toBlob(async (blob) => {
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            [blob.type]: blob,
-          }),
-        ]);
-        toast.success("QR Code copied to clipboard!");
-      });
+
+      // Check if clipboard API is available
+      if (!navigator.clipboard) {
+        // Fallback: Download the image instead on unsupported browsers
+        const link = document.createElement("a");
+        link.download = `qrcode-${Date.now()}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        toast.info(
+          "Downloaded QR Code (Clipboard not supported on this device)",
+        );
+        return;
+      }
+
+      // Try modern Clipboard API with write()
+      if (navigator.clipboard.write) {
+        canvas.toBlob(async (blob) => {
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({
+                [blob.type]: blob,
+              }),
+            ]);
+            toast.success("QR Code copied to clipboard!");
+          } catch (err) {
+            // Fallback to text copy if image copy fails
+            copyDataURLToClipboard(canvas);
+          }
+        });
+      } else {
+        // Fallback for browsers that don't support clipboard.write
+        copyDataURLToClipboard(canvas);
+      }
     } catch (error) {
-      toast.error("Failed to copy to clipboard");
+      console.error("Copy error:", error);
+      toast.error("Failed to copy. Try downloading instead.");
     }
   };
 
-  const printQR = async () => {
-    try {
-      const canvas = await getQRCanvas();
-      const printWindow = window.open("", "_blank");
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Print QR Code</title>
-            <style>
-              body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-              img { max-width: 80%; height: auto; }
-            </style>
-          </head>
-          <body>
-            <img src="${canvas.toDataURL()}" />
-            <script>window.onload = () => { window.print(); window.close(); }<\/script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    } catch (error) {
-      toast.error("Failed to print");
+  // Fallback method: Copy data URL as text
+  const copyDataURLToClipboard = (canvas) => {
+    const dataURL = canvas.toDataURL("image/png");
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(dataURL)
+        .then(() => {
+          toast.success("QR Code data copied to clipboard!");
+        })
+        .catch(() => {
+          // Final fallback: download
+          const link = document.createElement("a");
+          link.download = `qrcode-${Date.now()}.png`;
+          link.href = dataURL;
+          link.click();
+          toast.info("Downloaded QR Code (Copy not supported)");
+        });
+    } else {
+      // Download as last resort
+      const link = document.createElement("a");
+      link.download = `qrcode-${Date.now()}.png`;
+      link.href = dataURL;
+      link.click();
+      toast.info("Downloaded QR Code (Copy not supported)");
     }
   };
 
@@ -162,81 +155,55 @@ const DownloadOptions = () => {
     throw new Error("QR element not found");
   };
 
-  const shareQR = async () => {
-    if (navigator.share) {
-      try {
-        const canvas = await getQRCanvas();
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve));
-        const file = new File([blob], "qrcode.png", { type: "image/png" });
-        await navigator.share({
-          title: "My QR Code",
-          text: "Check out this QR code I created!",
-          files: [file],
-        });
-        toast.success("Shared successfully!");
-      } catch (error) {
-        toast.error("Share cancelled or failed");
-      }
-    } else {
-      toast.info("Web Share API not supported. Download the QR code instead.");
-    }
-  };
-
   return (
     <div className="download-options">
-      <div className="d-grid gap-2">
-        <div className="btn-group gap-2">
+      {/* Desktop: Single row, Mobile: Two rows */}
+      <div className="row g-2">
+        {/* PNG Button */}
+        <div className="col-6 col-md-3">
           <button
-            className={`btn ${activeFormat === "png" ? "btn-primary" : "btn-outline-primary"}`}
+            className={`btn p-1 w-100 ${activeFormat === "png" ? "btn-primary" : "btn-outline-primary"}`}
             onClick={downloadAsPNG}
             disabled={downloading}
           >
+            <FiImage className="me-2" />
             PNG
           </button>
+        </div>
+
+        {/* JPG Button */}
+        <div className="col-6 col-md-3">
           <button
-            className={`btn ${activeFormat === "jpg" ? "btn-primary" : "btn-outline-primary"}`}
+            className={`btn p-1 w-100 ${activeFormat === "jpg" ? "btn-primary" : "btn-outline-primary"}`}
             onClick={downloadAsJPG}
             disabled={downloading}
           >
+            <FiImage className="me-2" />
             JPG
           </button>
+        </div>
+
+        {/* PDF Button */}
+        <div className="col-6 col-md-3">
           <button
-            className={`btn ${activeFormat === "svg" ? "btn-primary" : "btn-outline-primary"}`}
-            onClick={downloadAsSVG}
-            disabled={downloading}
-          >
-            SVG
-          </button>
-          <button
-            className="btn btn-outline-primary"
+            className="btn p-1 btn-outline-primary w-100"
             onClick={downloadAsPDF}
             disabled={downloading}
           >
+            <FiFileText className="me-2" />
             PDF
           </button>
         </div>
 
-        <div className="btn-group gap-2">
+        {/* Copy QR Button */}
+        <div className="col-6 col-md-3">
           <button
-            className="btn btn-secondary"
+            className="btn p-1 btn-secondary w-100"
             onClick={copyToClipboard}
             disabled={downloading}
           >
-            <FiCopy className="me-2" /> Copy Image
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={shareQR}
-            disabled={downloading}
-          >
-            <FiShare2 className="me-2" /> Share
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={printQR}
-            disabled={downloading}
-          >
-            <FiPrinter className="me-2" /> Print
+            <FiCopy className="me-2" />
+            Copy
           </button>
         </div>
       </div>

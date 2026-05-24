@@ -30,13 +30,14 @@ const QRGeneratorPage = () => {
 
   const contentTypes = [
     { id: "url", name: "Website URL", icon: BiGlobe },
-    { id: "text", name: "Plain Text", icon: BiText },
-    { id: "email", name: "Email", icon: BiEnvelope },
-    { id: "phone", name: "Phone", icon: BiPhone },
-    { id: "sms", name: "SMS", icon: BiMessageSquare },
     { id: "whatsapp", name: "WhatsApp", icon: BiLogoWhatsapp },
+    { id: "email", name: "Email", icon: BiEnvelope },
     { id: "wifi", name: "WiFi", icon: BiWifi },
     { id: "vcard", name: "vCard", icon: BiIdCard },
+
+    // { id: "text", name: "Plain Text", icon: BiText },
+    // { id: "phone", name: "Phone", icon: BiPhone },
+    // { id: "sms", name: "SMS", icon: BiMessageSquare },
   ];
 
   const renderForm = () => {
@@ -49,8 +50,8 @@ const QRGeneratorPage = () => {
         return <EmailForm />;
       case "phone":
         return <PhoneForm />;
-      case "sms":
-        return <SMSForm />;
+      // case "sms":
+      //   return <SMSForm />;
       case "whatsapp":
         return <WhatsAppForm />;
       case "wifi":
@@ -77,8 +78,8 @@ const QRGeneratorPage = () => {
         <div className="col-12">
           <div className="card shadow-sm border-0 rounded-5">
             <div className="card-body p-3">
-              <div className="d-flex justify-content-between align-items-center flex-wrap">
-                <div className="d-flex flex-wrap gap-2 align-items-center">
+              <div className="d-flex justify-content-between align-items-start align-items-md-center flex-column flex-md-row gap-3">
+                <div className="qr-content-selector d-flex flex-wrap gap-2 align-items-center w-100">
                   {contentTypes.map((type) => {
                     const Icon = type.icon;
                     return (
@@ -106,7 +107,7 @@ const QRGeneratorPage = () => {
                             address: "",
                           });
                         }}
-                        className={`btn d-flex align-items-center gap-2 ${activeTab === type.id ? "btn-primary" : "btn-outline-secondary"}`}
+                        className={`qr-type-button btn d-flex align-items-center justify-content-center gap-2 ${activeTab === type.id ? "btn-primary" : "btn-outline-secondary"}`}
                       >
                         <Icon
                           className={`fs-5 ${activeTab === type.id ? "text-white" : "text-secondary"}`}
@@ -117,7 +118,7 @@ const QRGeneratorPage = () => {
                   })}
                 </div>
 
-                <div className="ms-3" style={{ minWidth: 220, maxWidth: 360 }}>
+                <div className="logo-uploader-wrapper w-100 w-md-auto">
                   <LogoUploader />
                 </div>
               </div>

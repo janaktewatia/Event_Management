@@ -1,5 +1,5 @@
 // src/pages/ImportQRPage.js
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import QRCodeStyling from "qr-code-styling";
@@ -60,30 +60,30 @@ const CONTENT_TYPES = [
       return `https://wa.me/${phone}${encoded ? `?text=${encoded}` : ""}`;
     },
   },
-  {
-    id: "sms",
-    name: "SMS",
-    icon: BiMessageSquare,
-    fields: [
-      {
-        key: "phone",
-        label: "Mobile Number",
-        keys: ["phone", "phonenumber", "mobile", "mobilenumber", "number"],
-      },
-      {
-        key: "message",
-        label: "Message",
-        keys: ["message", "msg", "text", "body"],
-      },
-    ],
-    build: (row) => {
-      const phone = row.phone?.toString().replace(/[^0-9+]/g, "") || "";
-      const text = row.message || row.msg || row.text || "";
-      if (!phone) return "";
-      const encoded = encodeURIComponent(text);
-      return `SMSTO:${phone}:${encoded}`;
-    },
-  },
+  // {
+  //   id: "sms",
+  //   name: "SMS",
+  //   icon: BiMessageSquare,
+  //   fields: [
+  //     {
+  //       key: "phone",
+  //       label: "Mobile Number",
+  //       keys: ["phone", "phonenumber", "mobile", "mobilenumber", "number"],
+  //     },
+  //     {
+  //       key: "message",
+  //       label: "Message",
+  //       keys: ["message", "msg", "text", "body"],
+  //     },
+  //   ],
+  //   build: (row) => {
+  //     const phone = row.phone?.toString().replace(/[^0-9+]/g, "") || "";
+  //     const text = row.message || row.msg || row.text || "";
+  //     if (!phone) return "";
+  //     const encoded = encodeURIComponent(text);
+  //     return `SMSTO:${phone}:${encoded}`;
+  //   },
+  // },
   {
     id: "email",
     name: "Email",
@@ -118,35 +118,35 @@ const CONTENT_TYPES = [
       }`;
     },
   },
-  {
-    id: "phone",
-    name: "Phone",
-    icon: BiPhone,
-    fields: [
-      {
-        key: "phone",
-        label: "Phone Number",
-        keys: ["phone", "phonenumber", "mobile", "mobilenumber", "number"],
-      },
-    ],
-    build: (row) => {
-      const phone = row.phone?.toString().replace(/[^0-9+]/g, "") || "";
-      return phone ? `tel:${phone}` : "";
-    },
-  },
-  {
-    id: "text",
-    name: "Text",
-    icon: BiText,
-    fields: [
-      {
-        key: "text",
-        label: "Text",
-        keys: ["text", "message", "value", "content"],
-      },
-    ],
-    build: (row) => row.text || row.message || row.value || row.content || "",
-  },
+  // {
+  //   id: "phone",
+  //   name: "Phone",
+  //   icon: BiPhone,
+  //   fields: [
+  //     {
+  //       key: "phone",
+  //       label: "Phone Number",
+  //       keys: ["phone", "phonenumber", "mobile", "mobilenumber", "number"],
+  //     },
+  //   ],
+  //   build: (row) => {
+  //     const phone = row.phone?.toString().replace(/[^0-9+]/g, "") || "";
+  //     return phone ? `tel:${phone}` : "";
+  //   },
+  // },
+  // {
+  //   id: "text",
+  //   name: "Text",
+  //   icon: BiText,
+  //   fields: [
+  //     {
+  //       key: "text",
+  //       label: "Text",
+  //       keys: ["text", "message", "value", "content"],
+  //     },
+  //   ],
+  //   build: (row) => row.text || row.message || row.value || row.content || "",
+  // },
   {
     id: "vcard",
     name: "vCard",
@@ -259,6 +259,7 @@ const makeQRPreview = async (data, styleData) => {
 
 const ImportQRPage = () => {
   const { qrData } = useQR();
+  const fileInputRef = useRef(null);
   const [activeType, setActiveType] = useState("url");
   const [file, setFile] = useState(null);
   const [rows, setRows] = useState([]);
@@ -275,34 +276,67 @@ const ImportQRPage = () => {
   );
 
   const handleFileChange = (event) => {
-    const input = event.target;
-    const selected = input.files?.[0];
+    const selected = event.target.files?.[0];
+
     if (!selected) return;
+
+    const allowedExtensions = [".xlsx", ".xls", ".csv"];
+
+    const extension = "." + selected.name.split(".").pop().toLowerCase();
+
+    if (!allowedExtensions.includes(extension)) {
+      toast.error("Please upload Excel or CSV file only");
+
+      event.target.value = "";
+      return;
+    }
+
     setFile(selected);
     setRows([]);
     setParsedRows([]);
     setPreviewUrls({});
     setWarnings([]);
+
     const reader = new FileReader();
+
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
+
+        const workbook = XLSX.read(data, {
+          type: "array",
+        });
+
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+        const json = XLSX.utils.sheet_to_json(worksheet, {
+          defval: "",
+        });
+
         setRows(json);
+
         toast.success(`${json.length} rows loaded from ${selected.name}`);
       } catch (error) {
-        toast.error(
-          "Unable to parse file: please upload a valid Excel or CSV file.",
-        );
+        console.error(error);
+
+        toast.error("Unable to parse file. Please upload valid Excel/CSV.");
       }
+
+      // allow selecting same file again later
+      event.target.value = "";
     };
+
     reader.readAsArrayBuffer(selected);
   };
 
-  const handleFileInputClick = (event) => {
-    event.target.value = null;
+  // const handleFileInputClick = (event) => {
+  //   event.target.value = null;
+  // };
+
+  const triggerFilePicker = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   useEffect(() => {
@@ -535,19 +569,42 @@ const ImportQRPage = () => {
                   </label>
                   <button
                     type="button"
-                    className="btn btn-sm btn-outline-primary"
+                    className="btn btn-sm btn-outline-primary download-format"
                     onClick={downloadTemplate}
                   >
                     <BiDownload className="me-1" /> Download Format
                   </button>
                 </div>
-                <input
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  className="form-control"
-                  onClick={handleFileInputClick}
-                  onChange={handleFileChange}
-                />
+                <div className="bulk-file-input-wrapper">
+                  <input
+                    id="excelInput"
+                    ref={fileInputRef}
+                    className="bulk-file-input"
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    onChange={handleFileChange}
+                  />
+
+                  <label
+                    htmlFor="excelInput"
+                    className="bulk-file-input-button me-2"
+                    style={{
+                      height: "36px", // Reduced height
+                      fontSize: "0.9rem", // Optional: slightly smaller font
+                      borderRadius: "5px", // Optional: rounded corners
+                    }}
+                  >
+                    <BiCloudUpload className="me-2" />
+                    {file ? "Change File" : "Choose File"}
+                  </label>
+
+                  {/* <span className="bulk-file-meta">
+                    {file ? file.name : "No file selected"}
+                  </span> */}
+                  <span className="bulk-file-input-hint">
+                    Excel or CSV only
+                  </span>
+                </div>
               </div>
               <div className="mb-3">
                 <label className="form-label small text-muted">
@@ -578,8 +635,8 @@ const ImportQRPage = () => {
               </div>
             </div>
             <div className="card-body justify-content-between p-3 d-flex flex-column h-100">
-              <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
-                <div>
+              <div className="bulk-summary-row d-flex justify-content-between align-items-start align-items-md-center flex-column flex-md-row gap-3 mt-4 mb-3">
+                <div className="bulk-summary-copy">
                   <p className="mb-2 text-muted">
                     {file?.name || "No file selected yet."}
                   </p>
@@ -589,7 +646,7 @@ const ImportQRPage = () => {
                       : "Upload a file to start."}
                   </p>
                 </div>
-                <div className="d-flex align-items-center gap-3">
+                <div className="bulk-color-control d-flex align-items-center gap-3">
                   <div>
                     <p className="mb-1 fw-semibold">Choose Color</p>
                   </div>
@@ -611,15 +668,10 @@ const ImportQRPage = () => {
               <div className="mb-3"></div>
               <div>
                 <button
-                  className="btn w-100"
+                  className="bulk-download-button btn w-100"
                   type="button"
                   onClick={downloadAllQRCodes}
                   disabled={isProcessing || !getValidRows().length}
-                  style={{
-                    backgroundColor: "#A855F7",
-                    borderColor: "#A855F7",
-                    color: "#ffffff",
-                  }}
                 >
                   <BiDownload className="me-2" /> Download All QR Codes
                 </button>
@@ -647,7 +699,7 @@ const ImportQRPage = () => {
         <div className="col-12">
           <div className="card shadow-sm border-0 rounded-5">
             <div className="card-body p-0">
-              <div className="table-responsive">
+              <div className="table-responsive d-none d-md-block">
                 <table className="table table-striped table-hover table-sm mb-0 align-middle">
                   <thead className="table-light">
                     <tr>
@@ -745,6 +797,92 @@ const ImportQRPage = () => {
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="bulk-mobile-results d-md-none p-3">
+                {parsedRows.length ? (
+                  parsedRows.map((row, index) => (
+                    <div
+                      className="bulk-mobile-result-card card mb-3"
+                      key={row.id}
+                    >
+                      <div className="card-body p-3">
+                        <div className="d-flex justify-content-between align-items-start gap-3 mb-3">
+                          <div>
+                            <p className="small text-muted mb-1">
+                              Row {index + 1}
+                            </p>
+                            <h6 className="mb-1">
+                              {row.normalized?.qr_name || "Untitled QR"}
+                            </h6>
+                            <p className="small text-muted mb-0">
+                              {row.display.filter(Boolean).join(" • ") ||
+                                "No details available"}
+                            </p>
+                          </div>
+                          <div>
+                            {row.valid ? (
+                              <span className="badge bg-success">
+                                <BiCheckCircle className="me-1" /> Ready
+                              </span>
+                            ) : (
+                              <span className="badge bg-danger">
+                                <BiErrorCircle className="me-1" /> Invalid
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="bulk-mobile-preview-box d-flex justify-content-center">
+                          {previewUrls[row.id] ? (
+                            <div className="qr-preview-box rounded bg-white d-flex align-items-center justify-content-center">
+                              <img
+                                src={previewUrls[row.id]}
+                                alt="QR preview"
+                                className="img-fluid"
+                              />
+                            </div>
+                          ) : row.valid ? (
+                            <div
+                              className="spinner-border spinner-border-sm text-primary"
+                              role="status"
+                            >
+                              <span className="visually-hidden">
+                                Generating...
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-danger">Invalid</span>
+                          )}
+                        </div>
+
+                        <div className="mt-3 small">
+                          <div className="row g-2">
+                            {activeConfig.fields.map((field, fieldIndex) => (
+                              <div
+                                className="col-12"
+                                key={`${row.id}-${field.label}`}
+                              >
+                                <div className="d-flex justify-content-between gap-3">
+                                  <span className="text-muted">
+                                    {field.label}
+                                  </span>
+                                  <span className="text-end fw-semibold">
+                                    {row.display[fieldIndex] || "—"}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-muted">
+                    Upload a file and select a type to preview your QR list.
+                  </div>
+                )}
               </div>
             </div>
           </div>

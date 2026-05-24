@@ -2,13 +2,27 @@
 import React from "react";
 import { BiUpload } from "react-icons/bi";
 import { AiOutlineQrcode } from "react-icons/ai";
+import { FiX } from "react-icons/fi";
 
-const Sidebar = ({ activePage, setActivePage }) => {
+const Sidebar = ({ activePage, setActivePage, isMobileMenuOpen, onClose }) => {
   return (
-    <aside className="sidebar d-flex flex-column p-3 bg-white">
-      <div className="mb-4">
-        <h4 className="fw-bold text-dark">QR Generator</h4>
-        <p className="small text-muted mb-0">Create and manage QR codes</p>
+    <aside
+      className={`sidebar d-flex flex-column p-3 bg-white ${isMobileMenuOpen ? "show" : ""}`}
+    >
+      <div className="sidebar__header mb-4">
+        <div>
+          <h4 className="fw-bold text-dark mb-1">QR Generator</h4>
+          <p className="small text-muted mb-0">Create and manage QR codes</p>
+        </div>
+
+        <button
+          type="button"
+          className="sidebar__close d-md-none"
+          onClick={onClose}
+          aria-label="Close navigation"
+        >
+          <FiX size={20} />
+        </button>
       </div>
 
       <button

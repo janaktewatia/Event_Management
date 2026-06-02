@@ -1,20 +1,75 @@
-// src/components/common/Sidebar.jsx
 import React from "react";
-import { BiUpload } from "react-icons/bi";
+import { useLocation, useNavigate } from "react-router-dom";
+import { BiScan, BiUpload, BiUserPlus } from "react-icons/bi";
 import { AiOutlineQrcode } from "react-icons/ai";
-import { FiX } from "react-icons/fi";
+import { FiX, FiGrid, FiCalendar, FiSettings } from "react-icons/fi";
+import { useAuth } from "../../context/AuthContext";
 
-const Sidebar = ({ activePage, setActivePage, isMobileMenuOpen, onClose }) => {
+const Sidebar = ({ isMobileMenuOpen, onClose }) => {
+  const location = useLocation();
+  const path = location.pathname;
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const isActive = (p) => path === p || path.startsWith(p + "/");
+
+  const can = (permission) => {
+    if (!permission) return true;
+    if (!user?.permissions?.length) return true;
+    return user.permissions.includes(permission);
+  };
+
+  const NavItem = ({ icon, label, to, exact, permission }) => {
+    if (!can(permission)) return null;
+    const active = exact ? path === to : isActive(to);
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          // debug: confirm click handler runs
+          // eslint-disable-next-line no-console
+          console.debug("Sidebar navigate:", to);
+          navigate(to);
+          if (onClose) onClose();
+        }}
+        className={`nav-link btn btn-ghost text-start w-100 mb-1 d-flex align-items-center gap-2 ${
+          active ? "active" : ""
+        }`}
+        style={{
+          color: active ? "#A855F7" : "#172033",
+          fontWeight: active ? 600 : 400,
+          textDecoration: "none",
+        }}
+      >
+        <span style={{ fontSize: 16, display: "flex", alignItems: "center" }}>
+          {icon}
+        </span>
+        {label}
+      </button>
+    );
+  };
+
   return (
     <aside
       className={`sidebar d-flex flex-column p-3 bg-white ${isMobileMenuOpen ? "show" : ""}`}
+      onPointerDown={(e) => {
+        // eslint-disable-next-line no-console
+        console.debug("Sidebar pointerDown", e.target && e.target.tagName);
+      }}
     >
+      {/* Header */}
       <div className="sidebar__header mb-4">
         <div>
-          <h4 className="fw-bold text-dark mb-1">QR Generator</h4>
-          <p className="small text-muted mb-0">Create and manage QR codes</p>
+          <h4
+            className="fw-bold mb-1"
+            style={{ color: "#A855F7", fontSize: 16 }}
+          >
+            Event Management
+          </h4>
+          <p className="small text-muted mb-0" style={{ fontSize: 11 }}>
+            Scan · Register · Track
+          </p>
         </div>
-
         <button
           type="button"
           className="sidebar__close d-md-none"
@@ -25,27 +80,115 @@ const Sidebar = ({ activePage, setActivePage, isMobileMenuOpen, onClose }) => {
         </button>
       </div>
 
-      <button
-        type="button"
-        className={`nav-link btn btn-ghost text-start text-dark w-100 mb-2 ${activePage === "generate" ? "active" : ""}`}
-        onClick={() => setActivePage("generate")}
-      >
-        <AiOutlineQrcode className="fs-5 me-2" />
-        Generate QR Code
-      </button>
+      {/* Primary nav */}
+      <div className="flex-grow-1">
+        <NavItem
+          icon={<FiGrid />}
+          label="Dashboard"
+          to="/dashboard"
+          exact
+          permission="reports.dashboard"
+        />
+        <NavItem
+          icon={<FiCalendar />}
+          label="Create Event"
+          to="/events"
+          permission="events.view"
+        />
+        <NavItem
+          icon={<BiUserPlus className="fs-6" />}
+          label="Registrants"
+          to="/registrants"
+          permission="attendees.view"
+        />
+        <NavItem
+          icon={<BiScan className="fs-6" />}
+          label="Scan Pass"
+          to="/scan"
+          exact
+          permission="scan.access"
+        />
 
-      <button
-        type="button"
-        className={`nav-link btn btn-ghost text-start text-dark w-100 mb-2 ${activePage === "import" ? "active" : ""}`}
-        onClick={() => setActivePage("import")}
-      >
-        <BiUpload className="fs-5 me-2" />
-        Bulk QR Codes
-      </button>
+        {(can("events.view") || can("reports.dashboard")) &&
+          can("scan.access") && (
+            <div
+              style={{ height: 1, background: "#f1f5f9", margin: "0.6rem 0" }}
+            />
+          )}
 
-      <div className="mt-auto pt-3">
-        <small className="text-muted">Powered by KnowVato</small>
+        <NavItem
+          icon={<AiOutlineQrcode className="fs-5" />}
+          label="Generate QR Code"
+          to="/"
+          exact
+          permission="pass.generate"
+        />
+        <NavItem
+          icon={<BiUpload className="fs-6" />}
+          label="Bulk QR Codes"
+          to="/bulk-qr"
+          exact
+          permission="pass.generate"
+        />
+
+        {can("setup.access") && (
+          <div
+            style={{ height: 1, background: "#f1f5f9", margin: "0.6rem 0" }}
+          />
+        )}
+
+        <NavItem
+          icon={<FiSettings />}
+          label="Setup"
+          to="/setup"
+          exact
+          permission="setup.access"
+        />
       </div>
+
+      {/* Profile & Logout */}
+      {user && (
+        <div className="pt-3 border-top mt-auto">
+          <div className="d-flex align-items-center gap-2 mb-2">
+            <div
+              className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+              style={{ width: 34, height: 34, background: "#f3e8ff" }}
+            >
+              <i
+                className="bi bi-person"
+                style={{ fontSize: 14, color: "#7c3aed" }}
+              />
+            </div>
+            <div className="flex-grow-1 min-w-0">
+              <p
+                className="small fw-600 text-dark mb-0"
+                style={{ fontSize: 12 }}
+              >
+                {user.name || "User"}
+              </p>
+              <p className="small text-muted mb-0" style={{ fontSize: 11 }}>
+                {user.userTypeName || ""}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn btn-sm w-100"
+            style={{
+              background: "#f1f5f9",
+              color: "#64748b",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 500,
+            }}
+            onClick={logout}
+          >
+            <i className="bi bi-box-arrow-right me-2" />
+            Logout
+          </button>
+        </div>
+      )}
     </aside>
   );
 };

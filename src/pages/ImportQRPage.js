@@ -5,6 +5,7 @@ import JSZip from "jszip";
 import QRCodeStyling from "qr-code-styling";
 import { toast } from "react-toastify";
 import { useQR } from "../context/QRContext";
+import { useEventData } from "../context/EventDataContext";
 import {
   BiCloudUpload,
   BiDownload,
@@ -259,7 +260,15 @@ const makeQRPreview = async (data, styleData) => {
 
 const ImportQRPage = () => {
   const { qrData } = useQR();
+  const {
+    events,
+    selectedEventId,
+    setSelectedEventId,
+    syncImportedRowsForEvent,
+    importedRows,
+  } = useEventData();
   const fileInputRef = useRef(null);
+  const previewUrlsRef = useRef({});
   const [activeType, setActiveType] = useState("url");
   const [file, setFile] = useState(null);
   const [rows, setRows] = useState([]);
@@ -273,6 +282,11 @@ const ImportQRPage = () => {
   const activeConfig = useMemo(
     () => CONTENT_TYPES.find((item) => item.id === activeType),
     [activeType],
+  );
+
+  const selectedEvent = useMemo(
+    () => events.find((event) => event.id === selectedEventId) || null,
+    [events, selectedEventId],
   );
 
   const handleFileChange = (event) => {
@@ -421,7 +435,26 @@ const ImportQRPage = () => {
   }, [rows, activeConfig]);
 
   useEffect(() => {
+    if (!selectedEventId || !parsedRows.length) {
+      return;
+    }
+
+    syncImportedRowsForEvent(selectedEventId, parsedRows, {
+      sourceFile: file?.name || "uploaded-file",
+      contentType: activeType,
+    });
+  }, [activeType, file, parsedRows, selectedEventId, syncImportedRowsForEvent]);
+
+  useEffect(() => {
+    let cancelled = false;
+
     const runPreview = async () => {
+      // Revoke previous object URLs before generating new ones
+      Object.values(previewUrlsRef.current).forEach((url) =>
+        URL.revokeObjectURL(url),
+      );
+      previewUrlsRef.current = {};
+
       if (!parsedRows.length) {
         setPreviewUrls({});
         return;
@@ -437,6 +470,7 @@ const ImportQRPage = () => {
         gradientEnd: qrColor,
       };
       for (const row of parsedRows) {
+        if (cancelled) break;
         if (!row.valid) continue;
         try {
           const blob = await makeQRPreview(row.value, previewStyle);
@@ -445,13 +479,24 @@ const ImportQRPage = () => {
           console.error("Preview generation failed", error);
         }
       }
-      setPreviewUrls(urls);
-      setIsProcessing(false);
+
+      if (!cancelled) {
+        previewUrlsRef.current = urls;
+        setPreviewUrls(urls);
+        setIsProcessing(false);
+      } else {
+        Object.values(urls).forEach((url) => URL.revokeObjectURL(url));
+      }
     };
 
     runPreview();
+
     return () => {
-      Object.values(previewUrls).forEach((url) => URL.revokeObjectURL(url));
+      cancelled = true;
+      Object.values(previewUrlsRef.current).forEach((url) =>
+        URL.revokeObjectURL(url),
+      );
+      previewUrlsRef.current = {};
     };
   }, [parsedRows, qrData, qrColor]);
 
@@ -561,7 +606,7 @@ const ImportQRPage = () => {
       <div className="row mb-4 align-items-stretch">
         <div className="col-lg-6 d-flex">
           <div className="card shadow-sm border-0 rounded-5 h-100 w-100">
-            <div className="card-body  p-3 d-flex flex-column h-100">
+            <div className="card-body p-3 d-flex flex-column h-100">
               <div className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <label className="form-label fw-semibold mb-0">

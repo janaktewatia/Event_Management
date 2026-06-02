@@ -16,6 +16,78 @@
   --border-color: #dbe2ef;
   --shadow-soft: 0 24px 50px rgba(168, 85, 247, 0.12);
   --shadow-hover: 0 30px 60px rgba(168, 85, 247, 0.16);
+  --compact-gutter-x: 0.55rem;
+  --compact-gutter-y: 0.55rem;
+}
+
+.container-fluid {
+  padding-left: 0.55rem !important;
+  padding-right: 0.55rem !important;
+}
+
+.row {
+  --bs-gutter-x: var(--compact-gutter-x);
+  --bs-gutter-y: var(--compact-gutter-y);
+}
+
+.g-2,
+.g-3,
+.g-4 {
+  --bs-gutter-x: var(--compact-gutter-x) !important;
+  --bs-gutter-y: var(--compact-gutter-y) !important;
+}
+
+.p-1 {
+  padding: 0.35rem !important;
+}
+
+.p-2 {
+  padding: 0.5rem !important;
+}
+
+.p-3 {
+  padding: 0.75rem !important;
+}
+
+.p-4 {
+  padding: 0.95rem !important;
+}
+
+.mb-1 {
+  margin-bottom: 0.35rem !important;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.mb-3 {
+  margin-bottom: 0.75rem !important;
+}
+
+.mb-4 {
+  margin-bottom: 0.95rem !important;
+}
+
+.mt-3 {
+  margin-top: 0.75rem !important;
+}
+
+.mt-4 {
+  margin-top: 0.95rem !important;
+}
+
+.my-4 {
+  margin-top: 0.95rem !important;
+  margin-bottom: 0.95rem !important;
+}
+
+.gap-2 {
+  gap: 0.45rem !important;
+}
+
+.gap-3 {
+  gap: 0.7rem !important;
 }
 
 body {
@@ -44,11 +116,11 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   position: sticky;
   top: 0;
   z-index: 900;
-  padding: 0.85rem 1rem;
+  padding: 0.7rem 0.85rem;
   background: rgba(248, 251, 255, 0.92);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(219, 226, 239, 0.8);
-  gap: 0.85rem;
+  gap: 0.7rem;
   align-items: center;
 }
 
@@ -62,7 +134,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 .mobile-topbar__title {
   margin: 0;
-  font-size: 1.02rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
@@ -71,8 +143,8 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border: 0;
   border-radius: 999px;
   background: var(--surface);
@@ -96,7 +168,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 .sidebar {
-  width: 260px;
+  width: 248px;
   position: fixed;
   top: 0;
   left: 0;
@@ -111,7 +183,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .sidebar .btn-ghost {
@@ -119,7 +191,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   border: none;
   color: inherit;
   text-align: left;
-  padding: 0.85rem 1rem;
+  padding: 0.75rem 0.9rem;
 }
 
 .sidebar .btn-ghost:hover,
@@ -147,10 +219,24 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   color: #ffffff !important;
 }
 
+.sidebar__submenu {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  padding-left: 0.6rem;
+  transition: max-height 0.28s ease, opacity 0.22s ease, margin-top 0.28s ease;
+}
+
+.sidebar__submenu.open {
+  max-height: 140px;
+  opacity: 1;
+  margin-top: 0.4rem;
+}
+
 .main-content {
-  margin-left: 260px;
+  margin-left: 248px;
   min-height: 100vh;
-  padding: 1.1rem 1.25rem 1.5rem;
+  padding: 0.65rem 0.7rem 0.8rem;
 }
 
 .card {
@@ -160,13 +246,13 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   box-shadow: var(--shadow-soft);
 }
 
-.card:hover {
+/* .card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
-}
+} */
 
 .card-body {
-  padding: 1.1rem !important;
+  padding: 0.95rem !important;
 }
 
 .btn-primary {
@@ -428,7 +514,7 @@ input[type="range"]::-moz-range-thumb {
 
 .color-picker-shell {
   background: var(--surface);
-  border-radius: 22px;
+  border-radius: 8px;
   padding: 1rem;
   box-shadow: 0 30px 80px rgba(15, 23, 42, 0.24);
   animation: riseIn 0.22s ease;
@@ -553,6 +639,207 @@ input[type="range"]::-moz-range-thumb {
   }
 }
 
+/* ── PIN Login ─────────────────────────────────────── */
+.pin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  max-width: 220px;
+  margin: 0 auto;
+}
+
+.pin-key {
+  aspect-ratio: 1;
+  font-size: 1.2rem;
+  border-radius: 12px !important;
+  background: #f8fafc;
+  border: 1px solid var(--border-color) !important;
+  transition: background 0.15s ease;
+}
+
+.pin-key:active {
+  background: var(--theme-accent) !important;
+}
+
+@keyframes pinShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.pin-shake {
+  animation: pinShake 0.5s ease;
+}
+
+/* ── Scan Page ─────────────────────────────────────── */
+.scan-viewport {
+  background: #0f172a;
+}
+
+.scan-crosshair {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.scan-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: #A855F7;
+  border-style: solid;
+}
+
+.scan-corner.tl { top: 20%; left: 20%; border-width: 3px 0 0 3px; }
+.scan-corner.tr { top: 20%; right: 20%; border-width: 3px 3px 0 0; }
+.scan-corner.bl { bottom: 20%; left: 20%; border-width: 0 0 3px 3px; }
+.scan-corner.br { bottom: 20%; right: 20%; border-width: 0 3px 3px 0; }
+
+.scan-line {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #A855F7, transparent);
+  animation: scanLineMove 2s ease-in-out infinite;
+}
+
+@keyframes scanLineMove {
+  0%, 100% { top: 20%; }
+  50% { top: 78%; }
+}
+
+.scan-log-list {
+  scrollbar-width: thin;
+}
+
+.attendee-result-card {
+  animation: slideIn 0.3s ease;
+}
+
+/* ── Pass card hover ───────────────────────────────── */
+.pass-card:hover {
+  box-shadow: 0 16px 48px rgba(168, 85, 247, 0.22) !important;
+  transform: translateY(-2px);
+}
+
+/* Expand submenu for 4 items */
+.sidebar__submenu.open {
+  max-height: 280px !important;
+}
+
+/* ── PIN dot ───────────────────────────────────────── */
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+
+/* ── Modal overlay / sheet ─────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(3px);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeInOverlay 0.18s ease;
+}
+
+.modal-sheet {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.4rem;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.22);
+  animation: riseIn 0.22s ease;
+}
+
+/* ── Import option cards ───────────────────────────── */
+.import-option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem 1rem;
+  background: var(--surface-soft);
+  border: 2px dashed var(--border-color);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.import-option-card:hover {
+  border-color: var(--theme-button);
+  background: var(--theme-accent);
+}
+
+/* ── Scan popup ────────────────────────────────────── */
+.scan-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(4px);
+  z-index: 1200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  animation: fadeInOverlay 0.18s ease;
+}
+
+@media (min-width: 576px) {
+  .scan-modal-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+}
+
+.scan-popup {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  box-shadow: 0 -8px 40px rgba(15, 23, 42, 0.18);
+  animation: slideUpSheet 0.25s ease;
+}
+
+@media (min-width: 576px) {
+  .scan-popup {
+    border-radius: 20px;
+    animation: riseIn 0.22s ease;
+  }
+}
+
+.scan-popup--error {
+  background: #fff8f8;
+}
+
+.scan-popup__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* ── Mobile table improvements ─────────────────────── */
+.table th, .table td {
+  vertical-align: middle;
+}
+
 @media (max-width: 1024px) {
   .mobile-topbar {
     display: flex;
@@ -569,29 +856,27 @@ input[type="range"]::-moz-range-thumb {
 
   .main-content {
     margin-left: 0;
-    padding-top: 1rem;
+    padding-top: 0.85rem;
   }
 }
 
 @media (max-width: 768px) {
   .main-content {
-    padding: 0.85rem;
+    padding: 0.75rem;
   }
 
-.btn-outline-primary {
-  padding: 6px;
-}
-
-
+  .btn-outline-primary {
+    padding: 6px;
+  }
 
   .card-body {
-    padding: 1rem !important;
+    padding: 0.9rem !important;
   }
 
   .qr-content-selector {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
+    gap: 0.55rem;
   }
 
   .qr-type-button {
@@ -647,17 +932,167 @@ input[type="range"]::-moz-range-thumb {
   .download-options .btn-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
+    gap: 0.55rem;
   }
+
   .download-options .btn-group .btn {
     flex: 1 1 48%;
     min-width: 48%;
     max-width: 48%;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.55rem;
   }
-  .qr-content-selector {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
+}
+
+/* ── Breadcrumb: consistent alignment on all screen sizes ── */
+.app-breadcrumb {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+.app-breadcrumb .breadcrumb-item {
+  min-width: 0;
+  white-space: nowrap;
+}
+.app-breadcrumb .breadcrumb-item.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.app-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+  flex-shrink: 0;
+  padding-right: 4px;
+  padding-left: 4px;
+}
+.app-breadcrumb .btn-link {
+  vertical-align: baseline;
+  line-height: inherit;
+}
+
+/* ── Action grid: row on desktop, 2x2 grid on mobile ── */
+.mobile-action-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+.mobile-action-grid .btn {
+  white-space: nowrap;
+}
+
+/* ── Mobile UX improvements (≤ 767px) ─────────────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* ── Base: comfortable touch targets ── */
+  .btn       { min-height: 42px; font-size: 14px; }
+  .btn-sm    { min-height: 38px; font-size: 13px; }
+
+  /* ── Card body: compact but breathable ── */
+  .card-body { padding: 0.8rem !important; }
+
+  /* ── Breadcrumb: compact font on mobile ── */
+  .app-breadcrumb { font-size: 12px; }
+  .app-breadcrumb .breadcrumb-item.text-truncate { max-width: 55vw; }
+
+  /* ── Modals slide up from bottom on mobile ── */
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .modal-sheet {
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 94vh;
+    padding: 1.25rem 1rem 1.5rem;
+    animation: slideUpSheet 0.28s cubic-bezier(0.32,0.72,0,1);
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ── Action buttons: 2×2 grid on mobile ── */
+  .mobile-action-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .mobile-action-grid .btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 13px;
+    min-height: 42px;
+  }
+
+  /* ── Tables: touch scroll ── */
+  .table-responsive { -webkit-overflow-scrolling: touch; }
+  .table th, .table td { font-size: 13px; padding: 0.5rem 0.6rem !important; }
+
+  /* ── Stat counter tiles ── */
+  .col-6.col-sm-3 > div { padding: 10px 4px !important; }
+
+  /* ── Forms: easier to tap on mobile ── */
+  .form-control, .form-select {
+    min-height: 42px;
+    font-size: 16px; /* prevents zoom on iOS */
+  }
+  .form-control-sm, .form-select-sm {
+    min-height: 36px;
+    font-size: 14px;
+  }
+
+  /* ── Scrollbar: thin on mobile ── */
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
+
+  /* ── Scan page: camera full width ── */
+  .scan-viewport { aspect-ratio: 1 / 1 !important; }
+
+  /* ── Activity log: old/new records stack vertically ── */
+  .record-diff-row { flex-direction: column !important; }
+
+  /* ── Badge: slightly larger on mobile ── */
+  .badge { font-size: 11px !important; padding: 4px 8px !important; }
+
+  /* ── Attendance records page header ── */
+  .attendance-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+    margin-top: 10px;
+  }
+  .attendance-header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ── Dashboard stat cards: 2x2 ── */
+  .dashboard-stats .col-6 { width: 50% !important; }
+
+  /* ── Events list: action dropdown larger hit area ── */
+  .dropdown-item { padding: 0.6rem 1rem !important; font-size: 14px !important; }
+
+  /* ── Scanner result cards ── */
+  .scanner-result-card { padding: 0.8rem !important; }
+  .scanner-result-card .btn { min-height: 44px; font-size: 14px; }
+
+  /* ── Pass generator: full width ── */
+  .pass-gen-btn { width: 100% !important; margin-bottom: 8px; }
+
+  /* ── Fix overlapping filter dropdown on mobile ── */
+  .filter-dropdown {
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: auto !important;
+    width: auto !important;
+    z-index: 1050 !important;
+  }
+
+  /* ── Topbar title ── */
+  .mobile-topbar__title { font-size: 0.95rem; }
+
+  /* ── Hide passes generated badge on very small screens to save space ── */
+  @media (max-width: 380px) {
+    .passes-badge { display: none !important; }
+    .mobile-action-grid { grid-template-columns: 1fr; }
   }
 }

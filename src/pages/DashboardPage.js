@@ -258,16 +258,64 @@ const DashboardPage = () => {
                 </button>
               </div>
               {eventTypeWiseData.length > 0 ? (
-                <>
-                  <ResponsiveContainer width="100%" height={300}>
+                showEventTypeTable ? (
+                  <div className="table-responsive">
+                    <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
+                      <thead style={{ background: "#f8fafc" }}>
+                        <tr>
+                          <th>Event Type</th>
+                          <th className="text-end">Count</th>
+                          <th className="text-end">Percentage</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {eventTypeWiseData.map((type, idx) => {
+                          const total = eventTypeWiseData.reduce((sum, t) => sum + t.count, 0);
+                          const percentage = ((type.count / total) * 100).toFixed(1);
+                          return (
+                            <tr key={idx}>
+                              <td>
+                                <div className="d-flex align-items-center gap-2">
+                                  <div
+                                    style={{
+                                      width: 12,
+                                      height: 12,
+                                      borderRadius: 2,
+                                      background: COLORS[idx % COLORS.length],
+                                    }}
+                                  />
+                                  {type.name}
+                                </div>
+                              </td>
+                              <td className="text-end fw-semibold">{type.count}</td>
+                              <td className="text-end">
+                                <span
+                                  className="badge"
+                                  style={{
+                                    background: "#f0fdf4",
+                                    color: "#10B981",
+                                    fontSize: 11,
+                                  }}
+                                >
+                                  {percentage}%
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={320}>
                     <PieChart>
                       <Pie
                         data={eventTypeWiseData}
                         cx="50%"
                         cy="50%"
-                        labelLine={true}
-                        label={({ name, count }) => `${name}: ${count}`}
-                        outerRadius={80}
+                        labelLine={false}
+                        label={({ name, count }) => `${name}\n${count}`}
+                        outerRadius={90}
                         fill="#8884d8"
                         dataKey="count"
                       >
@@ -278,56 +326,7 @@ const DashboardPage = () => {
                       <Tooltip formatter={(value) => `${value} event${value > 1 ? 's' : ''}`} />
                     </PieChart>
                   </ResponsiveContainer>
-                  {showEventTypeTable && (
-                    <div className="table-responsive mt-3">
-                      <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
-                        <thead style={{ background: "#f8fafc" }}>
-                          <tr>
-                            <th>Event Type</th>
-                            <th className="text-end">Count</th>
-                            <th className="text-end">Percentage</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {eventTypeWiseData.map((type, idx) => {
-                            const total = eventTypeWiseData.reduce((sum, t) => sum + t.count, 0);
-                            const percentage = ((type.count / total) * 100).toFixed(1);
-                            return (
-                              <tr key={idx}>
-                                <td>
-                                  <div className="d-flex align-items-center gap-2">
-                                    <div
-                                      style={{
-                                        width: 12,
-                                        height: 12,
-                                        borderRadius: 2,
-                                        background: COLORS[idx % COLORS.length],
-                                      }}
-                                    />
-                                    {type.name}
-                                  </div>
-                                </td>
-                                <td className="text-end fw-semibold">{type.count}</td>
-                                <td className="text-end">
-                                  <span
-                                    className="badge"
-                                    style={{
-                                      background: "#f0fdf4",
-                                      color: "#10B981",
-                                      fontSize: 11,
-                                    }}
-                                  >
-                                    {percentage}%
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </>
+                )
               ) : (
                 <div className="text-center text-muted py-5">No event type data available</div>
               )}
@@ -358,20 +357,8 @@ const DashboardPage = () => {
                   {showLast7DaysTable ? "Hide" : "Show"} Table
                 </button>
               </div>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={last7DaysTimeline}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                  <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: 11 }} />
-                  <YAxis stroke="#94a3b8" style={{ fontSize: 11 }} />
-                  <Tooltip
-                    contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
-                    formatter={(value) => [`${value} event${value > 1 ? 's' : ''}`, 'Count']}
-                  />
-                  <Bar dataKey="events" fill={THEME} radius={[6, 6, 0, 0]} barSize={20} />
-                </BarChart>
-              </ResponsiveContainer>
-              {showLast7DaysTable && (
-                <div className="table-responsive mt-3">
+              {showLast7DaysTable ? (
+                <div className="table-responsive">
                   <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
                     <thead style={{ background: "#f8fafc" }}>
                       <tr>
@@ -400,6 +387,19 @@ const DashboardPage = () => {
                     </tbody>
                   </table>
                 </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={last7DaysTimeline}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                    <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: 11 }} />
+                    <YAxis stroke="#94a3b8" style={{ fontSize: 11 }} />
+                    <Tooltip
+                      contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
+                      formatter={(value) => [`${value} event${value > 1 ? 's' : ''}`, 'Count']}
+                    />
+                    <Bar dataKey="events" fill={THEME} radius={[6, 6, 0, 0]} barSize={20} />
+                  </BarChart>
+                </ResponsiveContainer>
               )}
             </div>
           </div>

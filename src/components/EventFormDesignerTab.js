@@ -10,9 +10,10 @@ const FIELD_TYPE_BADGE = {
 };
 
 const EventFormDesignerTab = () => {
-  const { events, eventsLoading } = useEventData();
+  const { events, eventsLoading, updateEvent } = useEventData();
   const [selectedEventId, setSelectedEventId] = useState("");
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const selectedEvent = events.find(
     (e) => e.id === selectedEventId || e._id === selectedEventId
@@ -31,6 +32,34 @@ const EventFormDesignerTab = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  };
+
+  const handleFieldToggle = async (fieldId, key, value) => {
+    if (!selectedEvent) return;
+    setSaving(true);
+    try {
+      const updated = selectedEvent.attendeeFields.map((f) =>
+        f.fieldId === fieldId ? { ...f, [key]: value } : f
+      );
+      await updateEvent(selectedEvent.id || selectedEvent._id, { attendeeFields: updated }, selectedEvent);
+    } catch (err) {
+      console.error("Error updating field:", err);
+    }
+    setSaving(false);
+  };
+
+  const handleCategoryToggle = async (categoryId, value) => {
+    if (!selectedEvent) return;
+    setSaving(true);
+    try {
+      const updated = selectedEvent.categories.map((c) =>
+        c.categoryId === categoryId ? { ...c, enabled: value } : c
+      );
+      await updateEvent(selectedEvent.id || selectedEvent._id, { categories: updated }, selectedEvent);
+    } catch (err) {
+      console.error("Error updating category:", err);
+    }
+    setSaving(false);
   };
 
   return (
@@ -112,24 +141,14 @@ const EventFormDesignerTab = () => {
               </div>
             </div>
 
-            {/* Field Preview */}
+            {/* Field Configuration */}
             <div>
-              <div className="small fw-semibold mb-2">
-                Form Fields Preview
-                <span
-                  className="ms-2 badge rounded-pill"
-                  style={{
-                    background: "#ede9fe",
-                    color: "#7e22ce",
-                    fontSize: 10,
-                  }}
-                >
-                  {enabledFields.length} field
-                  {enabledFields.length !== 1 ? "s" : ""}
-                </span>
+              <div className="small fw-semibold mb-3 d-flex align-items-center gap-2">
+                Form Fields Configuration
+                {saving && <span className="spinner-border spinner-border-sm text-primary" />}
               </div>
 
-              {enabledFields.length === 0 ? (
+              {(!selectedEvent?.attendeeFields || selectedEvent.attendeeFields.length === 0) ? (
                 <div
                   className="rounded-3 p-3 text-muted small text-center"
                   style={{
@@ -137,90 +156,119 @@ const EventFormDesignerTab = () => {
                     border: "1px dashed #cbd5e1",
                   }}
                 >
-                  No fields are enabled for this event. Enable fields in the
-                  event settings.
+                  No fields configured for this event.
                 </div>
               ) : (
                 <div className="d-flex flex-column gap-2">
-                  {enabledFields.map((field) => {
+                  {selectedEvent.attendeeFields.map((field) => {
                     const badge =
                       FIELD_TYPE_BADGE[field.type] || FIELD_TYPE_BADGE.text;
                     return (
                       <div
                         key={field.fieldId}
-                        className="d-flex align-items-start gap-3 rounded-3 p-3"
+                        className="rounded-3 p-3"
                         style={{
-                          background: "#f8fafc",
-                          border: "1px solid #e2e8f0",
+                          background: field.enabled ? "#f0fdf4" : "#f8fafc",
+                          border: field.enabled ? "1px solid #86efac" : "1px solid #e2e8f0",
                         }}
                       >
-                        <div className="flex-grow-1">
-                          <div className="d-flex align-items-center gap-2 mb-1">
-                            <span className="fw-semibold small">
-                              {field.label}
-                            </span>
-                            {field.required && (
-                              <span
-                                className="text-danger"
-                                style={{ fontSize: 12 }}
-                              >
-                                *
+                        <div className="d-flex align-items-start justify-content-between mb-2">
+                          <div className="flex-grow-1">
+                            <div className="d-flex align-items-center gap-2 mb-1">
+                              <span className="fw-semibold small">
+                                {field.label}
                               </span>
-                            )}
-                            <span
-                              className="badge rounded-pill ms-auto"
-                              style={{
-                                background: badge.bg,
-                                color: badge.color,
-                                fontSize: 10,
-                              }}
-                            >
-                              {badge.label}
-                            </span>
-                          </div>
-                          {/* Simulated input */}
-                          {field.type === "choice" && (
-                            <select
-                              className="form-select form-select-sm"
-                              disabled
-                            >
-                              <option>— Select —</option>
-                              {(field.options || []).map((o) => (
-                                <option key={o}>{o}</option>
-                              ))}
-                            </select>
-                          )}
-                          {field.type === "multiple-choice" && (
-                            <div className="d-flex flex-wrap gap-2">
-                              {(field.options || []).map((o) => (
-                                <label key={o} className="form-check mb-0">
-                                  <input
-                                    type="checkbox"
-                                    className="form-check-input"
-                                    disabled
-                                  />
-                                  <span className="form-check-label small ms-1">
-                                    {o}
-                                  </span>
-                                </label>
-                              ))}
+                              <span
+                                className="badge rounded-pill"
+                                style={{
+                                  background: badge.bg,
+                                  color: badge.color,
+                                  fontSize: 10,
+                                }}
+                              >
+                                {badge.label}
+                              </span>
                             </div>
-                          )}
-                          {(field.type === "text" ||
-                            field.type === "date") && (
+                          </div>
+                        </div>
+                        <div className="d-flex align-items-center gap-3">
+                          <label className="form-check mb-0">
                             <input
-                              type={
-                                field.type === "date" ? "date" : "text"
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={field.enabled}
+                              onChange={(e) =>
+                                handleFieldToggle(field.fieldId, "enabled", e.target.checked)
                               }
-                              className="form-control form-control-sm"
-                              placeholder={field.label}
-                              disabled
+                              disabled={saving}
                             />
+                            <span className="form-check-label small">Show in form</span>
+                          </label>
+                          {field.enabled && (
+                            <label className="form-check mb-0">
+                              <input
+                                type="checkbox"
+                                className="form-check-input"
+                                checked={field.required}
+                                onChange={(e) =>
+                                  handleFieldToggle(field.fieldId, "required", e.target.checked)
+                                }
+                                disabled={saving}
+                              />
+                              <span className="form-check-label small">Required</span>
+                            </label>
                           )}
                         </div>
                       </div>
                     );
                   })}
+                </div>
+              )}
+
+              {/* Category Configuration */}
+              {selectedEvent?.categories && selectedEvent.categories.length > 0 && (
+                <div className="mt-4">
+                  <div className="small fw-semibold mb-3">
+                    Category Field
+                    {saving && <span className="spinner-border spinner-border-sm text-primary ms-2" />}
+                  </div>
+                  <div className="d-flex flex-column gap-2">
+                    {selectedEvent.categories.map((category) => (
+                      <div
+                        key={category.categoryId}
+                        className="rounded-3 p-3 d-flex align-items-center justify-content-between"
+                        style={{
+                          background: category.enabled ? "#f0fdf4" : "#f8fafc",
+                          border: category.enabled ? "1px solid #86efac" : "1px solid #e2e8f0",
+                        }}
+                      >
+                        <div className="d-flex align-items-center gap-2">
+                          <div
+                            style={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: 4,
+                              background: category.color || "#a855f7",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span className="small fw-semibold">{category.label}</span>
+                        </div>
+                        <label className="form-check mb-0">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={category.enabled}
+                            onChange={(e) =>
+                              handleCategoryToggle(category.categoryId, e.target.checked)
+                            }
+                            disabled={saving}
+                          />
+                          <span className="form-check-label small ms-2">Show</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

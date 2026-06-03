@@ -9,7 +9,7 @@ const router = Router();
 router.get("/event/:eventId", async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId)
-      .select("eventName attendeeFields startDate endDate venue")
+      .select("eventName attendeeFields startDate endDate venue categories")
       .lean();
     if (!event) return res.status(404).json({ error: "Event not found" });
     res.json(event);

@@ -62,6 +62,8 @@ export const EventDataProvider = ({ children }) => {
     fetchUserFields().then(setUserFields).catch(console.error);
     fetchCategories().then(setCategories).catch(console.error);
     fetchEventTypes().then(setEventTypes).catch(console.error);
+    // Load all attendees for dashboard analytics
+    fetchAttendees().then(setAttendees).catch(console.error);
   }, []);
 
   useEffect(() => {

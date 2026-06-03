@@ -1,420 +1,475 @@
-import React, { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useMemo, useState } from "react";
 import { useEventData } from "../context/EventDataContext";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const THEME = "#A855F7";
+const COLORS = ["#A855F7", "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#06B6D4", "#8B5CF6", "#EC4899"];
 
-const StatCard = ({ icon, label, value, sub, color, onClick }) => (
+const StatCard = ({ icon, label, value, trend, color }) => (
   <div
     className="card border-0 shadow-sm h-100"
-    style={{ cursor: onClick ? "pointer" : "default", borderRadius: 12 }}
-    onClick={onClick}
+    style={{ borderRadius: 12, background: "#fff", overflow: "hidden" }}
   >
-    <div className="card-body p-3 d-flex align-items-center gap-3">
-      <div
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: 12,
-          background: color + "1a",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
-      >
-        <i className={`bi ${icon}`} style={{ fontSize: 22, color }} />
-      </div>
-      <div className="min-w-0">
-        <div className="text-muted small mb-0" style={{ fontSize: 12 }}>
-          {label}
+    <div className="card-body p-4">
+      <div className="d-flex align-items-center justify-content-between mb-3">
+        <div
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 12,
+            background: color + "1a",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <i className={`bi ${icon}`} style={{ fontSize: 24, color }} />
         </div>
-        <div className="fw-bold" style={{ fontSize: 26, lineHeight: 1.1, color: "#172033" }}>
-          {value}
-        </div>
-        {sub && (
-          <div className="text-muted" style={{ fontSize: 11 }}>
-            {sub}
-          </div>
+        {trend && (
+          <span style={{ color: trend > 0 ? "#10B981" : "#EF4444", fontSize: 12, fontWeight: 600 }}>
+            {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}%
+          </span>
         )}
+      </div>
+      <div className="text-muted small mb-1" style={{ fontSize: 13 }}>
+        {label}
+      </div>
+      <div className="fw-bold" style={{ fontSize: 32, color: "#172033" }}>
+        {value}
       </div>
     </div>
   </div>
 );
 
-const StatusBadge = ({ status }) => {
-  const map = {
-    Active:    { bg: "#d1fae5", color: "#065f46" },
-    Draft:     { bg: "#f3f4f6", color: "#4b5563" },
-    Completed: { bg: "#ede9fe", color: "#5b21b6" },
-    Imported:  { bg: "#dbeafe", color: "#1e40af" },
-  };
-  const s = map[status] || map.Draft;
-  return (
-    <span
-      className="badge"
-      style={{ background: s.bg, color: s.color, fontWeight: 600, fontSize: 11 }}
-    >
-      {status || "Draft"}
-    </span>
-  );
+const ChartCard = ({ title, children }) => (
+  <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff" }}>
+    <div className="card-body p-4">
+      <h6 className="card-title fw-bold mb-4" style={{ fontSize: 14, color: "#172033" }}>
+        {title}
+      </h6>
+      {children}
+    </div>
+  </div>
+);
+
+const formatDate = (date) => {
+  if (!date) return "—";
+  const d = new Date(date);
+  return d.toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
+};
+
+const parseDate = (dateStr) => {
+  if (!dateStr) return null;
+  const parts = dateStr.split("/");
+  if (parts.length === 3) {
+    return new Date(parts[2], parts[1] - 1, parts[0]);
+  }
+  return new Date(dateStr);
 };
 
 const DashboardPage = () => {
-  const navigate = useNavigate();
   const { events, attendees } = useEventData();
 
-  const totalEvents    = events.length;
-  const activeEvents   = events.filter((e) => e.status === "Active").length;
-  const draftEvents    = events.filter((e) => !e.status || e.status === "Draft").length;
-  const totalAttendees = attendees.length > 0
-    ? attendees.length
-    : events.reduce((s, e) => s + (e.attendeeCount || 0), 0);
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-  const checkedIn  = attendees.filter((a) => a.status === "checked-in").length;
-  const checkedOut = attendees.filter((a) => a.status === "checked-out").length;
-  const registered = attendees.filter(
-    (a) => !a.status || a.status === "registered",
-  ).length;
+  // Calculate KPIs
+  const totalEvents = events.length;
+  const totalRegistrants = attendees.length;
+  const totalAttendees = attendees.filter((a) => a.status && a.status !== "registered").length;
+  const attendeePercentage = totalRegistrants > 0 ? ((totalAttendees / totalRegistrants) * 100).toFixed(1) : 0;
 
-  const passesGenerated = events.filter((e) => e.passDesignSaved || e.passStatus === "generated").length;
+  // Last 7 days events
+  const last7DaysEvents = useMemo(() => {
+    return events.filter((e) => {
+      const startDate = parseDate(e.startDate);
+      return startDate && startDate >= sevenDaysAgo && startDate <= now;
+    });
+  }, [events]);
 
-  // Recent events sorted by creation (latest first)
-  const recentEvents = useMemo(
-    () => [...events].sort((a, b) => (b.id > a.id ? 1 : -1)).slice(0, 8),
-    [events],
-  );
+  // Upcoming events (next 30 days)
+  const upcomingEvents = useMemo(() => {
+    return events.filter((e) => {
+      const startDate = parseDate(e.startDate);
+      return startDate && startDate > now && startDate <= thirtyDaysLater;
+    }).sort((a, b) => parseDate(a.startDate) - parseDate(b.startDate));
+  }, [events]);
 
-  const today = new Date().toLocaleDateString("en-IN", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  // Event type wise count
+  const eventTypeWiseData = useMemo(() => {
+    const types = {};
+    events.forEach((e) => {
+      const type = e.eventType || "Unclassified";
+      types[type] = (types[type] || 0) + 1;
+    });
+    return Object.entries(types).map(([name, count]) => ({ name, count }));
+  }, [events]);
+
+  // Event wise attendee percentage
+  const eventWiseAttendance = useMemo(() => {
+    return events.map((e) => {
+      const eventAttendees = attendees.filter((a) => a.eventId === e._id || a.eventId === e.id);
+      const checkedIn = eventAttendees.filter((a) => a.status && a.status !== "registered").length;
+      const percentage = eventAttendees.length > 0 ? Math.round((checkedIn / eventAttendees.length) * 100) : 0;
+      return {
+        name: e.eventName,
+        registered: eventAttendees.length,
+        attended: checkedIn,
+        percentage,
+      };
+    }).sort((a, b) => b.percentage - a.percentage);
+  }, [events, attendees]);
+
+  // Last 7 days timeline
+  const last7DaysTimeline = useMemo(() => {
+    const data = {};
+    const labels = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const key = d.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+      data[key] = 0;
+      labels.push(key);
+    }
+    last7DaysEvents.forEach((e) => {
+      const startDate = parseDate(e.startDate);
+      const key = startDate.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+      data[key]++;
+    });
+    return labels.map((label) => ({ date: label, events: data[label] }));
+  }, [last7DaysEvents, events]);
 
   return (
-    <div className="container-fluid p-2 fade-in">
-      {/* Welcome header */}
-      <div className="card border-0 shadow-sm mb-3" style={{ borderRadius: 14 }}>
-        <div
-          className="card-body p-3 d-flex align-items-center justify-content-between"
-          style={{
-            background: `linear-gradient(120deg, ${THEME} 0%, #7c3aed 100%)`,
-            borderRadius: 14,
-          }}
-        >
-          <div>
-            <div className="fw-bold text-white mb-1" style={{ fontSize: 18 }}>
-              Dashboard
-            </div>
-            <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 12 }}>
-              {today}
-            </div>
-          </div>
-          <div className="d-flex gap-2">
-            <button
-              type="button"
-              className="btn btn-sm"
-              style={{
-                background: "rgba(255,255,255,0.18)",
-                color: "#fff",
-                border: "1px solid rgba(255,255,255,0.3)",
-                fontSize: 12,
-              }}
-              onClick={() => navigate("/events?mode=new")}
-            >
-              <i className="bi bi-plus-circle me-1" />
-              New Event
-            </button>
-            <button
-              type="button"
-              className="btn btn-sm"
-              style={{
-                background: "rgba(255,255,255,0.18)",
-                color: "#fff",
-                border: "1px solid rgba(255,255,255,0.3)",
-                fontSize: 12,
-              }}
-              onClick={() => navigate("/scan")}
-            >
-              <i className="bi bi-qr-code-scan me-1" />
-              Scan Pass
-            </button>
-          </div>
-        </div>
+    <div className="container-fluid p-3" style={{ background: "#f8fafc", minHeight: "100vh" }}>
+      {/* Header */}
+      <div className="mb-4">
+        <h2 className="fw-bold mb-1" style={{ fontSize: 28, color: "#172033" }}>
+          Analytics & Insights
+        </h2>
+        <p className="text-muted mb-0" style={{ fontSize: 14 }}>
+          Real-time overview of your events and attendee data
+        </p>
       </div>
 
-      {/* Stat cards */}
-      <div className="row g-2 mb-3">
-        <div className="col-6 col-md-3">
+      {/* KPI Cards */}
+      <div className="row g-3 mb-4">
+        <div className="col-12 col-sm-6 col-lg-3">
           <StatCard
             icon="bi-calendar-event"
             label="Total Events"
             value={totalEvents}
-            sub={`${activeEvents} active · ${draftEvents} draft`}
             color={THEME}
-            onClick={() => navigate("/events")}
           />
         </div>
-        <div className="col-6 col-md-3">
+        <div className="col-12 col-sm-6 col-lg-3">
           <StatCard
             icon="bi-people"
-            label="Total Attendees"
-            value={totalAttendees}
-            sub={`${registered} registered`}
+            label="Total Registrants"
+            value={totalRegistrants}
             color="#3B82F6"
           />
         </div>
-        <div className="col-6 col-md-3">
+        <div className="col-12 col-sm-6 col-lg-3">
           <StatCard
-            icon="bi-box-arrow-in-right"
-            label="Checked In"
-            value={checkedIn}
-            sub={
-              totalAttendees > 0
-                ? `${Math.round((checkedIn / totalAttendees) * 100)}% of total`
-                : "—"
-            }
+            icon="bi-person-check"
+            label="Total Attendees"
+            value={totalAttendees}
             color="#10B981"
           />
         </div>
-        <div className="col-6 col-md-3">
+        <div className="col-12 col-sm-6 col-lg-3">
           <StatCard
-            icon="bi-box-arrow-right"
-            label="Checked Out"
-            value={checkedOut}
-            sub={`${passesGenerated} pass design${passesGenerated !== 1 ? "s" : ""} saved`}
+            icon="bi-percent"
+            label="Attendance Rate"
+            value={`${attendeePercentage}%`}
             color="#F59E0B"
           />
         </div>
       </div>
 
-      {/* Events table */}
-      <div className="card border-0 shadow-sm" style={{ borderRadius: 12 }}>
-        <div className="card-body p-0">
-          <div
-            className="d-flex align-items-center justify-content-between px-3 py-2"
-            style={{ borderBottom: "1px solid #f1f5f9" }}
-          >
-            <div className="fw-semibold" style={{ fontSize: 14 }}>
-              Events
-            </div>
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-secondary"
-              style={{ fontSize: 12 }}
-              onClick={() => navigate("/events")}
-            >
-              View All
-            </button>
-          </div>
-
-          {/* Desktop table */}
-          <div className="d-none d-md-block">
-            <div className="table-responsive">
-              <table
-                className="table table-hover align-middle mb-0"
-                style={{ fontSize: 13 }}
-              >
-                <thead className="table-light">
-                  <tr>
-                    <th>Event</th>
-                    <th>Dates</th>
-                    <th>Venue</th>
-                    <th style={{ width: 80 }}>Attendees</th>
-                    <th style={{ width: 90 }}>Status</th>
-                    <th style={{ width: 90 }}>Pass</th>
-                    <th className="text-center" style={{ width: 140 }}>
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentEvents.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="text-center py-5 text-muted">
-                        No events yet.{" "}
-                        <button
-                          type="button"
-                          className="btn btn-link p-0"
-                          onClick={() => navigate("/events?mode=new")}
-                        >
-                          Create your first event
-                        </button>
-                      </td>
-                    </tr>
-                  ) : (
-                    recentEvents.map((ev) => (
-                      <tr key={ev.id}>
-                        <td>
-                          <div className="fw-semibold">{ev.eventName}</div>
-                          {ev.organizer && (
-                            <small className="text-muted">{ev.organizer}</small>
-                          )}
-                        </td>
-                        <td className="text-muted small">
-                          <div>{ev.startDate || "—"}</div>
-                          {ev.endDate && (
-                            <div style={{ fontSize: 11 }}>to {ev.endDate}</div>
-                          )}
-                        </td>
-                        <td className="text-muted small">{ev.venue || "—"}</td>
-                        <td className="text-center fw-semibold">
-                          {ev.attendeeCount || 0}
-                        </td>
-                        <td>
-                          <StatusBadge status={ev.status} />
-                        </td>
-                        <td>
-                          {ev.passDesignSaved || ev.passStatus === "generated" ? (
-                            <span
-                              className="badge"
-                              style={{
-                                background: "#d1fae5",
-                                color: "#065f46",
-                                fontSize: 11,
-                              }}
-                            >
-                              <i className="bi bi-check-circle me-1" />
-                              Ready
-                            </span>
-                          ) : (
-                            <span className="text-muted small">—</span>
-                          )}
-                        </td>
-                        <td>
-                          <div className="d-flex gap-1 justify-content-center">
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-secondary"
-                              style={{ fontSize: 11, padding: "2px 8px" }}
-                              title="Upload Data"
-                              onClick={() =>
-                                navigate(`/events/${ev.id}/upload`)
-                              }
-                            >
-                              <i className="bi bi-upload me-1" />
-                              Upload
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-secondary"
-                              style={{ fontSize: 11, padding: "2px 8px" }}
-                              title="Attendance Records"
-                              onClick={() =>
-                                navigate(`/events/${ev.id}/attendees`)
-                              }
-                            >
-                              <i className="bi bi-person-check me-1" />
-                              Attend.
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-sm"
-                              style={{
-                                fontSize: 11,
-                                padding: "2px 8px",
-                                background: THEME,
-                                color: "#fff",
-                                border: "none",
-                              }}
-                              title="Scan"
-                              onClick={() => navigate("/scan")}
-                            >
-                              <i className="bi bi-qr-code-scan" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Mobile cards */}
-          <div className="d-md-none p-2">
-            {recentEvents.length === 0 ? (
-              <div className="text-center py-4 text-muted">
-                No events yet.{" "}
-                <button
-                  type="button"
-                  className="btn btn-link p-0"
-                  onClick={() => navigate("/events?mode=new")}
-                >
-                  Create your first event
-                </button>
-              </div>
+      {/* Charts Row 1 */}
+      <div className="row g-3 mb-4">
+        {/* Event Type Distribution */}
+        <div className="col-12 col-lg-6">
+          <ChartCard title="Event Type Distribution">
+            {eventTypeWiseData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={eventTypeWiseData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, count }) => `${name}: ${count}`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="count"
+                  >
+                    {eventTypeWiseData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             ) : (
-              recentEvents.map((ev) => (
-                <div
-                  key={ev.id}
-                  className="card border-0 mb-2"
-                  style={{ background: "#f8fafc", borderRadius: 10 }}
-                >
-                  <div className="card-body p-3">
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <div>
-                        <div className="fw-semibold" style={{ fontSize: 13 }}>
-                          {ev.eventName}
-                        </div>
-                        {ev.organizer && (
-                          <div className="text-muted" style={{ fontSize: 11 }}>
-                            {ev.organizer}
-                          </div>
-                        )}
-                      </div>
-                      <div className="d-flex flex-column align-items-end gap-1">
-                        <StatusBadge status={ev.status} />
-                        <span className="text-muted" style={{ fontSize: 11 }}>
-                          {ev.attendeeCount || 0} attendees
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-muted small mb-2">
-                      {ev.startDate}
-                      {ev.endDate ? ` → ${ev.endDate}` : ""}{" "}
-                      {ev.venue ? `· ${ev.venue}` : ""}
-                    </div>
-                    <div className="d-flex gap-2">
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary flex-fill"
-                        style={{ fontSize: 11 }}
-                        onClick={() => navigate(`/events/${ev.id}/upload`)}
-                      >
-                        <i className="bi bi-upload me-1" />
-                        Upload
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary flex-fill"
-                        style={{ fontSize: 11 }}
-                        onClick={() => navigate(`/events/${ev.id}/attendees`)}
-                      >
-                        <i className="bi bi-person-check me-1" />
-                        Attendance
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-sm flex-fill"
-                        style={{
-                          fontSize: 11,
-                          background: THEME,
-                          color: "#fff",
-                          border: "none",
-                        }}
-                        onClick={() => navigate("/scan")}
-                      >
-                        <i className="bi bi-qr-code-scan me-1" />
-                        Scan
-                      </button>
-                    </div>
+              <div className="text-center text-muted py-5">No event type data available</div>
+            )}
+          </ChartCard>
+        </div>
+
+        {/* Last 7 Days Events */}
+        <div className="col-12 col-lg-6">
+          <ChartCard title="Last 7 Days - Events Created">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={last7DaysTimeline}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: 12 }} />
+                <YAxis stroke="#94a3b8" style={{ fontSize: 12 }} />
+                <Tooltip contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }} />
+                <Bar dataKey="events" fill={THEME} radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
+      </div>
+
+      {/* Charts Row 2 */}
+      <div className="row g-3 mb-4">
+        {/* Upcoming Events Count */}
+        <div className="col-12 col-lg-6">
+          <ChartCard title="Event Status Overview">
+            <div className="row g-3 text-center">
+              <div className="col-6">
+                <div className="p-3" style={{ background: "#f0fdf4", borderRadius: 8 }}>
+                  <div className="text-muted small mb-2">Upcoming (30 days)</div>
+                  <div className="fw-bold" style={{ fontSize: 28, color: "#10B981" }}>
+                    {upcomingEvents.length}
                   </div>
                 </div>
-              ))
+              </div>
+              <div className="col-6">
+                <div className="p-3" style={{ background: "#fef3c7", borderRadius: 8 }}>
+                  <div className="text-muted small mb-2">Past 7 Days</div>
+                  <div className="fw-bold" style={{ fontSize: 28, color: "#F59E0B" }}>
+                    {last7DaysEvents.length}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ChartCard>
+        </div>
+
+        {/* Attendance Trend */}
+        <div className="col-12 col-lg-6">
+          <ChartCard title="Top Events by Attendance Rate">
+            {eventWiseAttendance.slice(0, 5).length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={eventWiseAttendance.slice(0, 5)}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: 11 }} angle={-15} height={80} />
+                  <YAxis stroke="#94a3b8" style={{ fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
+                    formatter={(value) => `${value}%`}
+                  />
+                  <Bar dataKey="percentage" fill="#10B981" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-center text-muted py-5">No attendance data available</div>
             )}
+          </ChartCard>
+        </div>
+      </div>
+
+      {/* Tables Row */}
+      <div className="row g-3">
+        {/* Upcoming Events Table */}
+        <div className="col-12 col-lg-6">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 12 }}>
+            <div className="card-body p-0">
+              <div className="px-4 py-3 d-flex align-items-center justify-content-between" style={{ borderBottom: "1px solid #e2e8f0" }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
+                  Upcoming Events (Next 30 Days)
+                </h6>
+                <span className="badge bg-light text-dark" style={{ fontSize: 11 }}>
+                  {upcomingEvents.length}
+                </span>
+              </div>
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0" style={{ fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: "#f8fafc" }}>
+                      <th>Event Name</th>
+                      <th>Start Date</th>
+                      <th className="text-end">Registrants</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {upcomingEvents.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="text-center py-4 text-muted">
+                          No upcoming events
+                        </td>
+                      </tr>
+                    ) : (
+                      upcomingEvents.map((ev) => (
+                        <tr key={ev._id || ev.id}>
+                          <td>
+                            <div className="fw-semibold">{ev.eventName}</div>
+                            {ev.venue && <small className="text-muted d-block">{ev.venue}</small>}
+                          </td>
+                          <td className="text-muted small">{formatDate(ev.startDate)}</td>
+                          <td className="text-end fw-semibold">
+                            {attendees.filter((a) => a.eventId === ev._id || a.eventId === ev.id).length}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Events (Last 7 Days) Table */}
+        <div className="col-12 col-lg-6">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 12 }}>
+            <div className="card-body p-0">
+              <div className="px-4 py-3 d-flex align-items-center justify-content-between" style={{ borderBottom: "1px solid #e2e8f0" }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
+                  Recent Events (Last 7 Days)
+                </h6>
+                <span className="badge bg-light text-dark" style={{ fontSize: 11 }}>
+                  {last7DaysEvents.length}
+                </span>
+              </div>
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0" style={{ fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: "#f8fafc" }}>
+                      <th>Event Name</th>
+                      <th>Date</th>
+                      <th className="text-end">Attendance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {last7DaysEvents.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="text-center py-4 text-muted">
+                          No recent events
+                        </td>
+                      </tr>
+                    ) : (
+                      last7DaysEvents.map((ev) => {
+                        const eventAttendees = attendees.filter((a) => a.eventId === ev._id || a.eventId === ev.id);
+                        const attended = eventAttendees.filter((a) => a.status && a.status !== "registered").length;
+                        const percentage = eventAttendees.length > 0 ? Math.round((attended / eventAttendees.length) * 100) : 0;
+                        return (
+                          <tr key={ev._id || ev.id}>
+                            <td>
+                              <div className="fw-semibold">{ev.eventName}</div>
+                              {ev.organizer && <small className="text-muted d-block">{ev.organizer}</small>}
+                            </td>
+                            <td className="text-muted small">{formatDate(ev.startDate)}</td>
+                            <td className="text-end">
+                              <div className="fw-semibold">{percentage}%</div>
+                              <small className="text-muted">{attended}/{eventAttendees.length}</small>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Event-wise Attendance Details */}
+      <div className="row g-3 mt-1">
+        <div className="col-12">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 12 }}>
+            <div className="card-body p-0">
+              <div className="px-4 py-3" style={{ borderBottom: "1px solid #e2e8f0" }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
+                  Event-wise Attendance Details
+                </h6>
+              </div>
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0" style={{ fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ background: "#f8fafc" }}>
+                      <th>Event Name</th>
+                      <th className="text-end">Registered</th>
+                      <th className="text-end">Attended</th>
+                      <th className="text-end">Percentage</th>
+                      <th className="text-center">Progress</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {eventWiseAttendance.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-4 text-muted">
+                          No event data available
+                        </td>
+                      </tr>
+                    ) : (
+                      eventWiseAttendance.map((row) => (
+                        <tr key={row.name}>
+                          <td className="fw-semibold">{row.name}</td>
+                          <td className="text-end fw-semibold">{row.registered}</td>
+                          <td className="text-end fw-semibold">{row.attended}</td>
+                          <td className="text-end">
+                            <span className="badge" style={{ background: "#f0fdf4", color: "#10B981" }}>
+                              {row.percentage}%
+                            </span>
+                          </td>
+                          <td>
+                            <div
+                              style={{
+                                background: "#e2e8f0",
+                                borderRadius: 8,
+                                height: 24,
+                                overflow: "hidden",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  background: row.percentage >= 80 ? "#10B981" : row.percentage >= 50 ? "#F59E0B" : "#EF4444",
+                                  height: "100%",
+                                  width: `${row.percentage}%`,
+                                  transition: "width 0.3s ease",
+                                }}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>

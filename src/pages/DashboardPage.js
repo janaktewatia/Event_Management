@@ -117,24 +117,35 @@ const DashboardPage = () => {
   const eventTypeWiseData = useMemo(() => {
     const types = {};
     const eventTypeMap = {};
+    const eventTypeMapByIdOnly = {};
 
-    // Initialize all active event types with 0 count
-    eventTypes.filter((et) => et.active).forEach((et) => {
-      eventTypeMap[et.id] = et.label;
+    // Create mapping both ways - by id field and by _id field (in case normalization varies)
+    (eventTypes || []).filter((et) => et.active).forEach((et) => {
+      const id = et.id || et._id;
+      eventTypeMap[id] = et.label;
+      eventTypeMapByIdOnly[et._id] = et.label;
       types[et.label] = 0;
     });
 
     let unclassifiedCount = 0;
 
     events.forEach((e) => {
-      if (e.eventType && eventTypeMap[e.eventType]) {
-        // EventType is an ID that matches an active event type
-        types[eventTypeMap[e.eventType]]++;
-      } else if (e.eventType && e.eventType.length <= 50 && !/^[a-f0-9]{24}$/.test(e.eventType)) {
-        // EventType is already a label
-        types[e.eventType] = (types[e.eventType] || 0) + 1;
+      const eventTypeId = e.eventType?.trim() || "";
+
+      if (eventTypeId) {
+        // Try to match with mapped event type
+        const mappedLabel = eventTypeMap[eventTypeId] || eventTypeMapByIdOnly[eventTypeId];
+
+        if (mappedLabel) {
+          types[mappedLabel]++;
+        } else if (eventTypeId.length <= 50 && !/^[a-f0-9]{24}$/.test(eventTypeId)) {
+          // EventType is already a label (not an ObjectId)
+          types[eventTypeId] = (types[eventTypeId] || 0) + 1;
+        } else {
+          // No valid event type found
+          unclassifiedCount++;
+        }
       } else {
-        // No valid event type
         unclassifiedCount++;
       }
     });
@@ -311,11 +322,10 @@ const DashboardPage = () => {
                     <PieChart>
                       <Pie
                         data={eventTypeWiseData}
-                        cx="50%"
+                        cx="45%"
                         cy="50%"
                         labelLine={false}
-                        label={({ name, count }) => `${name}\n${count}`}
-                        outerRadius={90}
+                        outerRadius={80}
                         fill="#8884d8"
                         dataKey="count"
                       >
@@ -323,7 +333,16 @@ const DashboardPage = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => `${value} event${value > 1 ? 's' : ''}`} />
+                      <Legend
+                        verticalAlign="middle"
+                        align="right"
+                        layout="vertical"
+                        formatter={(value, entry) => `${entry.payload.name}: ${entry.payload.count}`}
+                      />
+                      <Tooltip
+                        contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
+                        formatter={(value) => `${value} event${value > 1 ? 's' : ''}`}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 )

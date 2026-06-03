@@ -86,6 +86,7 @@ const DashboardPage = () => {
   const { events, attendees, eventTypes } = useEventData();
   const [showEventTypeTable, setShowEventTypeTable] = useState(false);
   const [showLast7DaysTable, setShowLast7DaysTable] = useState(false);
+  const [showAttendanceTable, setShowAttendanceTable] = useState(false);
 
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -426,49 +427,93 @@ const DashboardPage = () => {
       {/* Charts Row 2 */}
       <div className="row g-3 mb-4">
         {/* Upcoming Events Count */}
-        <div className="col-12 col-lg-6">
-          <ChartCard title="Event Status Overview">
-            <div className="row g-3 text-center">
-              <div className="col-6">
-                <div className="p-3" style={{ background: "#f0fdf4", borderRadius: 8 }}>
-                  <div className="text-muted small mb-2">Upcoming (30 days)</div>
-                  <div className="fw-bold" style={{ fontSize: 28, color: "#10B981" }}>
-                    {upcomingEvents.length}
-                  </div>
-                </div>
+        <div className="col-12 col-lg-4">
+          <ChartCard title="Upcoming Events (30 days)">
+            <div className="p-3 text-center">
+              <div className="text-muted small mb-3">Events scheduled for the next 30 days</div>
+              <div className="fw-bold" style={{ fontSize: 48, color: "#10B981", marginBottom: "1rem" }}>
+                {upcomingEvents.length}
               </div>
-              <div className="col-6">
-                <div className="p-3" style={{ background: "#fef3c7", borderRadius: 8 }}>
-                  <div className="text-muted small mb-2">Past 7 Days</div>
-                  <div className="fw-bold" style={{ fontSize: 28, color: "#F59E0B" }}>
-                    {last7DaysEvents.length}
-                  </div>
-                </div>
+              <div className="small text-muted">
+                {upcomingEvents.length === 0 ? "No upcoming events" : `${upcomingEvents.length} event${upcomingEvents.length !== 1 ? 's' : ''} scheduled`}
               </div>
             </div>
           </ChartCard>
         </div>
 
         {/* Attendance Trend */}
-        <div className="col-12 col-lg-6">
-          <ChartCard title="Top Events by Attendance Rate">
-            {eventWiseAttendance.slice(0, 5).length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={eventWiseAttendance.slice(0, 5)}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: 11 }} angle={-15} height={80} />
-                  <YAxis stroke="#94a3b8" style={{ fontSize: 12 }} />
-                  <Tooltip
-                    contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
-                    formatter={(value) => `${value}%`}
-                  />
-                  <Bar dataKey="percentage" fill="#10B981" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="text-center text-muted py-5">No attendance data available</div>
-            )}
-          </ChartCard>
+        <div className="col-12 col-lg-8">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff", height: 420 }}>
+            <div className="card-body p-4 d-flex flex-column" style={{ height: "100%" }}>
+              <div className="d-flex align-items-center justify-content-between mb-4">
+                <h6 className="card-title fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
+                  Top Events by Attendance Rate
+                </h6>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  style={{
+                    background: showAttendanceTable ? "#A855F7" : "#f3f4f6",
+                    color: showAttendanceTable ? "#fff" : "#64748b",
+                    border: "none",
+                    fontSize: 11,
+                  }}
+                  onClick={() => setShowAttendanceTable(!showAttendanceTable)}
+                >
+                  <i className="bi bi-table me-1" />
+                  {showAttendanceTable ? "Hide" : "Show"} Table
+                </button>
+              </div>
+              {showAttendanceTable ? (
+                <div className="table-responsive flex-grow-1" style={{ overflowY: "auto" }}>
+                  <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
+                    <thead style={{ background: "#f8fafc", position: "sticky", top: 0 }}>
+                      <tr>
+                        <th>Event Name</th>
+                        <th className="text-end">Attended</th>
+                        <th className="text-end">Percentage</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {eventWiseAttendance.slice(0, 5).map((row, idx) => (
+                        <tr key={idx}>
+                          <td className="fw-semibold">{row.name}</td>
+                          <td className="text-end small">{row.attended}/{row.registered}</td>
+                          <td className="text-end">
+                            <span
+                              className="badge"
+                              style={{
+                                background: row.percentage >= 80 ? "#d1fae5" : row.percentage >= 50 ? "#fef3c7" : "#fee2e2",
+                                color: row.percentage >= 80 ? "#065f46" : row.percentage >= 50 ? "#92400e" : "#7f1d1d",
+                                fontSize: 11,
+                              }}
+                            >
+                              {row.percentage}%
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : eventWiseAttendance.slice(0, 5).length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={eventWiseAttendance.slice(0, 5)}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: 11 }} angle={-15} height={80} />
+                    <YAxis stroke="#94a3b8" style={{ fontSize: 12 }} />
+                    <Tooltip
+                      contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
+                      formatter={(value) => `${value}%`}
+                    />
+                    <Bar dataKey="percentage" fill="#10B981" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center text-muted py-5">No attendance data available</div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

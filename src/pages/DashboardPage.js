@@ -83,7 +83,7 @@ const parseDate = (dateStr) => {
 };
 
 const DashboardPage = () => {
-  const { events, attendees } = useEventData();
+  const { events, attendees, eventTypes } = useEventData();
 
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -111,21 +111,42 @@ const DashboardPage = () => {
     }).sort((a, b) => parseDate(a.startDate) - parseDate(b.startDate));
   }, [events]);
 
-  // Event type wise count
+  // Event type wise count with proper mapping
   const eventTypeWiseData = useMemo(() => {
     const types = {};
-    events.forEach((e) => {
-      let type = e.eventType;
-      // Handle empty, null, or ObjectId-like values
-      if (!type || type.length > 50 || /^[a-f0-9]{24}$/.test(type)) {
-        type = "Unclassified";
-      }
-      types[type] = (types[type] || 0) + 1;
+    const eventTypeMap = {};
+
+    // Initialize all active event types with 0 count
+    eventTypes.filter((et) => et.active).forEach((et) => {
+      eventTypeMap[et.id] = et.label;
+      types[et.label] = 0;
     });
+
+    let unclassifiedCount = 0;
+
+    events.forEach((e) => {
+      if (e.eventType && eventTypeMap[e.eventType]) {
+        // EventType is an ID that matches an active event type
+        types[eventTypeMap[e.eventType]]++;
+      } else if (e.eventType && e.eventType.length <= 50 && !/^[a-f0-9]{24}$/.test(e.eventType)) {
+        // EventType is already a label
+        types[e.eventType] = (types[e.eventType] || 0) + 1;
+      } else {
+        // No valid event type
+        unclassifiedCount++;
+      }
+    });
+
+    // Only add Unclassified if there are unclassified events
+    if (unclassifiedCount > 0) {
+      types["Unclassified"] = unclassifiedCount;
+    }
+
     return Object.entries(types)
+      .filter(([, count]) => count > 0) // Only show types with at least 1 event
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
-  }, [events]);
+  }, [events, eventTypes]);
 
   // Event wise attendee percentage
   const eventWiseAttendance = useMemo(() => {

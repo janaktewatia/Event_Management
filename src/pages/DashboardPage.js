@@ -466,7 +466,7 @@ const DashboardPage = () => {
                             >
                               <div
                                 style={{
-                                  background: row.percentage >= 80 ? "#10B981" : row.percentage >= 50 ? "#F59E0B" : "#EF4444",
+                                  background: row.percentage >= 80 ? "#10B981" : row.percentage >= 50 ? "#F59E0B" : THEME,
                                   height: "100%",
                                   width: `${row.percentage}%`,
                                   transition: "width 0.3s ease",

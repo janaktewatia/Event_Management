@@ -84,6 +84,8 @@ const parseDate = (dateStr) => {
 
 const DashboardPage = () => {
   const { events, attendees, eventTypes } = useEventData();
+  const [showEventTypeTable, setShowEventTypeTable] = useState(false);
+  const [showLast7DaysTable, setShowLast7DaysTable] = useState(false);
 
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -234,127 +236,173 @@ const DashboardPage = () => {
       <div className="row g-3 mb-4">
         {/* Event Type Distribution */}
         <div className="col-12 col-lg-6">
-          <ChartCard title="Event Type Distribution">
-            {eventTypeWiseData.length > 0 ? (
-              <>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={eventTypeWiseData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={true}
-                      label={({ name, count }) => `${name}: ${count}`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="count"
-                    >
-                      {eventTypeWiseData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => `${value} event${value > 1 ? 's' : ''}`} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="table-responsive mt-3">
-                  <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
-                    <thead style={{ background: "#f8fafc" }}>
-                      <tr>
-                        <th>Event Type</th>
-                        <th className="text-end">Count</th>
-                        <th className="text-end">Percentage</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {eventTypeWiseData.map((type, idx) => {
-                        const total = eventTypeWiseData.reduce((sum, t) => sum + t.count, 0);
-                        const percentage = ((type.count / total) * 100).toFixed(1);
-                        return (
-                          <tr key={idx}>
-                            <td>
-                              <div className="d-flex align-items-center gap-2">
-                                <div
-                                  style={{
-                                    width: 12,
-                                    height: 12,
-                                    borderRadius: 2,
-                                    background: COLORS[idx % COLORS.length],
-                                  }}
-                                />
-                                {type.name}
-                              </div>
-                            </td>
-                            <td className="text-end fw-semibold">{type.count}</td>
-                            <td className="text-end">
-                              <span
-                                className="badge"
-                                style={{
-                                  background: "#f0fdf4",
-                                  color: "#10B981",
-                                  fontSize: 11,
-                                }}
-                              >
-                                {percentage}%
-                              </span>
-                            </td>
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff" }}>
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between mb-4">
+                <h6 className="card-title fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
+                  Event Type Distribution
+                </h6>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  style={{
+                    background: showEventTypeTable ? THEME : "#f3f4f6",
+                    color: showEventTypeTable ? "#fff" : "#64748b",
+                    border: "none",
+                    fontSize: 11,
+                  }}
+                  onClick={() => setShowEventTypeTable(!showEventTypeTable)}
+                >
+                  <i className="bi bi-table me-1" />
+                  {showEventTypeTable ? "Hide" : "Show"} Table
+                </button>
+              </div>
+              {eventTypeWiseData.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={eventTypeWiseData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={true}
+                        label={({ name, count }) => `${name}: ${count}`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="count"
+                      >
+                        {eventTypeWiseData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => `${value} event${value > 1 ? 's' : ''}`} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {showEventTypeTable && (
+                    <div className="table-responsive mt-3">
+                      <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
+                        <thead style={{ background: "#f8fafc" }}>
+                          <tr>
+                            <th>Event Type</th>
+                            <th className="text-end">Count</th>
+                            <th className="text-end">Percentage</th>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            ) : (
-              <div className="text-center text-muted py-5">No event type data available</div>
-            )}
-          </ChartCard>
+                        </thead>
+                        <tbody>
+                          {eventTypeWiseData.map((type, idx) => {
+                            const total = eventTypeWiseData.reduce((sum, t) => sum + t.count, 0);
+                            const percentage = ((type.count / total) * 100).toFixed(1);
+                            return (
+                              <tr key={idx}>
+                                <td>
+                                  <div className="d-flex align-items-center gap-2">
+                                    <div
+                                      style={{
+                                        width: 12,
+                                        height: 12,
+                                        borderRadius: 2,
+                                        background: COLORS[idx % COLORS.length],
+                                      }}
+                                    />
+                                    {type.name}
+                                  </div>
+                                </td>
+                                <td className="text-end fw-semibold">{type.count}</td>
+                                <td className="text-end">
+                                  <span
+                                    className="badge"
+                                    style={{
+                                      background: "#f0fdf4",
+                                      color: "#10B981",
+                                      fontSize: 11,
+                                    }}
+                                  >
+                                    {percentage}%
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center text-muted py-5">No event type data available</div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Last 7 Days Events */}
         <div className="col-12 col-lg-6">
-          <ChartCard title="Last 7 Days - Events Created">
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={last7DaysTimeline}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: 11 }} />
-                <YAxis stroke="#94a3b8" style={{ fontSize: 11 }} />
-                <Tooltip
-                  contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
-                  formatter={(value) => [`${value} event${value > 1 ? 's' : ''}`, 'Count']}
-                />
-                <Bar dataKey="events" fill={THEME} radius={[6, 6, 0, 0]} barSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="table-responsive mt-3">
-              <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
-                <thead style={{ background: "#f8fafc" }}>
-                  <tr>
-                    <th>Date</th>
-                    <th className="text-end">Events Created</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {last7DaysTimeline.map((day, idx) => (
-                    <tr key={idx}>
-                      <td className="fw-semibold">{day.date}</td>
-                      <td className="text-end">
-                        <span
-                          className="badge"
-                          style={{
-                            background: day.events > 0 ? "#f0fdf4" : "#f3f4f6",
-                            color: day.events > 0 ? "#10B981" : "#6b7280",
-                            fontSize: 11,
-                          }}
-                        >
-                          {day.events}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff" }}>
+            <div className="card-body p-4">
+              <div className="d-flex align-items-center justify-content-between mb-4">
+                <h6 className="card-title fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
+                  Last 7 Days - Events Created
+                </h6>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  style={{
+                    background: showLast7DaysTable ? THEME : "#f3f4f6",
+                    color: showLast7DaysTable ? "#fff" : "#64748b",
+                    border: "none",
+                    fontSize: 11,
+                  }}
+                  onClick={() => setShowLast7DaysTable(!showLast7DaysTable)}
+                >
+                  <i className="bi bi-table me-1" />
+                  {showLast7DaysTable ? "Hide" : "Show"} Table
+                </button>
+              </div>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={last7DaysTimeline}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                  <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: 11 }} />
+                  <YAxis stroke="#94a3b8" style={{ fontSize: 11 }} />
+                  <Tooltip
+                    contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
+                    formatter={(value) => [`${value} event${value > 1 ? 's' : ''}`, 'Count']}
+                  />
+                  <Bar dataKey="events" fill={THEME} radius={[6, 6, 0, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+              {showLast7DaysTable && (
+                <div className="table-responsive mt-3">
+                  <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
+                    <thead style={{ background: "#f8fafc" }}>
+                      <tr>
+                        <th>Date</th>
+                        <th className="text-end">Events Created</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {last7DaysTimeline.map((day, idx) => (
+                        <tr key={idx}>
+                          <td className="fw-semibold">{day.date}</td>
+                          <td className="text-end">
+                            <span
+                              className="badge"
+                              style={{
+                                background: day.events > 0 ? "#f0fdf4" : "#f3f4f6",
+                                color: day.events > 0 ? "#10B981" : "#6b7280",
+                                fontSize: 11,
+                              }}
+                            >
+                              {day.events}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          </ChartCard>
+          </div>
         </div>
       </div>
 

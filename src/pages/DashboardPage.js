@@ -426,28 +426,8 @@ const DashboardPage = () => {
 
       {/* Charts Row 2 */}
       <div className="row g-3 mb-4">
-        {/* Upcoming Events Count */}
-        <div className="col-12 col-lg-6">
-          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff", height: 420 }}>
-            <div className="card-body p-4 d-flex flex-column" style={{ height: "100%" }}>
-              <h6 className="card-title fw-bold mb-4" style={{ fontSize: 14, color: "#172033" }}>
-                Upcoming Events (30 days)
-              </h6>
-              <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
-                <div className="text-muted small mb-3">Events scheduled for the next 30 days</div>
-                <div className="fw-bold" style={{ fontSize: 48, color: "#10B981", marginBottom: "1rem" }}>
-                  {upcomingEvents.length}
-                </div>
-                <div className="small text-muted">
-                  {upcomingEvents.length === 0 ? "No upcoming events" : `${upcomingEvents.length} event${upcomingEvents.length !== 1 ? 's' : ''} scheduled`}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Attendance Trend */}
-        <div className="col-12 col-lg-6">
+        <div className="col-12 col-lg-12">
           <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff", height: 420 }}>
             <div className="card-body p-4 d-flex flex-column" style={{ height: "100%" }}>
               <div className="d-flex align-items-center justify-content-between mb-4">
@@ -522,112 +502,6 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Tables Row */}
-      <div className="row g-3">
-        {/* Upcoming Events Table */}
-        <div className="col-12 col-lg-6">
-          <div className="card border-0 shadow-sm" style={{ borderRadius: 12 }}>
-            <div className="card-body p-0">
-              <div className="px-4 py-3 d-flex align-items-center justify-content-between" style={{ borderBottom: "1px solid #e2e8f0" }}>
-                <h6 className="fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
-                  Upcoming Events (Next 30 Days)
-                </h6>
-                <span className="badge bg-light text-dark" style={{ fontSize: 11 }}>
-                  {upcomingEvents.length}
-                </span>
-              </div>
-              <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0" style={{ fontSize: 13 }}>
-                  <thead>
-                    <tr style={{ background: "#f8fafc" }}>
-                      <th>Event Name</th>
-                      <th>Start Date</th>
-                      <th className="text-end">Registrants</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {upcomingEvents.length === 0 ? (
-                      <tr>
-                        <td colSpan={3} className="text-center py-4 text-muted">
-                          No upcoming events
-                        </td>
-                      </tr>
-                    ) : (
-                      upcomingEvents.map((ev) => (
-                        <tr key={ev._id || ev.id}>
-                          <td>
-                            <div className="fw-semibold">{ev.eventName}</div>
-                            {ev.venue && <small className="text-muted d-block">{ev.venue}</small>}
-                          </td>
-                          <td className="text-muted small">{formatDate(ev.startDate)}</td>
-                          <td className="text-end fw-semibold">
-                            {attendees.filter((a) => a.eventId === ev._id || a.eventId === ev.id).length}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Events (Last 7 Days) Table */}
-        <div className="col-12 col-lg-6">
-          <div className="card border-0 shadow-sm" style={{ borderRadius: 12 }}>
-            <div className="card-body p-0">
-              <div className="px-4 py-3 d-flex align-items-center justify-content-between" style={{ borderBottom: "1px solid #e2e8f0" }}>
-                <h6 className="fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
-                  Recent Events (Last 7 Days)
-                </h6>
-                <span className="badge bg-light text-dark" style={{ fontSize: 11 }}>
-                  {last7DaysEvents.length}
-                </span>
-              </div>
-              <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0" style={{ fontSize: 13 }}>
-                  <thead>
-                    <tr style={{ background: "#f8fafc" }}>
-                      <th>Event Name</th>
-                      <th>Date</th>
-                      <th className="text-end">Attendance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {last7DaysEvents.length === 0 ? (
-                      <tr>
-                        <td colSpan={3} className="text-center py-4 text-muted">
-                          No recent events
-                        </td>
-                      </tr>
-                    ) : (
-                      last7DaysEvents.map((ev) => {
-                        const eventAttendees = attendees.filter((a) => a.eventId === ev._id || a.eventId === ev.id);
-                        const attended = eventAttendees.filter((a) => a.status && a.status !== "registered").length;
-                        const percentage = eventAttendees.length > 0 ? Math.round((attended / eventAttendees.length) * 100) : 0;
-                        return (
-                          <tr key={ev._id || ev.id}>
-                            <td>
-                              <div className="fw-semibold">{ev.eventName}</div>
-                              {ev.organizer && <small className="text-muted d-block">{ev.organizer}</small>}
-                            </td>
-                            <td className="text-muted small">{formatDate(ev.startDate)}</td>
-                            <td className="text-end">
-                              <div className="fw-semibold">{percentage}%</div>
-                              <small className="text-muted">{attended}/{eventAttendees.length}</small>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Event-wise Attendance Details */}
       <div className="row g-3 mt-1">

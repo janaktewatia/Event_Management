@@ -428,17 +428,22 @@ const DashboardPage = () => {
       <div className="row g-3 mb-4">
         {/* Upcoming Events Count */}
         <div className="col-12 col-lg-6">
-          <ChartCard title="Upcoming Events (30 days)">
-            <div className="p-3 text-center">
-              <div className="text-muted small mb-3">Events scheduled for the next 30 days</div>
-              <div className="fw-bold" style={{ fontSize: 48, color: "#10B981", marginBottom: "1rem" }}>
-                {upcomingEvents.length}
-              </div>
-              <div className="small text-muted">
-                {upcomingEvents.length === 0 ? "No upcoming events" : `${upcomingEvents.length} event${upcomingEvents.length !== 1 ? 's' : ''} scheduled`}
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff", height: 420 }}>
+            <div className="card-body p-4 d-flex flex-column" style={{ height: "100%" }}>
+              <h6 className="card-title fw-bold mb-4" style={{ fontSize: 14, color: "#172033" }}>
+                Upcoming Events (30 days)
+              </h6>
+              <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+                <div className="text-muted small mb-3">Events scheduled for the next 30 days</div>
+                <div className="fw-bold" style={{ fontSize: 48, color: "#10B981", marginBottom: "1rem" }}>
+                  {upcomingEvents.length}
+                </div>
+                <div className="small text-muted">
+                  {upcomingEvents.length === 0 ? "No upcoming events" : `${upcomingEvents.length} event${upcomingEvents.length !== 1 ? 's' : ''} scheduled`}
+                </div>
               </div>
             </div>
-          </ChartCard>
+          </div>
         </div>
 
         {/* Attendance Trend */}

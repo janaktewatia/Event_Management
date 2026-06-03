@@ -400,7 +400,7 @@ const DashboardPage = () => {
                   <BarChart data={last7DaysTimeline}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                     <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: 11 }} />
-                    <YAxis stroke="#94a3b8" style={{ fontSize: 11 }} />
+                    <YAxis stroke="#94a3b8" style={{ fontSize: 11 }} allowDecimals={false} />
                     <Tooltip
                       contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
                       formatter={(value) => [`${value} event${value > 1 ? 's' : ''}`, 'Count']}

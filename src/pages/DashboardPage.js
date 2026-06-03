@@ -22,35 +22,36 @@ const COLORS = ["#A855F7", "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#06B6D4"
 const StatCard = ({ icon, label, value, trend, color }) => (
   <div
     className="card border-0 shadow-sm h-100"
-    style={{ borderRadius: 12, background: "#fff", overflow: "hidden" }}
+    style={{ borderRadius: 10, background: "#fff", overflow: "hidden" }}
   >
-    <div className="card-body p-4">
-      <div className="d-flex align-items-center justify-content-between mb-3">
-        <div
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: 12,
-            background: color + "1a",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <i className={`bi ${icon}`} style={{ fontSize: 24, color }} />
+    <div className="card-body p-3 d-flex align-items-center gap-3">
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 10,
+          background: color + "1a",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <i className={`bi ${icon}`} style={{ fontSize: 20, color }} />
+      </div>
+      <div className="flex-grow-1 min-w-0">
+        <div className="text-muted" style={{ fontSize: 12 }}>
+          {label}
         </div>
-        {trend && (
-          <span style={{ color: trend > 0 ? "#10B981" : "#EF4444", fontSize: 12, fontWeight: 600 }}>
-            {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}%
-          </span>
-        )}
+        <div className="fw-bold" style={{ fontSize: 24, color: "#172033", lineHeight: 1.2 }}>
+          {value}
+        </div>
       </div>
-      <div className="text-muted small mb-1" style={{ fontSize: 13 }}>
-        {label}
-      </div>
-      <div className="fw-bold" style={{ fontSize: 32, color: "#172033" }}>
-        {value}
-      </div>
+      {trend && (
+        <span style={{ color: trend > 0 ? "#10B981" : "#EF4444", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+          {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}%
+        </span>
+      )}
     </div>
   </div>
 );
@@ -167,8 +168,8 @@ const DashboardPage = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="row g-3 mb-4">
-        <div className="col-12 col-sm-6 col-lg-3">
+      <div className="row g-2 mb-4">
+        <div className="col-6 col-md-3">
           <StatCard
             icon="bi-calendar-event"
             label="Total Events"
@@ -176,7 +177,7 @@ const DashboardPage = () => {
             color={THEME}
           />
         </div>
-        <div className="col-12 col-sm-6 col-lg-3">
+        <div className="col-6 col-md-3">
           <StatCard
             icon="bi-people"
             label="Total Registrants"
@@ -184,7 +185,7 @@ const DashboardPage = () => {
             color="#3B82F6"
           />
         </div>
-        <div className="col-12 col-sm-6 col-lg-3">
+        <div className="col-6 col-md-3">
           <StatCard
             icon="bi-person-check"
             label="Total Attendees"
@@ -192,7 +193,7 @@ const DashboardPage = () => {
             color="#10B981"
           />
         </div>
-        <div className="col-12 col-sm-6 col-lg-3">
+        <div className="col-6 col-md-3">
           <StatCard
             icon="bi-percent"
             label="Attendance Rate"

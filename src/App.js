@@ -25,6 +25,7 @@ import PassDesignerPage from "./pages/PassDesignerPageV2";
 import RegistrantsPage from "./pages/RegistrantsPage";
 import SetupPage from "./pages/SetupPage";
 import ActivityLogPage from "./pages/ActivityLogPage";
+import PublicRegistrationForm from "./pages/PublicRegistrationForm";
 import ToastNotification from "./components/common/ToastNotification";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -249,7 +250,13 @@ function App() {
         <HistoryProvider>
           <EventDataProvider>
             <BrowserRouter>
-              <AuthGate />
+              <Routes>
+                <Route
+                  path="/register/:eventId"
+                  element={<PublicRegistrationForm />}
+                />
+                <Route path="/*" element={<AuthGate />} />
+              </Routes>
             </BrowserRouter>
           </EventDataProvider>
         </HistoryProvider>

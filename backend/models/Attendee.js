@@ -14,7 +14,7 @@ const attendeeSchema = new mongoose.Schema(
     checkInTime: { type: String, default: null },
     checkOutTime: { type: String, default: null },
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.model("Attendee", attendeeSchema);

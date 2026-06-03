@@ -140,3 +140,10 @@ export const createEventLog = (data) =>
 
 export const clearEventLogs = (eventId) =>
   req(`/event-logs?eventId=${eventId}`, { method: "DELETE" });
+
+// ── Public Registration (no auth) ─────────────────────────────────────────────
+export const fetchPublicEvent = (eventId) =>
+  req(`/public/event/${eventId}`);
+
+export const publicRegister = (eventId, data) =>
+  req("/public/register", { method: "POST", body: JSON.stringify({ eventId, ...data }) });

@@ -1,5 +1,8 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
 const PassTemplateTab = lazy(() => import("./PassTemplateEditor"));
+const EventFormDesignerTab = lazy(
+  () => import("../components/EventFormDesignerTab")
+);
 import { useEventData } from "../context/EventDataContext";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useAuth } from "../context/AuthContext";
@@ -534,6 +537,7 @@ const SetupPage = () => {
     { key: "users", label: "Users" },
     { key: "autoScheme", label: "Auto Scheme" },
     { key: "passTemplate", label: "Pass Template" },
+    { key: "eventFormDesigner", label: "Form Designer" },
     { key: "configuration", label: "Configuration" },
   ];
 
@@ -2511,6 +2515,19 @@ const SetupPage = () => {
               }
             >
               <PassTemplateTab />
+            </Suspense>
+          )}
+
+          {/* ── Event Form Designer ── */}
+          {activeTab === "eventFormDesigner" && (
+            <Suspense
+              fallback={
+                <div className="card border-0 shadow-sm h-100 d-flex align-items-center justify-content-center">
+                  <div className="spinner-border text-primary" />
+                </div>
+              }
+            >
+              <EventFormDesignerTab />
             </Suspense>
           )}
 

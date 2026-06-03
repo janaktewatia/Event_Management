@@ -13,6 +13,7 @@ import userTypeRoutes from "./routes/userTypeRoutes.js";
 import appUserRoutes from "./routes/appUserRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import passTemplateRoutes from "./routes/passTemplateRoutes.js";
+import publicRoutes from "./routes/publicRoutes.js";
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/user-types", userTypeRoutes);
 app.use("/api/app-users", appUserRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/pass-templates", passTemplateRoutes);
+app.use("/api/public", publicRoutes);
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 

@@ -324,8 +324,9 @@ const DashboardPage = () => {
                         data={eventTypeWiseData}
                         cx="45%"
                         cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
+                        labelLine={true}
+                        label={({ name, count, percent }) => `${name}\n${count}`}
+                        outerRadius={75}
                         fill="#8884d8"
                         dataKey="count"
                       >
@@ -382,27 +383,24 @@ const DashboardPage = () => {
                     <thead style={{ background: "#f8fafc", position: "sticky", top: 0 }}>
                       <tr>
                         <th>Date</th>
-                        <th className="text-end">Events Created</th>
+                        <th>Event Name</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {last7DaysTimeline.map((day, idx) => (
-                        <tr key={idx}>
-                          <td className="fw-semibold">{day.date}</td>
-                          <td className="text-end">
-                            <span
-                              className="badge"
-                              style={{
-                                background: day.events > 0 ? "#f0fdf4" : "#f3f4f6",
-                                color: day.events > 0 ? "#10B981" : "#6b7280",
-                                fontSize: 11,
-                              }}
-                            >
-                              {day.events}
-                            </span>
+                      {last7DaysEvents.length > 0 ? (
+                        last7DaysEvents.map((event) => (
+                          <tr key={event._id || event.id}>
+                            <td className="fw-semibold text-nowrap">{formatDate(event.startDate)}</td>
+                            <td>{event.eventName}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={2} className="text-center text-muted py-3">
+                            No events created in last 7 days
                           </td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>

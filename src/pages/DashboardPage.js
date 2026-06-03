@@ -427,7 +427,7 @@ const DashboardPage = () => {
       {/* Charts Row 2 */}
       <div className="row g-3 mb-4">
         {/* Upcoming Events Count */}
-        <div className="col-12 col-lg-4">
+        <div className="col-12 col-lg-6">
           <ChartCard title="Upcoming Events (30 days)">
             <div className="p-3 text-center">
               <div className="text-muted small mb-3">Events scheduled for the next 30 days</div>
@@ -442,7 +442,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Attendance Trend */}
-        <div className="col-12 col-lg-8">
+        <div className="col-12 col-lg-6">
           <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff", height: 420 }}>
             <div className="card-body p-4 d-flex flex-column" style={{ height: "100%" }}>
               <div className="d-flex align-items-center justify-content-between mb-4">
@@ -499,14 +499,14 @@ const DashboardPage = () => {
               ) : eventWiseAttendance.slice(0, 5).length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={eventWiseAttendance.slice(0, 5)}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                     <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: 11 }} angle={-15} height={80} />
                     <YAxis stroke="#94a3b8" style={{ fontSize: 12 }} />
                     <Tooltip
                       contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
                       formatter={(value) => `${value}%`}
                     />
-                    <Bar dataKey="percentage" fill="#10B981" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="percentage" fill="#10B981" radius={[6, 6, 0, 0]} barSize={20} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (

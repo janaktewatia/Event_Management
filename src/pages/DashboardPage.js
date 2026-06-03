@@ -247,8 +247,8 @@ const DashboardPage = () => {
       <div className="row g-3 mb-4">
         {/* Event Type Distribution */}
         <div className="col-12 col-lg-6">
-          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff" }}>
-            <div className="card-body p-4">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff", height: 420 }}>
+            <div className="card-body p-4 d-flex flex-column" style={{ height: "100%" }}>
               <div className="d-flex align-items-center justify-content-between mb-4">
                 <h6 className="card-title fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
                   Event Type Distribution
@@ -270,9 +270,9 @@ const DashboardPage = () => {
               </div>
               {eventTypeWiseData.length > 0 ? (
                 showEventTypeTable ? (
-                  <div className="table-responsive">
+                  <div className="table-responsive flex-grow-1" style={{ overflowY: "auto" }}>
                     <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
-                      <thead style={{ background: "#f8fafc" }}>
+                      <thead style={{ background: "#f8fafc", position: "sticky", top: 0 }}>
                         <tr>
                           <th>Event Type</th>
                           <th className="text-end">Count</th>
@@ -355,8 +355,8 @@ const DashboardPage = () => {
 
         {/* Last 7 Days Events */}
         <div className="col-12 col-lg-6">
-          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff" }}>
-            <div className="card-body p-4">
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff", height: 420 }}>
+            <div className="card-body p-4 d-flex flex-column" style={{ height: "100%" }}>
               <div className="d-flex align-items-center justify-content-between mb-4">
                 <h6 className="card-title fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
                   Last 7 Days - Events Created
@@ -377,9 +377,9 @@ const DashboardPage = () => {
                 </button>
               </div>
               {showLast7DaysTable ? (
-                <div className="table-responsive">
+                <div className="table-responsive flex-grow-1" style={{ overflowY: "auto" }}>
                   <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
-                    <thead style={{ background: "#f8fafc" }}>
+                    <thead style={{ background: "#f8fafc", position: "sticky", top: 0 }}>
                       <tr>
                         <th>Date</th>
                         <th className="text-end">Events Created</th>

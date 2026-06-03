@@ -115,10 +115,16 @@ const DashboardPage = () => {
   const eventTypeWiseData = useMemo(() => {
     const types = {};
     events.forEach((e) => {
-      const type = e.eventType || "Unclassified";
+      let type = e.eventType;
+      // Handle empty, null, or ObjectId-like values
+      if (!type || type.length > 50 || /^[a-f0-9]{24}$/.test(type)) {
+        type = "Unclassified";
+      }
       types[type] = (types[type] || 0) + 1;
     });
-    return Object.entries(types).map(([name, count]) => ({ name, count }));
+    return Object.entries(types)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
   }, [events]);
 
   // Event wise attendee percentage
@@ -215,7 +221,7 @@ const DashboardPage = () => {
                     data={eventTypeWiseData}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
+                    labelLine={true}
                     label={({ name, count }) => `${name}: ${count}`}
                     outerRadius={80}
                     fill="#8884d8"
@@ -225,7 +231,7 @@ const DashboardPage = () => {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip formatter={(value) => `${value} event${value > 1 ? 's' : ''}`} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (

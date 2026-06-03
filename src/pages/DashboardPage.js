@@ -313,15 +313,47 @@ const DashboardPage = () => {
         {/* Last 7 Days Events */}
         <div className="col-12 col-lg-6">
           <ChartCard title="Last 7 Days - Events Created">
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={last7DaysTimeline}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: 12 }} />
-                <YAxis stroke="#94a3b8" style={{ fontSize: 12 }} />
-                <Tooltip contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }} />
-                <Bar dataKey="events" fill={THEME} radius={[8, 8, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: 11 }} />
+                <YAxis stroke="#94a3b8" style={{ fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
+                  formatter={(value) => [`${value} event${value > 1 ? 's' : ''}`, 'Count']}
+                />
+                <Bar dataKey="events" fill={THEME} radius={[6, 6, 0, 0]} barSize={20} />
               </BarChart>
             </ResponsiveContainer>
+            <div className="table-responsive mt-3">
+              <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
+                <thead style={{ background: "#f8fafc" }}>
+                  <tr>
+                    <th>Date</th>
+                    <th className="text-end">Events Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {last7DaysTimeline.map((day, idx) => (
+                    <tr key={idx}>
+                      <td className="fw-semibold">{day.date}</td>
+                      <td className="text-end">
+                        <span
+                          className="badge"
+                          style={{
+                            background: day.events > 0 ? "#f0fdf4" : "#f3f4f6",
+                            color: day.events > 0 ? "#10B981" : "#6b7280",
+                            fontSize: 11,
+                          }}
+                        >
+                          {day.events}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </ChartCard>
         </div>
       </div>

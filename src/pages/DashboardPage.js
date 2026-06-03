@@ -236,25 +236,74 @@ const DashboardPage = () => {
         <div className="col-12 col-lg-6">
           <ChartCard title="Event Type Distribution">
             {eventTypeWiseData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={eventTypeWiseData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={true}
-                    label={({ name, count }) => `${name}: ${count}`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="count"
-                  >
-                    {eventTypeWiseData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `${value} event${value > 1 ? 's' : ''}`} />
-                </PieChart>
-              </ResponsiveContainer>
+              <>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={eventTypeWiseData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={true}
+                      label={({ name, count }) => `${name}: ${count}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="count"
+                    >
+                      {eventTypeWiseData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `${value} event${value > 1 ? 's' : ''}`} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="table-responsive mt-3">
+                  <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
+                    <thead style={{ background: "#f8fafc" }}>
+                      <tr>
+                        <th>Event Type</th>
+                        <th className="text-end">Count</th>
+                        <th className="text-end">Percentage</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {eventTypeWiseData.map((type, idx) => {
+                        const total = eventTypeWiseData.reduce((sum, t) => sum + t.count, 0);
+                        const percentage = ((type.count / total) * 100).toFixed(1);
+                        return (
+                          <tr key={idx}>
+                            <td>
+                              <div className="d-flex align-items-center gap-2">
+                                <div
+                                  style={{
+                                    width: 12,
+                                    height: 12,
+                                    borderRadius: 2,
+                                    background: COLORS[idx % COLORS.length],
+                                  }}
+                                />
+                                {type.name}
+                              </div>
+                            </td>
+                            <td className="text-end fw-semibold">{type.count}</td>
+                            <td className="text-end">
+                              <span
+                                className="badge"
+                                style={{
+                                  background: "#f0fdf4",
+                                  color: "#10B981",
+                                  fontSize: 11,
+                                }}
+                              >
+                                {percentage}%
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ) : (
               <div className="text-center text-muted py-5">No event type data available</div>
             )}

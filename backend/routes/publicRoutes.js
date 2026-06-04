@@ -8,9 +8,7 @@ const router = Router();
 // Returns only the fields needed for the public form: eventName + enabled attendeeFields
 router.get("/event/:eventId", async (req, res) => {
   try {
-    const event = await Event.findById(req.params.eventId)
-      .select("eventName attendeeFields startDate endDate venue categories")
-      .lean();
+    const event = await Event.findById(req.params.eventId);
     if (!event) return res.status(404).json({ error: "Event not found" });
     res.json(event);
   } catch (err) {
@@ -38,7 +36,9 @@ router.post("/register", async (req, res) => {
       $inc: { attendeeCount: 1 },
       status: "Active",
     });
-    res.status(201).json({ passId: attendee.passId, message: "Registration successful" });
+    res
+      .status(201)
+      .json({ passId: attendee.passId, message: "Registration successful" });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

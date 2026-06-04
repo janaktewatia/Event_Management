@@ -14,14 +14,18 @@ import appUserRoutes from "./routes/appUserRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import passTemplateRoutes from "./routes/passTemplateRoutes.js";
 import publicRoutes from "./routes/publicRoutes.js";
+import formsRoutes from "./routes/formsRoutes.js";
+import formTemplatesRoutes from "./routes/formTemplatesRoutes.js";
 
 const app = express();
 
 connectDB();
 
-app.use(cors({
-  origin: (origin, cb) => cb(null, true), // allow all origins in dev
-}));
+app.use(
+  cors({
+    origin: (origin, cb) => cb(null, true), // allow all origins in dev
+  }),
+);
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
@@ -36,6 +40,8 @@ app.use("/api/app-users", appUserRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/pass-templates", passTemplateRoutes);
 app.use("/api/public", publicRoutes);
+app.use("/api/forms", formsRoutes);
+app.use("/api/form-templates", formTemplatesRoutes);
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 

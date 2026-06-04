@@ -3,6 +3,8 @@ const PassTemplateTab = lazy(() => import("./PassTemplateEditor"));
 const EventFormDesignerTab = lazy(
   () => import("../components/EventFormDesignerTab"),
 );
+const FormDesignerPage = lazy(() => import("./FormDesignerPage"));
+const FormTemplatePage = lazy(() => import("./FormTemplatePage"));
 import { useEventData } from "../context/EventDataContext";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useAuth } from "../context/AuthContext";
@@ -537,6 +539,8 @@ const SetupPage = () => {
     { key: "users", label: "Users" },
     { key: "autoScheme", label: "Auto Scheme" },
     { key: "passTemplate", label: "Pass Template" },
+    { key: "formDesigner", label: "Form Designer" },
+    { key: "formTemplates", label: "Form Templates" },
     { key: "eventFormDesigner", label: "Registration Fields" },
     { key: "configuration", label: "Configuration" },
   ];
@@ -2515,6 +2519,32 @@ const SetupPage = () => {
               }
             >
               <PassTemplateTab />
+            </Suspense>
+          )}
+
+          {/* ── Form Designer ── */}
+          {activeTab === "formDesigner" && (
+            <Suspense
+              fallback={
+                <div className="card border-0 shadow-sm h-100 d-flex align-items-center justify-content-center">
+                  <div className="spinner-border text-primary" />
+                </div>
+              }
+            >
+              <FormDesignerPage />
+            </Suspense>
+          )}
+
+          {/* ── Form Templates ── */}
+          {activeTab === "formTemplates" && (
+            <Suspense
+              fallback={
+                <div className="card border-0 shadow-sm h-100 d-flex align-items-center justify-content-center">
+                  <div className="spinner-border text-primary" />
+                </div>
+              }
+            >
+              <FormTemplatePage />
             </Suspense>
           )}
 

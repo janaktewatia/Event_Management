@@ -24,7 +24,7 @@ const DEFAULT_SYSTEM_FIELDS = [
   {
     fieldId: "mobile",
     label: "Mobile Number",
-    type: "text",
+    type: "number",
     enabled: true,
     required: false,
   },

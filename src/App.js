@@ -11,6 +11,7 @@ import Sidebar from "./components/common/Sidebar";
 import { QRProvider } from "./context/QRContext";
 import { HistoryProvider } from "./context/HistoryContext";
 import { EventDataProvider } from "./context/EventDataContext";
+import { FormProvider } from "./context/FormContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -249,15 +250,17 @@ function App() {
       <QRProvider>
         <HistoryProvider>
           <EventDataProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route
-                  path="/register/:eventId"
-                  element={<PublicRegistrationForm />}
-                />
-                <Route path="/*" element={<AuthGate />} />
-              </Routes>
-            </BrowserRouter>
+            <FormProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route
+                    path="/register/:eventId"
+                    element={<PublicRegistrationForm />}
+                  />
+                  <Route path="/*" element={<AuthGate />} />
+                </Routes>
+              </BrowserRouter>
+            </FormProvider>
           </EventDataProvider>
         </HistoryProvider>
       </QRProvider>

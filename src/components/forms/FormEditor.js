@@ -992,7 +992,20 @@ const FormEditor = ({ formId, onBack }) => {
   const selectedElements = elements.filter((el) => selectedElementIds.includes(el.id));
   const isFormElement = selectedElement && ["form-field", "form-select", "form-checkbox", "form-submit"].includes(selectedElement.type);
 
-  // Group management
+  const addElement = useCallback(
+    (type) => {
+      const el = makeElement(type);
+      setElements((prev) => [...prev, el]);
+      setSelectedElementIds([el.id]);
+    },
+    []
+  );
+
+  const updateElement = useCallback((updated) => {
+    setElements((prev) => prev.map((el) => (el.id === updated.id ? updated : el)));
+  }, []);
+
+  // Group management (must be after updateElement definition)
   const groupElements = useCallback(() => {
     if (selectedElements.length < 2) return;
     const groupId = uid();
@@ -1017,19 +1030,6 @@ const FormEditor = ({ formId, onBack }) => {
     });
     return true;
   }, [elements, updateElement]);
-
-  const addElement = useCallback(
-    (type) => {
-      const el = makeElement(type);
-      setElements((prev) => [...prev, el]);
-      setSelectedElementIds([el.id]);
-    },
-    []
-  );
-
-  const updateElement = useCallback((updated) => {
-    setElements((prev) => prev.map((el) => (el.id === updated.id ? updated : el)));
-  }, []);
 
   const deleteSelected = useCallback(() => {
     setElements((prev) => prev.filter((el) => !selectedElementIds.includes(el.id)));

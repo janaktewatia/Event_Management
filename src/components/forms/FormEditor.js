@@ -398,7 +398,7 @@ const SelectInput = ({ value, onChange, options }) => (
   </select>
 );
 
-const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate, onBring, onSend, canvasState, alignElements, distributeHorizontally, distributeVertically, groupElements, ungroupElements, form }) => {
+const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate, onBring, onSend, canvasState, alignElements, distributeHorizontally, distributeVertically, groupElements, ungroupElements, form, gap, setGap }) => {
   if (!el)
     return (
       <div style={{ padding: 16 }}>
@@ -467,13 +467,26 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
           </div>
 
           {/* Distribution Controls */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 6 }}>
             <button onClick={() => distributeHorizontally()} style={{ ...smallBtn, fontSize: 9 }} title="Distribute Horizontally">
               <i className="bi bi-columns-gap" /> Dist H
             </button>
             <button onClick={() => distributeVertically()} style={{ ...smallBtn, fontSize: 9 }} title="Distribute Vertically">
               <i className="bi bi-rows-gap" /> Dist V
             </button>
+          </div>
+
+          {/* Gap Control */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 8px", background: "#dcfce7", borderRadius: 6 }}>
+            <label style={{ fontSize: 10, color: "#16a34a", fontWeight: 600, flex: 1 }}>Gap (px):</label>
+            <input
+              type="number"
+              value={gap}
+              onChange={(e) => setGap(Math.max(0, Number(e.target.value)))}
+              min={0}
+              max={100}
+              style={{ width: 40, height: 24, borderRadius: 4, border: "1px solid #86efac", padding: "0 4px", fontSize: 12, textAlign: "center" }}
+            />
           </div>
         </div>
       )}
@@ -987,6 +1000,7 @@ const FormEditor = ({ formId, onBack }) => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [fullscreen, setFullscreen] = useState(true);
+  const [gap, setGap] = useState(10);
   const canvasRef = useRef(null);
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
@@ -1062,7 +1076,7 @@ const FormEditor = ({ formId, onBack }) => {
   }, [elements, selectedElementIds, updateElement]);
 
   // Distribute elements horizontally with equal gap
-  const distributeHorizontally = useCallback((gap = 10) => {
+  const distributeHorizontally = useCallback(() => {
     if (selectedElements.length < 2) return;
     const sorted = [...selectedElements].sort((a, b) => a.x - b.x);
     let currentX = sorted[0].x;
@@ -1072,10 +1086,10 @@ const FormEditor = ({ formId, onBack }) => {
       return newEl;
     });
     updated.forEach((el) => updateElement(el));
-  }, [selectedElements, updateElement]);
+  }, [selectedElements, gap, updateElement]);
 
   // Distribute elements vertically with equal gap
-  const distributeVertically = useCallback((gap = 10) => {
+  const distributeVertically = useCallback(() => {
     if (selectedElements.length < 2) return;
     const sorted = [...selectedElements].sort((a, b) => a.y - b.y);
     let currentY = sorted[0].y;
@@ -1085,7 +1099,7 @@ const FormEditor = ({ formId, onBack }) => {
       return newEl;
     });
     updated.forEach((el) => updateElement(el));
-  }, [selectedElements, updateElement]);
+  }, [selectedElements, gap, updateElement]);
 
   // Align all selected elements
   const alignElements = useCallback((direction) => {
@@ -1397,7 +1411,7 @@ const FormEditor = ({ formId, onBack }) => {
         {/* Right Panel */}
         {!fullscreen && (
         <div style={{ width: 240, background: "#fff", borderLeft: "1px solid #e2e8f0", overflow: "hidden" }}>
-          <PropertiesPanel el={selectedElement} selectedElements={selectedElements} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} alignElements={alignElements} distributeHorizontally={distributeHorizontally} distributeVertically={distributeVertically} groupElements={groupElements} ungroupElements={ungroupElements} form={form} />
+          <PropertiesPanel el={selectedElement} selectedElements={selectedElements} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} alignElements={alignElements} distributeHorizontally={distributeHorizontally} distributeVertically={distributeVertically} groupElements={groupElements} ungroupElements={ungroupElements} form={form} gap={gap} setGap={setGap} />
         </div>
         )}
       </div>

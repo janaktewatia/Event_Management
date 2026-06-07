@@ -31,11 +31,15 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
   const selectedEvent = activeEvents.find(
     (e) => e.id === formData.eventId || e._id === formData.eventId,
   );
-  const eventFields = selectedEvent?.attendeeFields || [];
+
+  // Get ONLY fields that exist in the selected event
+  const eventFields = selectedEvent?.attendeeFields?.filter(field =>
+    field && (field.fieldName || field.label)
+  ) || [];
 
   // Get event categories from global context
   const eventCategories = categories.filter(
-    (cat) => !selectedEvent || !selectedEvent.id || cat.active !== false
+    (cat) => cat.active !== false
   );
 
   // Map field names to proper types
@@ -106,11 +110,19 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
         zIndex: 1050,
       }}
     >
-      <div className="modal-dialog modal-lg">
-        <div className="modal-content">
+      <div className="modal-dialog modal-lg" style={{ maxWidth: "600px" }}>
+        <div className="modal-content border-0 shadow-lg">
           {/* Header */}
-          <div className="modal-header border-bottom">
-            <h5 className="modal-title fw-bold">Create New Form</h5>
+          <div className="modal-header border-0 pb-0 pt-4">
+            <div>
+              <h5 className="modal-title fw-bold mb-1">
+                <i className="bi bi-form-check me-2" style={{ color: "#a855f7" }} />
+                Create New Form
+              </h5>
+              <p className="text-muted small mb-0">
+                {step === 1 ? "Configure your form" : "Review and create"}
+              </p>
+            </div>
             <button
               type="button"
               className="btn-close"
@@ -119,14 +131,18 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
           </div>
 
           {/* Body */}
-          <div className="modal-body" style={{ minHeight: "300px" }}>
+          <div className="modal-body" style={{ minHeight: "400px", paddingTop: "2rem" }}>
             {step === 1 ? (
               <div>
+                {/* Form Name */}
                 <div className="mb-4">
-                  <label className="form-label fw-semibold">Form Name</label>
+                  <label className="form-label small fw-semibold d-flex align-items-center gap-2">
+                    <i className="bi bi-card-text" style={{ color: "#a855f7" }} />
+                    Form Name
+                  </label>
                   <input
                     type="text"
-                    className={`form-control ${
+                    className={`form-control form-control-lg ${
                       errors.formName ? "is-invalid" : ""
                     }`}
                     placeholder="e.g., Registration Form"
@@ -151,10 +167,14 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
                   )}
                 </div>
 
+                {/* Choose Event */}
                 <div className="mb-4">
-                  <label className="form-label fw-semibold">Choose Event</label>
+                  <label className="form-label small fw-semibold d-flex align-items-center gap-2">
+                    <i className="bi bi-calendar-event" style={{ color: "#a855f7" }} />
+                    Choose Event
+                  </label>
                   <select
-                    className={`form-select ${
+                    className={`form-select form-select-lg ${
                       errors.eventId ? "is-invalid" : ""
                     }`}
                     value={formData.eventId}
@@ -169,6 +189,7 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
                           eventId: "",
                         }));
                       }
+                      setSelectedFields([]);
                     }}
                   >
                     <option value="">Select an event...</option>
@@ -190,67 +211,89 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
 
                 {selectedEvent && (
                   <div>
+                    {/* Categories Section */}
                     {eventCategories.length > 0 && (
                       <div className="mb-4">
-                        <label className="form-label fw-semibold">
+                        <label className="form-label small fw-semibold d-flex align-items-center gap-2 mb-3">
+                          <i className="bi bi-tag" style={{ color: "#a855f7" }} />
                           Categories
+                          <span className="badge bg-light text-dark ms-auto">{eventCategories.length}</span>
                         </label>
                         <div
-                          className="p-3 border rounded"
-                          style={{ backgroundColor: "#f8f9fa" }}
+                          className="border rounded-3 p-3"
+                          style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0" }}
                         >
-                          {eventCategories.map((category) => (
-                            <div
-                              key={category.id || category._id}
-                              className="form-check mb-2"
-                            >
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                id={`category-${category.id || category._id}`}
-                                checked={selectedCategories.includes(
-                                  category.id || category._id,
-                                )}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedCategories((prev) => [
-                                      ...prev,
-                                      category.id || category._id,
-                                    ]);
-                                  } else {
-                                    setSelectedCategories((prev) =>
-                                      prev.filter(
-                                        (c) =>
-                                          c !== (category.id || category._id),
-                                      ),
-                                    );
-                                  }
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
+                            {eventCategories.map((category) => (
+                              <div
+                                key={category.id || category._id}
+                                className="form-check"
+                                style={{
+                                  padding: "8px 10px",
+                                  borderRadius: "6px",
+                                  background: selectedCategories.includes(category.id || category._id) ? "#f3e8ff" : "transparent",
+                                  border: selectedCategories.includes(category.id || category._id) ? "1px solid #a855f7" : "1px solid transparent",
                                 }}
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor={`category-${category.id || category._id}`}
                               >
-                                {category.label || category.categoryName || category.name}
-                              </label>
-                            </div>
-                          ))}
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id={`category-${category.id || category._id}`}
+                                  checked={selectedCategories.includes(
+                                    category.id || category._id,
+                                  )}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedCategories((prev) => [
+                                        ...prev,
+                                        category.id || category._id,
+                                      ]);
+                                    } else {
+                                      setSelectedCategories((prev) =>
+                                        prev.filter(
+                                          (c) =>
+                                            c !== (category.id || category._id),
+                                        ),
+                                      );
+                                    }
+                                  }}
+                                />
+                                <label
+                                  className="form-check-label ms-2"
+                                  htmlFor={`category-${category.id || category._id}`}
+                                  style={{ cursor: "pointer", fontSize: "13px", fontWeight: "500" }}
+                                >
+                                  {category.label || category.categoryName || category.name}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
-                    {eventFields.length > 0 && (
-                      <div className="mb-4">
-                        <label className="form-label fw-semibold">
-                          Available Fields - Select to Include
+
+                    {/* Fields Section */}
+                    {eventFields.length > 0 ? (
+                      <div className="mb-2">
+                        <label className="form-label small fw-semibold d-flex align-items-center gap-2 mb-3">
+                          <i className="bi bi-list-check" style={{ color: "#a855f7" }} />
+                          Available Fields
+                          <span className="badge bg-light text-dark ms-auto">{eventFields.length}</span>
                         </label>
                         <div
-                          className="p-3 border rounded"
-                          style={{ backgroundColor: "#f8f9fa" }}
+                          className="border rounded-3 p-3"
+                          style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0" }}
                         >
                           {eventFields.map((field, idx) => (
                             <div
                               key={idx}
-                              className="form-check mb-2"
+                              className="form-check mb-3"
+                              style={{
+                                padding: "10px",
+                                borderRadius: "6px",
+                                background: selectedFields.includes(idx) ? "#f3e8ff" : "transparent",
+                                border: selectedFields.includes(idx) ? "1px solid #a855f7" : "1px solid transparent",
+                              }}
                             >
                               <input
                                 className="form-check-input"
@@ -268,11 +311,20 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
                                 }}
                               />
                               <label
-                                className="form-check-label"
+                                className="form-check-label ms-2"
                                 htmlFor={`field-${idx}`}
+                                style={{ cursor: "pointer", fontSize: "13px", fontWeight: "500" }}
                               >
                                 {field.fieldName || field.label}
-                                <span className="ms-2 badge bg-light text-dark">
+                                <span
+                                  className="ms-2 badge"
+                                  style={{
+                                    background: "#dbeafe",
+                                    color: "#1e40af",
+                                    fontSize: "10px",
+                                    fontWeight: "600",
+                                  }}
+                                >
                                   {getFieldType(field.fieldName || field.label)}
                                 </span>
                               </label>
@@ -280,93 +332,167 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
                           ))}
                         </div>
                       </div>
+                    ) : (
+                      selectedEvent && (
+                        <div
+                          className="alert alert-info border-0 rounded-3 mb-0"
+                          style={{ backgroundColor: "#dbeafe", color: "#1e40af" }}
+                        >
+                          <i className="bi bi-info-circle me-2" />
+                          No fields available for this event
+                        </div>
+                      )
                     )}
                   </div>
                 )}
               </div>
             ) : (
               <div>
-                <div className="mb-3">
-                  <h6 className="fw-semibold mb-2">Form Summary</h6>
-                  <div className="p-3 bg-light rounded">
-                    <div className="mb-2">
-                      <span className="text-muted">Form Name:</span>
-                      <div className="fw-semibold">{formData.formName}</div>
+                <div className="mb-4">
+                  <h6 className="fw-semibold mb-3 d-flex align-items-center gap-2">
+                    <i className="bi bi-clipboard-check" style={{ color: "#10b981" }} />
+                    Review Form Configuration
+                  </h6>
+                  <div className="p-4 border rounded-3" style={{ backgroundColor: "#f0fdf4", borderColor: "#86efac" }}>
+                    {/* Form Name */}
+                    <div className="mb-3">
+                      <div className="text-muted small fw-semibold">Form Name</div>
+                      <div className="fw-bold text-dark">{formData.formName}</div>
                     </div>
-                    <div className="mb-2">
-                      <span className="text-muted">Event:</span>
-                      <div className="fw-semibold">
-                        {selectedEvent?.eventName}
+
+                    {/* Event */}
+                    <div className="mb-3">
+                      <div className="text-muted small fw-semibold">Event</div>
+                      <div className="fw-bold text-dark">{selectedEvent?.eventName}</div>
+                    </div>
+
+                    {/* Selected Fields */}
+                    <div className="mb-3">
+                      <div className="text-muted small fw-semibold mb-2">Fields ({selectedFields.length})</div>
+                      <div>
+                        {selectedFields.length > 0 ? (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                            {selectedFields.map((idx) => (
+                              <span
+                                key={idx}
+                                className="badge rounded-pill"
+                                style={{
+                                  background: "#dcfce7",
+                                  color: "#166534",
+                                  fontSize: "11px",
+                                  fontWeight: "600",
+                                  padding: "6px 10px",
+                                }}
+                              >
+                                {eventFields[idx]?.fieldName || eventFields[idx]?.label}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-muted small">No fields selected</span>
+                        )}
                       </div>
                     </div>
-                    <div className="mb-2">
-                      <span className="text-muted">Selected Fields:</span>
-                      <div className="fw-semibold">
-                        {selectedFields.length > 0
-                          ? selectedFields.map((idx) => eventFields[idx]?.fieldName || eventFields[idx]?.label).join(", ")
-                          : "No fields selected"}
-                      </div>
-                    </div>
+
+                    {/* Categories */}
                     <div>
-                      <span className="text-muted">Categories:</span>
-                      <div className="fw-semibold">
-                        {selectedCategories.length > 0
-                          ? selectedCategories.length + " category(ies)"
-                          : "None"}
+                      <div className="text-muted small fw-semibold mb-2">Categories ({selectedCategories.length})</div>
+                      <div>
+                        {selectedCategories.length > 0 ? (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                            {selectedCategories.map((catId) => {
+                              const cat = eventCategories.find(
+                                (c) => c.id === catId || c._id === catId
+                              );
+                              return (
+                                <span
+                                  key={catId}
+                                  className="badge rounded-pill"
+                                  style={{
+                                    background: "#f3e8ff",
+                                    color: "#7e22ce",
+                                    fontSize: "11px",
+                                    fontWeight: "600",
+                                    padding: "6px 10px",
+                                  }}
+                                >
+                                  {cat?.label || cat?.categoryName || cat?.name || "Unknown"}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <span className="text-muted small">No categories selected</span>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="alert alert-info small">
-                  Click "Create Form" to proceed to the form editor where you
-                  can design the layout and customize field properties.
+
+                <div
+                  className="alert border-0 rounded-3 mb-0"
+                  style={{ backgroundColor: "#dbeafe", color: "#1e40af", borderColor: "#7dd3fc" }}
+                >
+                  <i className="bi bi-lightbulb me-2" />
+                  <small>
+                    Click "Create Form" to proceed to the form editor where you can design the layout and customize field properties.
+                  </small>
                 </div>
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="modal-footer border-top">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-              disabled={loading}
-            >
-              Cancel
-            </button>
-            {step === 1 ? (
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleNext}
-                disabled={loading}
-              >
-                Next <FiChevronRight className="ms-1" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleCreateForm}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" />
-                    Creating...
-                  </>
-                ) : (
-                  "Create Form"
-                )}
-              </button>
+          <div className="modal-footer border-top-0 pt-3 pb-4 px-4">
+            {createError && (
+              <div className="alert alert-danger w-100 mb-3" style={{ fontSize: "12px" }}>
+                <i className="bi bi-exclamation-circle me-2" />
+                {createError}
+              </div>
             )}
-          </div>
-          {createError && (
-            <div className="alert alert-danger m-3 mb-0 py-2 px-3 small">
-              {createError}
+            <div style={{ display: "flex", gap: "10px", width: "100%" }}>
+              <button
+                type="button"
+                className="btn btn-outline-secondary flex-grow-1"
+                onClick={onClose}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              {step === 1 ? (
+                <button
+                  type="button"
+                  className="btn btn-primary flex-grow-1"
+                  onClick={handleNext}
+                  disabled={loading || !formData.eventId}
+                  style={{
+                    opacity: !formData.eventId ? 0.5 : 1,
+                  }}
+                >
+                  Next <i className="bi bi-arrow-right ms-2" style={{ fontSize: "12px" }} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-success flex-grow-1"
+                  onClick={handleCreateForm}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-plus-circle me-1" />
+                      Create Form
+                    </>
+                  )}
+                </button>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

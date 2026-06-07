@@ -5,7 +5,7 @@ import { useForm } from "../../context/FormContext";
 import { useAuth } from "../../context/AuthContext";
 
 const AddFormModal = ({ onClose, onFormCreated }) => {
-  const { events } = useEventData();
+  const { events, categories } = useEventData();
   const { createForm, setCurrentForm } = useForm();
   const { user } = useAuth();
 
@@ -20,6 +20,7 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
   const [loading, setLoading] = useState(false);
   const [createError, setCreateError] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedFields, setSelectedFields] = useState([]);
 
   // Filter to show only active events (current date within event date range)
   const today = new Date().toISOString().slice(0, 10);
@@ -31,6 +32,23 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
     (e) => e.id === formData.eventId || e._id === formData.eventId,
   );
   const eventFields = selectedEvent?.attendeeFields || [];
+
+  // Get event categories from global context
+  const eventCategories = categories.filter(
+    (cat) => !selectedEvent || !selectedEvent.id || cat.active !== false
+  );
+
+  // Map field names to proper types
+  const getFieldType = (fieldName) => {
+    const nameMap = {
+      "Mobile Number": "number",
+      "Email": "text",
+      "Organization": "text",
+      "Name": "text",
+      "Phone": "number",
+    };
+    return nameMap[fieldName] || "text";
+  };
 
   const validateStep1 = () => {
     const newErrors = {};
@@ -50,19 +68,23 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
     setLoading(true);
     setCreateError("");
     try {
+      // Get only the selected fields
+      const formFields = selectedFields.map((idx) => eventFields[idx]);
+
       const newForm = await createForm({
         formName: formData.formName,
         eventId: formData.eventId,
         eventName: selectedEvent?.eventName || "",
         description: "",
         createdBy: user?.name || "System",
-        fields: eventFields,
+        fields: formFields.length > 0 ? formFields : eventFields,
         selectedCategories: selectedCategories,
       });
 
       setCurrentForm(newForm);
       onFormCreated && onFormCreated(newForm);
       setSelectedCategories([]);
+      setSelectedFields([]);
 
       // Close modal will be handled by parent since we're transitioning to editor
       setTimeout(() => {
@@ -168,69 +190,92 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
 
                 {selectedEvent && (
                   <div>
-                    {selectedEvent.categories &&
-                      selectedEvent.categories.length > 0 && (
-                        <div className="mb-4">
-                          <label className="form-label fw-semibold">
-                            Categories
-                          </label>
-                          <div
-                            className="p-3 border rounded"
-                            style={{ backgroundColor: "#f8f9fa" }}
-                          >
-                            {selectedEvent.categories.map((category) => (
-                              <div
-                                key={category.id || category._id}
-                                className="form-check mb-2"
+                    {eventCategories.length > 0 && (
+                      <div className="mb-4">
+                        <label className="form-label fw-semibold">
+                          Categories
+                        </label>
+                        <div
+                          className="p-3 border rounded"
+                          style={{ backgroundColor: "#f8f9fa" }}
+                        >
+                          {eventCategories.map((category) => (
+                            <div
+                              key={category.id || category._id}
+                              className="form-check mb-2"
+                            >
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id={`category-${category.id || category._id}`}
+                                checked={selectedCategories.includes(
+                                  category.id || category._id,
+                                )}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedCategories((prev) => [
+                                      ...prev,
+                                      category.id || category._id,
+                                    ]);
+                                  } else {
+                                    setSelectedCategories((prev) =>
+                                      prev.filter(
+                                        (c) =>
+                                          c !== (category.id || category._id),
+                                      ),
+                                    );
+                                  }
+                                }}
+                              />
+                              <label
+                                className="form-check-label"
+                                htmlFor={`category-${category.id || category._id}`}
                               >
-                                <input
-                                  className="form-check-input"
-                                  type="checkbox"
-                                  id={`category-${category.id || category._id}`}
-                                  checked={selectedCategories.includes(
-                                    category.id || category._id,
-                                  )}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setSelectedCategories((prev) => [
-                                        ...prev,
-                                        category.id || category._id,
-                                      ]);
-                                    } else {
-                                      setSelectedCategories((prev) =>
-                                        prev.filter(
-                                          (c) =>
-                                            c !== (category.id || category._id),
-                                        ),
-                                      );
-                                    }
-                                  }}
-                                />
-                                <label
-                                  className="form-check-label"
-                                  htmlFor={`category-${category.id || category._id}`}
-                                >
-                                  {category.categoryName || category.name}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
+                                {category.label || category.categoryName || category.name}
+                              </label>
+                            </div>
+                          ))}
                         </div>
-                      )}
+                      </div>
+                    )}
                     {eventFields.length > 0 && (
-                      <div className="alert alert-info small mb-0">
-                        <div className="fw-semibold mb-2">
-                          Available Fields:
-                        </div>
-                        <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                      <div className="mb-4">
+                        <label className="form-label fw-semibold">
+                          Available Fields - Select to Include
+                        </label>
+                        <div
+                          className="p-3 border rounded"
+                          style={{ backgroundColor: "#f8f9fa" }}
+                        >
                           {eventFields.map((field, idx) => (
-                            <div key={idx} className="mb-1">
-                              • {field.fieldName || field.label}
-                              {field.type && (
-                                <span className="ms-1 badge bg-light text-dark">
-                                  {field.type}
+                            <div
+                              key={idx}
+                              className="form-check mb-2"
+                            >
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id={`field-${idx}`}
+                                checked={selectedFields.includes(idx)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedFields((prev) => [...prev, idx]);
+                                  } else {
+                                    setSelectedFields((prev) =>
+                                      prev.filter((f) => f !== idx)
+                                    );
+                                  }
+                                }}
+                              />
+                              <label
+                                className="form-check-label"
+                                htmlFor={`field-${idx}`}
+                              >
+                                {field.fieldName || field.label}
+                                <span className="ms-2 badge bg-light text-dark">
+                                  {getFieldType(field.fieldName || field.label)}
                                 </span>
-                              )}
+                              </label>
                             </div>
                           ))}
                         </div>
@@ -254,10 +299,20 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
                         {selectedEvent?.eventName}
                       </div>
                     </div>
-                    <div>
-                      <span className="text-muted">Fields:</span>
+                    <div className="mb-2">
+                      <span className="text-muted">Selected Fields:</span>
                       <div className="fw-semibold">
-                        {eventFields.length} field(s) available
+                        {selectedFields.length > 0
+                          ? selectedFields.map((idx) => eventFields[idx]?.fieldName || eventFields[idx]?.label).join(", ")
+                          : "No fields selected"}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-muted">Categories:</span>
+                      <div className="fw-semibold">
+                        {selectedCategories.length > 0
+                          ? selectedCategories.length + " category(ies)"
+                          : "None"}
                       </div>
                     </div>
                   </div>

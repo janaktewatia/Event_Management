@@ -1040,11 +1040,11 @@ const FormEditor = ({ formId, onBack }) => {
   const form = getFormById(formId);
   const [elements, setElements] = useState(getFormElements(formId) || []);
   const [selectedElementIds, setSelectedElementIds] = useState([]);
-  const [canvas, setCanvas] = useState({ width: 600, height: 800, background: "#ffffff", borderRadius: 0 });
+  const [canvas, setCanvas] = useState({ width: 600, height: 400, background: "#ffffff", borderRadius: 0 });
   const [zoom, setZoom] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [fullscreen, setFullscreen] = useState(true);
+  const [fullscreen, setFullscreen] = useState(false);
   const [gap, setGap] = useState(10);
   const canvasRef = useRef(null);
   const dragRef = useRef(null);

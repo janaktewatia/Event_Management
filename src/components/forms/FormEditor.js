@@ -834,6 +834,20 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
               )}
             </select>
           </PropRow>
+          <PropRow label="Input Type">
+            <select
+              value={el.inputType || "text"}
+              onChange={(e) => onChange({ ...el, inputType: e.target.value })}
+              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
+            >
+              <option value="text">Text Input</option>
+              <option value="email">Email</option>
+              <option value="number">Number</option>
+              <option value="dropdown">Dropdown/Select</option>
+              <option value="checkbox">Checkbox</option>
+              <option value="textarea">Textarea</option>
+            </select>
+          </PropRow>
           <PropRow label="Placeholder">
             <input
               type="text"
@@ -843,6 +857,17 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
               style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
             />
           </PropRow>
+          {el.inputType === "dropdown" && (
+            <PropRow label="Options (comma-separated)">
+              <input
+                type="text"
+                value={el.options || ""}
+                onChange={(e) => onChange({ ...el, options: e.target.value })}
+                placeholder="Option 1, Option 2, Option 3"
+                style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+              />
+            </PropRow>
+          )}
         </div>
       )}
 
@@ -1021,43 +1046,17 @@ const FormEditor = ({ formId, onBack }) => {
   const [error, setError] = useState("");
   const [fullscreen, setFullscreen] = useState(true);
   const [gap, setGap] = useState(10);
-  const [showFieldMenu, setShowFieldMenu] = useState(false);
   const canvasRef = useRef(null);
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
-  const fieldMenuRef = useRef(null);
-
-  const { events } = useEventData();
-  const event = events.find(e => e.id === form?.eventId || e._id === form?.eventId);
-  const availableFields = (form?.fields || []).filter(f => f.enabled === true);
-  const availableCategories = event?.categories?.filter(
-    c => c.enabled !== false && (form?.selectedCategories || []).includes(c.categoryId || c.id || c._id)
-  ) || [];
 
   const selectedElement = elements.find((el) => el.id === selectedElementIds[0]);
   const selectedElements = elements.filter((el) => selectedElementIds.includes(el.id));
   const isFormElement = selectedElement && ["form-field", "form-select", "form-checkbox", "form-submit"].includes(selectedElement.type);
 
-  // Close field menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (fieldMenuRef.current && !fieldMenuRef.current.contains(e.target) && !e.target.closest('[style*="position: absolute"]')) {
-        setShowFieldMenu(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const addElement = useCallback(
-    (type, fieldData = null) => {
+    (type) => {
       const el = makeElement(type);
-      // If fieldData provided, map it automatically
-      if (fieldData && type === "form-field") {
-        el.fieldId = fieldData.fieldId;
-        el.placeholder = fieldData.label || "";
-        el.content = fieldData.label || "Form Field";
-      }
       setElements((prev) => [...prev, el]);
       setSelectedElementIds([el.id]);
     },
@@ -1311,77 +1310,17 @@ const FormEditor = ({ formId, onBack }) => {
 
       {/* Toolbar */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "#fff", borderBottom: "1px solid #e2e8f0", overflowX: "auto" }}>
-        <div style={{ display: "flex", gap: 8, flexShrink: 0, position: "relative" }}>
+        <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
           {ELEMENT_BTNS.map(({ type, icon, label }) => (
-            type === "form-field" ? (
-              <div key={type} style={{ position: "relative" }}>
-                <button
-                  ref={fieldMenuRef}
-                  onClick={() => setShowFieldMenu(!showFieldMenu)}
-                  title={`Add ${label}`}
-                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", height: 32, borderRadius: 6, border: showFieldMenu ? "1px solid #a855f7" : "1px solid #e2e8f0", background: showFieldMenu ? "#f5f3ff" : "#f8fafc", color: showFieldMenu ? "#7c3aed" : "#475569", cursor: "pointer", fontSize: 11, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 }}
-                >
-                  <i className={`bi ${icon}`} />
-                  {label}
-                  <i className="bi bi-chevron-down" style={{ fontSize: 10 }} />
-                </button>
-
-                {/* Field Dropdown Menu */}
-                {showFieldMenu && (
-                  <div style={{ position: "absolute", top: 36, left: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", zIndex: 1000, minWidth: 200 }}>
-                    {availableFields.length === 0 && availableCategories.length === 0 ? (
-                      <div style={{ padding: 12, fontSize: 11, color: "#94a3b8", textAlign: "center" }}>No fields available</div>
-                    ) : (
-                      <>
-                        {availableFields.map(field => (
-                          <button
-                            key={field.fieldId}
-                            onClick={() => {
-                              addElement("form-field", field);
-                              setShowFieldMenu(false);
-                            }}
-                            style={{ width: "100%", display: "block", padding: "8px 12px", textAlign: "left", border: "none", background: "transparent", cursor: "pointer", fontSize: 11, color: "#1e293b", borderBottom: "1px solid #f1f5f9", transition: "background 0.2s" }}
-                            onMouseEnter={(e) => e.target.style.background = "#f8fafc"}
-                            onMouseLeave={(e) => e.target.style.background = "transparent"}
-                          >
-                            <span style={{ fontWeight: 500 }}>{field.label}</span>
-                            <span style={{ display: "block", fontSize: 10, color: "#94a3b8", marginTop: 2 }}>({field.fieldName || field.fieldId})</span>
-                          </button>
-                        ))}
-                        {availableCategories.length > 0 && availableFields.length > 0 && (
-                          <div style={{ height: 1, background: "#e2e8f0" }} />
-                        )}
-                        {availableCategories.map(cat => (
-                          <button
-                            key={cat.categoryId || cat.id}
-                            onClick={() => {
-                              addElement("form-field", { fieldId: cat.categoryId || cat.id, label: cat.label || cat.categoryName });
-                              setShowFieldMenu(false);
-                            }}
-                            style={{ width: "100%", display: "block", padding: "8px 12px", textAlign: "left", border: "none", background: "transparent", cursor: "pointer", fontSize: 11, color: "#1e293b", borderBottom: "1px solid #f1f5f9", transition: "background 0.2s" }}
-                            onMouseEnter={(e) => e.target.style.background = "#f0fdf4"}
-                            onMouseLeave={(e) => e.target.style.background = "transparent"}
-                          >
-                            <span style={{ fontWeight: 500 }}>{cat.label || cat.categoryName}</span>
-                            <span style={{ display: "block", fontSize: 10, color: "#94a3b8", marginTop: 2 }}>(category)</span>
-                          </button>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                key={type}
-                onClick={() => addElement(type)}
-                title={`Add ${label}`}
-                style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", height: 32, borderRadius: 6, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", cursor: "pointer", fontSize: 11, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 }}
-              >
-                <i className={`bi ${icon}`} />
-                {label}
-              </button>
-            )
+            <button
+              key={type}
+              onClick={() => addElement(type)}
+              title={`Add ${label}`}
+              style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", height: 32, borderRadius: 6, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", cursor: "pointer", fontSize: 11, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 }}
+            >
+              <i className={`bi ${icon}`} />
+              {label}
+            </button>
           ))}
         </div>
 

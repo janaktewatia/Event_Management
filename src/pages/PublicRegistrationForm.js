@@ -158,6 +158,62 @@ const PublicRegistrationForm = () => {
   const renderField = (field) => {
     const val = formData[field.fieldId] ?? "";
 
+    // Handle form field input types (from form designer)
+    if (field.inputType === "dropdown") {
+      const options = (field.options || "").split(",").map(opt => opt.trim()).filter(Boolean);
+      return (
+        <select
+          className="form-select"
+          style={{
+            borderRadius: 10,
+            borderColor: "#e2e8f0",
+            padding: "12px 16px",
+          }}
+          value={val}
+          onChange={(e) => handleChange(field.fieldId, e.target.value)}
+          required={field.required}
+        >
+          <option value="">— Select an option —</option>
+          {options.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (field.inputType === "textarea") {
+      return (
+        <textarea
+          className="form-control"
+          style={{
+            borderRadius: 10,
+            borderColor: "#e2e8f0",
+            padding: "12px 16px",
+          }}
+          value={val}
+          onChange={(e) => handleChange(field.fieldId, e.target.value)}
+          required={field.required}
+          rows={4}
+        />
+      );
+    }
+
+    if (field.inputType === "checkbox") {
+      return (
+        <label className="form-check">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            checked={val === true || val === "true"}
+            onChange={(e) => handleChange(field.fieldId, e.target.checked)}
+          />
+          <span className="form-check-label">{field.label}</span>
+        </label>
+      );
+    }
+
     if (field.type === "choice") {
       return (
         <select
@@ -217,9 +273,14 @@ const PublicRegistrationForm = () => {
       );
     }
 
+    const inputType = field.inputType || "text";
+    const finalType = inputType === "email" || field.fieldId === "email" ? "email"
+                    : inputType === "number" || field.fieldId === "mobile" ? "number"
+                    : "text";
+
     return (
       <input
-        type={field.fieldId === "email" ? "email" : "text"}
+        type={finalType}
         className="form-control"
         style={{
           borderRadius: 10,
@@ -229,7 +290,7 @@ const PublicRegistrationForm = () => {
         value={val}
         onChange={(e) => handleChange(field.fieldId, e.target.value)}
         required={field.required}
-        placeholder={field.label}
+        placeholder={field.placeholder || field.label}
       />
     );
   };

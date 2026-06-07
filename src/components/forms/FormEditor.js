@@ -399,6 +399,8 @@ const SelectInput = ({ value, onChange, options }) => (
 );
 
 const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate, onBring, onSend, canvasState, alignElements, distributeHorizontally, distributeVertically, groupElements, ungroupElements, form, gap, setGap }) => {
+  const { events } = useEventData();
+
   if (!el)
     return (
       <div style={{ padding: 16 }}>
@@ -412,6 +414,12 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
   const p = (key) => (val) => onChange({ ...el, [key]: val });
   const isText = ["text", "header", "footer", "card"].includes(el.type);
   const isMedia = ["image", "logo"].includes(el.type);
+
+  // Get event data to access category labels
+  const event = events.find(e => e.id === form?.eventId || e._id === form?.eventId);
+  const selectedCategories = event?.categories?.filter(
+    c => c.enabled !== false && (form?.selectedCategories || []).includes(c.categoryId || c.id || c._id)
+  ) || [];
 
   return (
     <div style={{ padding: 12, overflowY: "auto", height: "100%" }}>
@@ -805,6 +813,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
               style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
             >
               <option value="">— Select a field —</option>
+              {/* Fields */}
               {(form?.fields || [])
                 .filter(f => f.enabled === true)
                 .map(field => (
@@ -812,7 +821,17 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
                     {field.label} ({field.fieldName || field.fieldId})
                   </option>
                 ))}
-
+              {/* Categories */}
+              {selectedCategories.length > 0 && (
+                <>
+                  <option disabled>─────────────────</option>
+                  {selectedCategories.map(cat => (
+                    <option key={cat.categoryId || cat.id} value={cat.categoryId || cat.id}>
+                      {cat.label || cat.categoryName} (category)
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
           </PropRow>
           <PropRow label="Placeholder">

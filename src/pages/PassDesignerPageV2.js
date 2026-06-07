@@ -137,7 +137,7 @@ const CanvasEl = ({ el, selected }) => {
   const hPos = (h) => {
     const s = { position: "absolute", width: 8, height: 8, borderRadius: 2,
       background: "#A855F7", border: "2px solid #fff", zIndex: 10,
-      boxShadow: "0 1px 4px rgba(0,0,0,0.2)", pointerEvents: "none" };
+      boxShadow: "0 1px 4px rgba(0,0,0,0.2)", cursor: handleCursor[h], pointerEvents: "auto" };
     if (h === "nw") return { ...s, top: -4, left: -4 };
     if (h === "n")  return { ...s, top: -4, left: "50%", transform: "translateX(-50%)" };
     if (h === "ne") return { ...s, top: -4, right: -4 };
@@ -256,7 +256,7 @@ const SelectInput = ({ value, onChange, options }) => (
 );
 
 // ── Properties Panel Component (EXACT COPY from PassTemplateEditor) ────────────────────────────────
-const PropertiesPanel = ({ el, onChange, onDelete, onDuplicate, onBring, onSend, canvasState, onCanvasChange }) => {
+const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate, onBring, onSend, canvasState, onCanvasChange, alignElements, distributeHorizontally, distributeVertically }) => {
   if (!el) return (
     <div style={{ padding: 16 }}>
       <div style={{ fontSize: 12, color: "#94a3b8", textAlign: "center", marginTop: 40 }}>
@@ -284,10 +284,41 @@ const PropertiesPanel = ({ el, onChange, onDelete, onDuplicate, onBring, onSend,
         </div>
       </div>
 
+      {/* Multi-Select Controls */}
+      {selectedElements && selectedElements.length > 1 && (
+        <div style={{ background: "#f0fdf4", borderRadius: 8, padding: 10, marginBottom: 10, border: "1px solid #bbf7d0" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#22c55e", marginBottom: 8 }}>
+            {selectedElements.length} Elements Selected
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 6 }}>
+            <button onClick={() => alignElements("left")} style={{ height: 26, borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#475569", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center" }} title="Align Left">
+              <i className="bi bi-align-start" /> Left
+            </button>
+            <button onClick={() => alignElements("centerX")} style={{ height: 26, borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#475569", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center" }} title="Align Center">
+              <i className="bi bi-distribute-horizontal" /> Center
+            </button>
+            <button onClick={() => alignElements("top")} style={{ height: 26, borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#475569", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center" }} title="Align Top">
+              <i className="bi bi-align-top" /> Top
+            </button>
+            <button onClick={() => alignElements("centerY")} style={{ height: 26, borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#475569", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center" }} title="Align Middle">
+              <i className="bi bi-distribute-vertical" /> Middle
+            </button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+            <button onClick={() => distributeHorizontally()} style={{ height: 26, borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#475569", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center" }} title="Distribute Horizontally">
+              <i className="bi bi-columns-gap" /> Dist H
+            </button>
+            <button onClick={() => distributeVertically()} style={{ height: 26, borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#475569", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center" }} title="Distribute Vertically">
+              <i className="bi bi-rows-gap" /> Dist V
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Lock */}
       <PropRow label="State">
         <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer" }}>
-          <input type="checkbox" checked={el.locked} onChange={(e) => onChange({ ...el, locked: e.target.checked })} />
+          <input type="checkbox" checked={el?.locked} onChange={(e) => onChange({ ...el, locked: e.target.checked })} />
           Lock element
         </label>
       </PropRow>
@@ -469,9 +500,9 @@ const PassDesignerPageV2 = () => {
   const saved = selectedEvent?.passDesign;
 
   // State
-  const [canvas, setCanvas] = useState(saved?.canvas || { width: 400, height: 600, background: "#ffffff" });
+  const [canvas, setCanvas] = useState(saved?.canvas || { width: 400, height: 600, background: "#ffffff", borderRadius: 0 });
   const [elements, setElements] = useState(saved?.elements || []);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [zoom, setZoom] = useState(1);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
@@ -576,33 +607,89 @@ const PassDesignerPageV2 = () => {
   }, [elements, captureHistory]);
 
   const deleteSelected = useCallback(() => {
-    setElements(elements.filter(el => el.id !== selectedId));
-    setSelectedId(null);
+    setElements(elements.filter(el => !selectedIds.includes(el.id)));
+    setSelectedIds([]);
     setTimeout(captureHistory, 0);
-  }, [elements, selectedId, captureHistory]);
+  }, [elements, selectedIds, captureHistory]);
 
   const duplicateSelected = useCallback(() => {
-    const el = elements.find(e => e.id === selectedId);
+    const el = elements.find(e => e.id === selectedIds[0]);
     if (!el) return;
     const dup = { ...el, id: uid(), x: el.x + 16, y: el.y + 16 };
     setElements([...elements, dup]);
-    setSelectedId(dup.id);
+    setSelectedIds([dup.id]);
     setTimeout(captureHistory, 0);
-  }, [elements, selectedId, captureHistory]);
+  }, [elements, selectedIds, captureHistory]);
 
   const bringForward = useCallback(() => {
-    const el = elements.find(e => e.id === selectedId);
+    const el = elements.find(e => e.id === selectedIds[0]);
     if (!el) return;
     const maxZ = Math.max(...elements.map(e => e.zIndex || 1), 0);
     updateElement({ ...el, zIndex: maxZ + 1 });
-  }, [elements, selectedId, updateElement]);
+  }, [elements, selectedIds, updateElement]);
 
   const sendBackward = useCallback(() => {
-    const el = elements.find(e => e.id === selectedId);
+    const el = elements.find(e => e.id === selectedIds[0]);
     if (!el) return;
     const minZ = Math.min(...elements.map(e => e.zIndex || 1), 0);
     updateElement({ ...el, zIndex: minZ - 1 });
-  }, [elements, selectedId, updateElement]);
+  }, [elements, selectedIds, updateElement]);
+
+  // Distribute elements horizontally
+  const distributeHorizontally = useCallback((gap = 10) => {
+    const selected = elements.filter(e => selectedIds.includes(e.id));
+    if (selected.length < 2) return;
+    const sorted = [...selected].sort((a, b) => a.x - b.x);
+    let currentX = sorted[0].x;
+    sorted.forEach((el) => {
+      updateElement({ ...el, x: currentX });
+      currentX += el.w + gap;
+    });
+  }, [elements, selectedIds, updateElement]);
+
+  // Distribute elements vertically
+  const distributeVertically = useCallback((gap = 10) => {
+    const selected = elements.filter(e => selectedIds.includes(e.id));
+    if (selected.length < 2) return;
+    const sorted = [...selected].sort((a, b) => a.y - b.y);
+    let currentY = sorted[0].y;
+    sorted.forEach((el) => {
+      updateElement({ ...el, y: currentY });
+      currentY += el.h + gap;
+    });
+  }, [elements, selectedIds, updateElement]);
+
+  // Align selected elements
+  const alignElements = useCallback((direction) => {
+    const selected = elements.filter(e => selectedIds.includes(e.id));
+    if (selected.length < 2) return;
+    selected.forEach((el) => {
+      let updates = {};
+      switch (direction) {
+        case "left":
+          updates.x = Math.min(...selected.map(e => e.x));
+          break;
+        case "centerX":
+          updates.x = selected.reduce((sum, e) => sum + e.x + e.w / 2, 0) / selected.length - el.w / 2;
+          break;
+        case "right":
+          updates.x = Math.max(...selected.map(e => e.x + e.w)) - el.w;
+          break;
+        case "top":
+          updates.y = Math.min(...selected.map(e => e.y));
+          break;
+        case "centerY":
+          updates.y = selected.reduce((sum, e) => sum + e.y + e.h / 2, 0) / selected.length - el.h / 2;
+          break;
+        case "bottom":
+          updates.y = Math.max(...selected.map(e => e.y + e.h)) - el.h;
+          break;
+        default:
+          return;
+      }
+      if (Object.keys(updates).length > 0) updateElement({ ...el, ...updates });
+    });
+  }, [elements, selectedIds, updateElement]);
 
   // Canvas mouse handler
   const onCanvasMouseDown = useCallback((e) => {
@@ -615,11 +702,18 @@ const PassDesignerPageV2 = () => {
 
     const clicked = getElementAtPoint(px, py);
     if (!clicked) {
-      setSelectedId(null);
+      setSelectedIds([]);
       return;
     }
 
-    setSelectedId(clicked.id);
+    // Multi-select with Ctrl/Cmd + Click
+    if (e.ctrlKey || e.metaKey) {
+      setSelectedIds((prev) =>
+        prev.includes(clicked.id) ? prev.filter((id) => id !== clicked.id) : [...prev, clicked.id]
+      );
+    } else {
+      setSelectedIds([clicked.id]);
+    }
     if (clicked.locked) return;
 
     // Check for resize handle (8px tolerance)
@@ -691,23 +785,24 @@ const PassDesignerPageV2 = () => {
 
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
-        selectedId && deleteSelected();
+        selectedIds.length > 0 && deleteSelected();
       }
-      if (e.key === "Escape") setSelectedId(null);
+      if (e.key === "Escape") setSelectedIds([]);
       if ((e.ctrlKey || e.metaKey) && e.key === "z") {
         e.preventDefault();
         e.shiftKey ? redo() : undo();
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "d") {
         e.preventDefault();
-        selectedId && duplicateSelected();
+        selectedIds.length > 0 && duplicateSelected();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selectedId, deleteSelected, undo, redo, duplicateSelected]);
+  }, [selectedIds, deleteSelected, undo, redo, duplicateSelected]);
 
-  const selectedElement = elements.find(el => el.id === selectedId);
+  const selectedElement = elements.find(el => el.id === selectedIds[0]);
+  const selectedElements = elements.filter(el => selectedIds.includes(el.id));
 
   // Apply template
   const applyTemplate = useCallback((templateId) => {
@@ -987,6 +1082,14 @@ const PassDesignerPageV2 = () => {
               <span style={{ fontSize: 10, color: "#94a3b8" }}>Background</span>
               <ColorInput value={canvas.background} onChange={(v) => setCanvas((c) => ({ ...c, background: v }))} />
             </div>
+            <div style={{ marginBottom: 6 }}>
+              <span style={{ fontSize: 10, color: "#94a3b8" }}>Border Radius</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <input type="number" value={canvas.borderRadius || 0} min={0} max={100} onChange={(e) => setCanvas((c) => ({ ...c, borderRadius: Number(e.target.value) }))}
+                  style={{ width: 56, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px", outline: "none" }} />
+                <span style={{ fontSize: 10, color: "#94a3b8" }}>px</span>
+              </div>
+            </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginBottom: 10 }}>
               {CANVAS_PRESETS.map((p) => (
                 <button key={p.label} onClick={() => setCanvas((c) => ({ ...c, width: p.w, height: p.h }))}
@@ -1038,11 +1141,19 @@ const PassDesignerPageV2 = () => {
           <div style={{ flex: 1, overflowY: "auto" }}>
             {[...elements].filter(Boolean).reverse().map((el) => (
               <div key={el.id}
-                onClick={() => setSelectedId(el.id)}
+                onClick={(e) => {
+                  if (e.ctrlKey || e.metaKey) {
+                    setSelectedIds((prev) =>
+                      prev.includes(el.id) ? prev.filter((id) => id !== el.id) : [...prev, el.id]
+                    );
+                  } else {
+                    setSelectedIds([el.id]);
+                  }
+                }}
                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", cursor: "pointer",
-                  background: el.id === selectedId ? "#f5f3ff" : "transparent",
-                  borderLeft: `3px solid ${el.id === selectedId ? "#A855F7" : "transparent"}` }}>
-                <i className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`} style={{ fontSize: 12, color: el.id === selectedId ? "#7c3aed" : "#94a3b8", flexShrink: 0 }} />
+                  background: selectedIds.includes(el.id) ? "#f5f3ff" : "transparent",
+                  borderLeft: `3px solid ${selectedIds.includes(el.id) ? "#A855F7" : "transparent"}` }}>
+                <i className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`} style={{ fontSize: 12, color: selectedIds.includes(el.id) ? "#7c3aed" : "#94a3b8", flexShrink: 0 }} />
                 <span style={{ fontSize: 11, color: "#475569", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {el.content?.replace(/\{\{[^}]+\}\}/g, "…") || el.label || el.type}
                 </span>
@@ -1070,19 +1181,20 @@ const PassDesignerPageV2 = () => {
                 width: canvas.width,
                 height: canvas.height,
                 background: canvas.background,
+                borderRadius: canvas.borderRadius || 0,
                 boxShadow: "0 4px 30px rgba(0,0,0,0.15)",
                 transform: `scale(${zoom})`, transformOrigin: "top left",
                 backgroundImage: "radial-gradient(#cbd5e1 0.5px, transparent 0.5px)", backgroundSize: "16px 16px",
                 cursor: "default", userSelect: "none"
               }}>
-              {elements.map(el => <CanvasEl key={el.id} el={el} selected={selectedId === el.id} />)}
+              {elements.map(el => <CanvasEl key={el.id} el={el} selected={selectedIds.includes(el.id)} />)}
             </div>
           </div>
         </div>
 
         {/* Right Panel */}
         <div style={{ width: 240, background: "#fff", borderLeft: "1px solid #e2e8f0", overflow: "hidden" }}>
-          <PropertiesPanel el={selectedElement} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} />
+          <PropertiesPanel el={selectedElement} selectedElements={selectedElements} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} alignElements={alignElements} distributeHorizontally={distributeHorizontally} distributeVertically={distributeVertically} />
         </div>
       </div>
     </div>

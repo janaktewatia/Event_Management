@@ -37,6 +37,13 @@ const AddFormModal = ({ onClose, onFormCreated }) => {
     field && (field.fieldName || field.label)
   ) || [];
 
+  // Debug: log fields when event changes
+  React.useEffect(() => {
+    if (selectedEvent) {
+      console.log("Selected Event Fields:", eventFields);
+    }
+  }, [selectedEvent?.id, eventFields]);
+
   // Get event categories from global context
   const eventCategories = categories.filter(
     (cat) => cat.active !== false

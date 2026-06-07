@@ -13,35 +13,188 @@ import {
   FiCopy,
   FiChevronDown,
   FiCheck,
+  FiLock,
+  FiUnlock,
+  FiChevronUp,
 } from "react-icons/fi";
 import { useForm } from "../../context/FormContext";
 import { useEventData } from "../../context/EventDataContext";
 
 const ELEMENT_TYPES = [
-  { id: "header", label: "Header", icon: FiType },
-  { id: "image", label: "Image", icon: FiImage },
-  { id: "logo", label: "Logo", icon: FiBox },
-  { id: "text", label: "Text", icon: FiType },
-  { id: "field", label: "Field", icon: FiSquare },
+  { id: "header", label: "Header", icon: "bi-layout-text-window" },
+  { id: "footer", label: "Footer", icon: "bi-layout-text-sidebar-reverse" },
+  { id: "text", label: "Text", icon: "bi-type-h1" },
+  { id: "image", label: "Image", icon: "bi-image" },
+  { id: "logo", label: "Logo", icon: "bi-patch-check" },
+  { id: "divider", label: "Divider", icon: "bi-dash-lg" },
 ];
 
+const FONTS = [
+  "Inter, sans-serif",
+  "Arial, sans-serif",
+  "Georgia, serif",
+  "Courier New, monospace",
+  "Verdana, sans-serif",
+];
+
+const CANVAS_PRESETS = [
+  { label: "Card (350×200)", w: 350, h: 200 },
+  { label: "Badge (400×600)", w: 400, h: 600 },
+  { label: "Ticket (600×250)", w: 600, h: 250 },
+];
+
+const uid = () => Math.random().toString(36).slice(2, 9);
+
 const DEFAULT_ELEMENT = {
-  type: "text",
-  content: "New Element",
-  x: 10,
-  y: 10,
-  width: 200,
-  height: 40,
-  fontSize: 16,
-  color: "#000000",
-  backgroundColor: "#ffffff",
-  borderRadius: 0,
-  fontStyle: "normal",
-  fontWeight: "normal",
-  textAlign: "left",
-  borderWidth: 1,
-  borderColor: "#cccccc",
+  text: {
+    w: 200,
+    h: 36,
+    label: "Text",
+    content: "Text Here",
+    fontSize: 16,
+    fontWeight: "400",
+    fontFamily: "Inter, sans-serif",
+    fontStyle: "normal",
+    textDecoration: "none",
+    color: "#1e293b",
+    textAlign: "left",
+    lineHeight: 1.4,
+    bg: "transparent",
+    borderRadius: 0,
+    borderWidth: 0,
+    borderColor: "#e2e8f0",
+    borderStyle: "solid",
+    paddingX: 0,
+    paddingY: 0,
+    opacity: 1,
+  },
+  header: {
+    w: 400,
+    h: 72,
+    label: "Header",
+    content: "Event Header",
+    fontSize: 22,
+    fontWeight: "700",
+    fontFamily: "Inter, sans-serif",
+    fontStyle: "normal",
+    textDecoration: "none",
+    color: "#ffffff",
+    textAlign: "center",
+    lineHeight: 1.3,
+    bg: "#7c3aed",
+    borderRadius: 0,
+    borderWidth: 0,
+    borderColor: "transparent",
+    borderStyle: "solid",
+    paddingX: 16,
+    paddingY: 16,
+    opacity: 1,
+  },
+  footer: {
+    w: 400,
+    h: 48,
+    label: "Footer",
+    content: "Event Footer",
+    fontSize: 12,
+    fontWeight: "400",
+    fontFamily: "Inter, sans-serif",
+    fontStyle: "normal",
+    textDecoration: "none",
+    color: "#94a3b8",
+    textAlign: "center",
+    lineHeight: 1.4,
+    bg: "#f8fafc",
+    borderRadius: 0,
+    borderWidth: 0,
+    borderColor: "transparent",
+    borderStyle: "solid",
+    paddingX: 8,
+    paddingY: 8,
+    opacity: 1,
+  },
+  image: {
+    w: 140,
+    h: 140,
+    label: "Image",
+    content: "",
+    imageUrl: "",
+    objectFit: "cover",
+    fontSize: 12,
+    fontWeight: "400",
+    fontFamily: "Inter, sans-serif",
+    fontStyle: "normal",
+    textDecoration: "none",
+    color: "#94a3b8",
+    textAlign: "center",
+    lineHeight: 1,
+    bg: "#f1f5f9",
+    borderRadius: 8,
+    borderWidth: 0,
+    borderColor: "#e2e8f0",
+    borderStyle: "solid",
+    paddingX: 0,
+    paddingY: 0,
+    opacity: 1,
+  },
+  logo: {
+    w: 80,
+    h: 80,
+    label: "Logo",
+    content: "",
+    imageUrl: "",
+    objectFit: "contain",
+    fontSize: 12,
+    fontWeight: "400",
+    fontFamily: "Inter, sans-serif",
+    fontStyle: "normal",
+    textDecoration: "none",
+    color: "#94a3b8",
+    textAlign: "center",
+    lineHeight: 1,
+    bg: "transparent",
+    borderRadius: 0,
+    borderWidth: 0,
+    borderColor: "transparent",
+    borderStyle: "solid",
+    paddingX: 0,
+    paddingY: 0,
+    opacity: 1,
+  },
+  divider: {
+    w: 360,
+    h: 2,
+    label: "Divider",
+    content: "",
+    fontSize: 0,
+    fontWeight: "400",
+    fontFamily: "Inter, sans-serif",
+    fontStyle: "normal",
+    textDecoration: "none",
+    color: "transparent",
+    textAlign: "left",
+    lineHeight: 1,
+    bg: "#e2e8f0",
+    borderRadius: 0,
+    borderWidth: 0,
+    borderColor: "transparent",
+    borderStyle: "solid",
+    paddingX: 0,
+    paddingY: 0,
+    opacity: 1,
+  },
 };
+
+const makeElement = (type, x = 40, y = 40) => ({
+  id: uid(),
+  type,
+  x,
+  y,
+  w: DEFAULT_ELEMENT[type].w,
+  h: DEFAULT_ELEMENT[type].h,
+  zIndex: 1,
+  locked: false,
+  ...DEFAULT_ELEMENT[type],
+});
 
 const FormEditor = ({ formId, onBack }) => {
   const { getFormById, getFormElements, saveFormElements, updateForm } =
@@ -49,12 +202,15 @@ const FormEditor = ({ formId, onBack }) => {
   const { events } = useEventData();
 
   const form = getFormById(formId);
-  const [elements, setElements] = useState(getFormElements(formId));
+  const [elements, setElements] = useState(getFormElements(formId) || []);
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
+  const [templateDesc, setTemplateDesc] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [canvasWidth, setCanvasWidth] = useState(600);
+  const [canvasHeight, setCanvasHeight] = useState(800);
   const canvasRef = useRef(null);
 
   const selectedElement = elements.find((el) => el.id === selectedElementId);
@@ -64,13 +220,7 @@ const FormEditor = ({ formId, onBack }) => {
   const eventFields = selectedEvent?.attendeeFields || [];
 
   const addElement = (type) => {
-    const newElement = {
-      ...DEFAULT_ELEMENT,
-      type,
-      id: Date.now().toString(),
-      content: type === "field" ? "Select Field" : `${type}`,
-      y: elements.length * 30,
-    };
+    const newElement = makeElement(type, 40, 40 + elements.length * 20);
     setElements((prev) => [...prev, newElement]);
     setSelectedElementId(newElement.id);
   };
@@ -90,14 +240,24 @@ const FormEditor = ({ formId, onBack }) => {
     const element = elements.find((el) => el.id === elementId);
     if (!element) return;
 
-    const newElement = {
-      ...element,
-      id: Date.now().toString(),
-      x: element.x + 10,
-      y: element.y + 10,
-    };
+    const newElement = { ...element, id: uid(), x: element.x + 10, y: element.y + 10 };
     setElements((prev) => [...prev, newElement]);
     setSelectedElementId(newElement.id);
+  };
+
+  const bringToFront = (elementId) => {
+    const maxZ = Math.max(...elements.map((el) => el.zIndex || 1), 0);
+    updateElement(elementId, { zIndex: maxZ + 1 });
+  };
+
+  const sendToBack = (elementId) => {
+    const minZ = Math.min(...elements.map((el) => el.zIndex || 1));
+    updateElement(elementId, { zIndex: minZ - 1 });
+  };
+
+  const toggleLock = (elementId) => {
+    const el = elements.find((e) => e.id === elementId);
+    if (el) updateElement(elementId, { locked: !el.locked });
   };
 
   const handleCanvasClick = (e) => {
@@ -108,22 +268,64 @@ const FormEditor = ({ formId, onBack }) => {
 
   const handleElementMouseDown = (e, elementId) => {
     e.preventDefault();
+    e.stopPropagation();
     setSelectedElementId(elementId);
 
     const element = elements.find((el) => el.id === elementId);
-    if (!element) return;
+    if (!element || element.locked) return;
 
     const startX = e.clientX - element.x;
     const startY = e.clientY - element.y;
 
     const handleMouseMove = (moveEvent) => {
-      const newX = moveEvent.clientX - startX;
-      const newY = moveEvent.clientY - startY;
+      const newX = Math.max(0, moveEvent.clientX - startX);
+      const newY = Math.max(0, moveEvent.clientY - startY);
+      updateElement(elementId, { x: newX, y: newY });
+    };
 
-      updateElement(elementId, {
-        x: Math.max(0, newX),
-        y: Math.max(0, newY),
-      });
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const handleResizeMouseDown = (e, elementId, handle) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const element = elements.find((el) => el.id === elementId);
+    if (!element || element.locked) return;
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startW = element.w;
+    const startH = element.h;
+    const startX_pos = element.x;
+    const startY_pos = element.y;
+
+    const handleMouseMove = (moveEvent) => {
+      const dX = moveEvent.clientX - startX;
+      const dY = moveEvent.clientY - startY;
+      const updates = {};
+
+      if (handle === "se") {
+        updates.w = Math.max(20, startW + dX);
+        updates.h = Math.max(20, startH + dY);
+      } else if (handle === "s") {
+        updates.h = Math.max(20, startH + dY);
+      } else if (handle === "e") {
+        updates.w = Math.max(20, startW + dX);
+      } else if (handle === "nw") {
+        updates.x = Math.max(0, startX_pos + dX);
+        updates.y = Math.max(0, startY_pos + dY);
+        updates.w = Math.max(20, startW - dX);
+        updates.h = Math.max(20, startH - dY);
+      }
+
+      updateElement(elementId, updates);
     };
 
     const handleMouseUp = () => {
@@ -185,18 +387,14 @@ const FormEditor = ({ formId, onBack }) => {
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      {/* Top Bar */}
+      {/* Header */}
       <div
         className="bg-light border-bottom p-3"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
       >
         <div className="d-flex align-items-center gap-3">
-          <button className="btn btn-link p-0" onClick={onBack}>
-            <FiArrowLeft size={20} /> Back
+          <button className="btn btn-link p-0 text-dark" onClick={onBack}>
+            <FiArrowLeft size={20} />
           </button>
           <div>
             <h5 className="mb-0 fw-bold">{form?.formName}</h5>
@@ -206,19 +404,22 @@ const FormEditor = ({ formId, onBack }) => {
         <div className="d-flex gap-2">
           <button
             className="btn btn-outline-secondary btn-sm"
+            onClick={() => setShowSaveTemplate(true)}
+            disabled={saving}
+          >
+            Save as Template
+          </button>
+          <button
+            className="btn btn-outline-secondary btn-sm"
             onClick={saveDraft}
             disabled={saving}
           >
             {saving ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-1" />
-                Saving...
-              </>
+              <span className="spinner-border spinner-border-sm me-1" />
             ) : (
-              <>
-                <FiDownload size={14} className="me-1" /> Save Draft
-              </>
+              <FiDownload size={14} className="me-1" />
             )}
+            Draft
           </button>
           <button
             className="btn btn-primary btn-sm"
@@ -226,77 +427,70 @@ const FormEditor = ({ formId, onBack }) => {
             disabled={saving}
           >
             {saving ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-1" />
-                Saving...
-              </>
+              <span className="spinner-border spinner-border-sm me-1" />
             ) : (
-              <>
-                <FiSave size={14} className="me-1" /> Save Form
-              </>
+              <FiSave size={14} className="me-1" />
             )}
-          </button>
-          <button
-            className="btn btn-outline-primary btn-sm"
-            onClick={() => setShowSaveTemplate(true)}
-            disabled={saving}
-          >
-            Save as Template
+            Save
           </button>
         </div>
-        {error && (
-          <div className="alert alert-danger mt-2 mb-0 py-2 px-3 small">
-            {error}
-          </div>
-        )}
       </div>
+      {error && <div className="alert alert-danger mt-2 mb-0 py-2 px-3 small">{error}</div>}
 
       {/* Main Editor */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         {/* Left Panel - Elements */}
-        <div
-          style={{
-            width: 200,
-            borderRight: "2px solid #e2e8f0",
-            background: "#fafbfc",
-            overflowY: "auto",
-            padding: "1rem",
-          }}
-        >
-          <h6 className="fw-semibold mb-3">Elements</h6>
-          <div className="d-flex flex-column gap-2">
+        <div style={{ width: 220, borderRight: "1px solid #e2e8f0", background: "#f8fafc", overflowY: "auto", padding: "1rem" }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            Elements
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {ELEMENT_TYPES.map((element) => (
               <button
                 key={element.id}
-                className="btn btn-outline-secondary btn-sm text-start d-flex align-items-center gap-2"
                 onClick={() => addElement(element.id)}
+                style={{
+                  height: 32,
+                  borderRadius: 6,
+                  border: "1px solid #e2e8f0",
+                  background: "#fff",
+                  color: "#475569",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                  gap: 8,
+                  padding: "0 8px",
+                }}
               >
-                <element.icon size={16} />
-                <span className="text-truncate">{element.label}</span>
+                <i className={`bi ${element.icon}`} style={{ fontSize: 14 }} />
+                <span>{element.label}</span>
               </button>
             ))}
           </div>
 
-          {/* Layers Panel */}
-          <hr className="my-3" />
-          <h6 className="fw-semibold mb-2">Layers</h6>
-          <div
-            className="small"
-            style={{ maxHeight: "300px", overflowY: "auto" }}
-          >
+          <hr style={{ margin: "12px 0", border: "none", borderTop: "1px solid #e2e8f0" }} />
+
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            Layers ({elements.length})
+          </div>
+          <div style={{ maxHeight: 400, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4 }}>
             {elements.map((el, idx) => (
               <div
                 key={el.id}
-                className={`p-2 mb-1 rounded cursor-pointer border ${
-                  selectedElementId === el.id
-                    ? "bg-primary text-white border-primary"
-                    : "bg-white border-light hover:bg-light"
-                }`}
                 onClick={() => setSelectedElementId(el.id)}
-                style={{ cursor: "pointer" }}
+                style={{
+                  padding: 8,
+                  borderRadius: 6,
+                  background: selectedElementId === el.id ? "#dbeafe" : "#f1f5f9",
+                  borderLeft: selectedElementId === el.id ? "3px solid #3b82f6" : "3px solid transparent",
+                  cursor: "pointer",
+                  fontSize: 12,
+                }}
               >
-                <div className="small">
-                  {el.type} #{idx + 1}
+                <div style={{ fontWeight: selectedElementId === el.id ? 600 : 500, color: "#1e293b" }}>
+                  {el.label || el.type} #{idx + 1}
                 </div>
               </div>
             ))}
@@ -304,23 +498,36 @@ const FormEditor = ({ formId, onBack }) => {
         </div>
 
         {/* Center - Canvas */}
-        <div
-          style={{
-            flex: 1,
-            background: "#f9fafb",
-            overflow: "auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "2rem",
-          }}
-        >
+        <div style={{ flex: 1, background: "#f9fafb", overflow: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", padding: "2rem 1rem" }}>
+          {/* Canvas Presets */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+            {CANVAS_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                onClick={() => { setCanvasWidth(preset.w); setCanvasHeight(preset.h); }}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 6,
+                  border: canvasWidth === preset.w && canvasHeight === preset.h ? "2px solid #3b82f6" : "1px solid #e2e8f0",
+                  background: canvasWidth === preset.w && canvasHeight === preset.h ? "#dbeafe" : "#fff",
+                  color: "#475569",
+                  cursor: "pointer",
+                  fontSize: 11,
+                  fontWeight: 500,
+                }}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Canvas */}
           <div
             ref={canvasRef}
             onClick={handleCanvasClick}
             style={{
-              width: "600px",
-              height: "800px",
+              width: `${canvasWidth}px`,
+              height: `${canvasHeight}px`,
               background: "white",
               border: "2px solid #e5e7eb",
               borderRadius: "8px",
@@ -329,435 +536,268 @@ const FormEditor = ({ formId, onBack }) => {
               overflow: "hidden",
             }}
           >
-            {/* Render Elements */}
-            {elements.map((element) => (
-              <div
-                key={element.id}
-                onMouseDown={(e) => handleElementMouseDown(e, element.id)}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedElementId(element.id);
-                }}
-                style={{
-                  position: "absolute",
-                  left: `${element.x}px`,
-                  top: `${element.y}px`,
-                  width: `${element.width}px`,
-                  height: `${element.height}px`,
-                  fontSize: `${element.fontSize}px`,
-                  color: element.color,
-                  backgroundColor: element.backgroundColor,
-                  borderRadius: `${element.borderRadius}px`,
-                  fontStyle: element.fontStyle,
-                  fontWeight: element.fontWeight,
-                  textAlign: element.textAlign,
-                  border: `${element.borderWidth}px solid ${element.borderColor}`,
-                  padding: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent:
-                    element.textAlign === "center" ? "center" : "flex-start",
-                  cursor: "move",
-                  boxSizing: "border-box",
-                  outline:
-                    selectedElementId === element.id
-                      ? "3px solid #3b82f6"
-                      : "none",
-                  transition: "outline 0.2s",
-                }}
-              >
-                <div style={{ wordWrap: "break-word", width: "100%" }}>
-                  {element.content}
+            {elements.map((el) => {
+              const isText = ["text", "header", "footer"].includes(el.type);
+              const isMedia = ["image", "logo"].includes(el.type);
+              return (
+                <div
+                  key={el.id}
+                  onClick={(e) => { e.stopPropagation(); setSelectedElementId(el.id); }}
+                  onMouseDown={(e) => !el.locked && handleElementMouseDown(e, el.id)}
+                  style={{
+                    position: "absolute",
+                    left: el.x,
+                    top: el.y,
+                    width: el.w,
+                    height: el.h,
+                    background: el.bg,
+                    borderRadius: el.borderRadius,
+                    border: el.borderWidth > 0 ? `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}` : "none",
+                    opacity: el.opacity ?? 1,
+                    zIndex: (el.zIndex || 1) + 1,
+                    cursor: el.locked ? "not-allowed" : "move",
+                    boxSizing: "border-box",
+                    outline: selectedElementId === el.id ? "2px solid #a855f7" : "none",
+                    outlineOffset: 2,
+                    boxShadow: selectedElementId === el.id ? "0 0 0 1px #e9d5ff, 0 0 8px rgba(168,85,247,0.3)" : "none",
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: el.textAlign === "center" ? "center" : el.textAlign === "right" ? "flex-end" : "flex-start",
+                    padding: `${el.paddingY}px ${el.paddingX}px`,
+                    fontSize: el.fontSize,
+                    fontWeight: el.fontWeight,
+                    fontFamily: el.fontFamily,
+                    fontStyle: el.fontStyle,
+                    textDecoration: el.textDecoration,
+                    color: el.color,
+                    lineHeight: el.lineHeight,
+                  }}
+                >
+                  {el.type === "divider" ? null : isMedia && el.imageUrl ? (
+                    <img src={el.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: el.objectFit || "cover", display: "block" }} />
+                  ) : isText ? (
+                    <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", width: "100%" }}>
+                      {el.content || <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>Empty…</span>}
+                    </div>
+                  ) : isMedia ? (
+                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 4 }}>
+                      <i className="bi bi-image" style={{ fontSize: 28, color: "#cbd5e1" }} />
+                      <span style={{ fontSize: 10, color: "#94a3b8" }}>{el.label}</span>
+                    </div>
+                  ) : null}
+
+                  {/* Resize Handles */}
+                  {selectedElementId === el.id && !el.locked && (
+                    <>
+                      {[[0, 0, "nw"], [el.w, el.h, "se"], [el.w, 0, "ne"], [0, el.h, "sw"], [el.w / 2, el.h, "s"], [el.w, el.h / 2, "e"]].map(([x, y, handle]) => (
+                        <div
+                          key={handle}
+                          onMouseDown={(e) => handleResizeMouseDown(e, el.id, handle)}
+                          style={{
+                            position: "absolute",
+                            left: x - 4,
+                            top: y - 4,
+                            width: 8,
+                            height: 8,
+                            borderRadius: 2,
+                            background: "#a855f7",
+                            border: "2px solid #fff",
+                            cursor: handle === "se" ? "se-resize" : handle === "nw" ? "nw-resize" : handle === "s" ? "s-resize" : "e-resize",
+                            zIndex: 10,
+                            boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+                          }}
+                        />
+                      ))}
+                    </>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {elements.length === 0 && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  textAlign: "center",
-                  color: "#9ca3af",
-                }}
-              >
-                <div className="text-muted">
-                  Add elements from the left panel
-                </div>
+              <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", color: "#9ca3af" }}>
+                <i className="bi bi-plus-circle" style={{ fontSize: 32, display: "block", marginBottom: 8, opacity: 0.5 }} />
+                <div style={{ fontSize: 13, color: "#94a3b8" }}>Add elements from the left panel</div>
               </div>
             )}
           </div>
         </div>
 
         {/* Right Panel - Properties */}
-        <div
-          style={{
-            width: 280,
-            borderLeft: "2px solid #e2e8f0",
-            background: "#fafbfc",
-            overflowY: "auto",
-            padding: "1rem",
-          }}
-        >
+        <div style={{ width: 300, borderLeft: "1px solid #e2e8f0", background: "#f8fafc", overflowY: "auto", padding: "12px" }}>
           {selectedElement ? (
             <div>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h6 className="fw-semibold mb-0">Properties</h6>
-                <div className="btn-group btn-group-sm">
-                  <button
-                    className="btn btn-outline-secondary"
-                    onClick={() => duplicateElement(selectedElement.id)}
-                    title="Duplicate"
-                  >
-                    <FiCopy size={14} />
-                  </button>
-                  <button
-                    className="btn btn-outline-danger"
-                    onClick={() => deleteElement(selectedElement.id)}
-                    title="Delete"
-                  >
-                    <FiTrash2 size={14} />
-                  </button>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f1f5f9" }}>
+                <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b", display: "flex", alignItems: "center", gap: 6 }}>
+                  <i className="bi bi-pencil-square" style={{ color: "#a855f7" }} />
+                  {selectedElement.label || selectedElement.type}
+                </span>
+                <div style={{ display: "flex", gap: 4 }}>
+                  <button onClick={() => duplicateElement(selectedElement.id)} title="Duplicate" style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #f1f5f9", background: "#f1f5f9", color: "#475569", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><FiCopy size={12} /></button>
+                  <button onClick={() => deleteElement(selectedElement.id)} title="Delete" style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #fef2f2", background: "#fef2f2", color: "#dc2626", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}><FiTrash2 size={12} /></button>
                 </div>
               </div>
 
-              {/* Position */}
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">Position</label>
-                <div className="row g-2">
-                  <div className="col-6">
-                    <label className="form-label small">X</label>
-                    <input
-                      type="number"
-                      className="form-control form-control-sm"
-                      value={selectedElement.x}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          x: parseInt(e.target.value) || 0,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="col-6">
-                    <label className="form-label small">Y</label>
-                    <input
-                      type="number"
-                      className="form-control form-control-sm"
-                      value={selectedElement.y}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          y: parseInt(e.target.value) || 0,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
+              {/* State */}
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer" }}>
+                  <input type="checkbox" checked={selectedElement.locked} onChange={() => toggleLock(selectedElement.id)} style={{ cursor: "pointer" }} />
+                  {selectedElement.locked ? "Locked" : "Unlocked"}
+                </label>
               </div>
 
-              {/* Size */}
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">Size</label>
-                <div className="row g-2">
-                  <div className="col-6">
-                    <label className="form-label small">Width</label>
-                    <input
-                      type="number"
-                      className="form-control form-control-sm"
-                      value={selectedElement.width}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          width: parseInt(e.target.value) || 100,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="col-6">
-                    <label className="form-label small">Height</label>
-                    <input
-                      type="number"
-                      className="form-control form-control-sm"
-                      value={selectedElement.height}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          height: parseInt(e.target.value) || 40,
-                        })
-                      }
-                    />
-                  </div>
+              {/* Position & Size */}
+              <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Position & Size</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div><span style={{ fontSize: 10, color: "#94a3b8" }}>X</span><input type="number" value={Math.round(selectedElement.x)} onChange={(e) => updateElement(selectedElement.id, { x: Number(e.target.value) })} style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px", outline: "none", boxSizing: "border-box" }} /></div>
+                  <div><span style={{ fontSize: 10, color: "#94a3b8" }}>Y</span><input type="number" value={Math.round(selectedElement.y)} onChange={(e) => updateElement(selectedElement.id, { y: Number(e.target.value) })} style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px", outline: "none", boxSizing: "border-box" }} /></div>
+                  <div><span style={{ fontSize: 10, color: "#94a3b8" }}>W</span><input type="number" value={Math.round(selectedElement.w)} onChange={(e) => updateElement(selectedElement.id, { w: Math.max(20, Number(e.target.value)) })} style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px", outline: "none", boxSizing: "border-box" }} /></div>
+                  <div><span style={{ fontSize: 10, color: "#94a3b8" }}>H</span><input type="number" value={Math.round(selectedElement.h)} onChange={(e) => updateElement(selectedElement.id, { h: Math.max(20, Number(e.target.value)) })} style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px", outline: "none", boxSizing: "border-box" }} /></div>
                 </div>
               </div>
 
               {/* Colors */}
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">Colors</label>
-                <div className="mb-2">
-                  <label className="form-label small">Text Color</label>
-                  <div className="d-flex gap-2">
-                    <input
-                      type="color"
-                      className="form-control form-control-color"
-                      value={selectedElement.color}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          color: e.target.value,
-                        })
-                      }
-                      style={{ width: "50px" }}
-                    />
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      value={selectedElement.color}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          color: e.target.value,
-                        })
-                      }
-                    />
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Colors</div>
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>Text Color</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <input type="color" value={selectedElement.color === "transparent" ? "#000000" : selectedElement.color} onChange={(e) => updateElement(selectedElement.id, { color: e.target.value })} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", cursor: "pointer", padding: 2 }} />
+                    <input type="text" value={selectedElement.color} onChange={(e) => updateElement(selectedElement.id, { color: e.target.value })} style={{ width: 80, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 6px", fontFamily: "monospace" }} />
                   </div>
                 </div>
                 <div>
-                  <label className="form-label small">Background</label>
-                  <div className="d-flex gap-2">
-                    <input
-                      type="color"
-                      className="form-control form-control-color"
-                      value={selectedElement.backgroundColor}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          backgroundColor: e.target.value,
-                        })
-                      }
-                      style={{ width: "50px" }}
-                    />
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      value={selectedElement.backgroundColor}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          backgroundColor: e.target.value,
-                        })
-                      }
-                    />
+                  <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>Background</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <input type="color" value={selectedElement.bg === "transparent" ? "#ffffff" : selectedElement.bg} onChange={(e) => updateElement(selectedElement.id, { bg: e.target.value })} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", cursor: "pointer", padding: 2 }} />
+                    <input type="text" value={selectedElement.bg} onChange={(e) => updateElement(selectedElement.id, { bg: e.target.value })} style={{ width: 80, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 6px", fontFamily: "monospace" }} />
+                    <button onClick={() => updateElement(selectedElement.id, { bg: "transparent" })} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11 }}>✕</button>
                   </div>
                 </div>
               </div>
 
               {/* Typography */}
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">
-                  Typography
-                </label>
-                <div className="mb-2">
-                  <label className="form-label small">Font Size</label>
-                  <input
-                    type="number"
-                    className="form-control form-control-sm"
-                    value={selectedElement.fontSize}
-                    onChange={(e) =>
-                      updateElement(selectedElement.id, {
-                        fontSize: parseInt(e.target.value) || 16,
-                      })
-                    }
-                  />
-                </div>
-                <div className="mb-2">
-                  <label className="form-label small">Font Weight</label>
-                  <select
-                    className="form-select form-select-sm"
-                    value={selectedElement.fontWeight}
-                    onChange={(e) =>
-                      updateElement(selectedElement.id, {
-                        fontWeight: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="normal">Normal</option>
-                    <option value="bold">Bold</option>
-                    <option value="lighter">Lighter</option>
-                  </select>
-                </div>
-                <div className="mb-2">
-                  <label className="form-label small">Font Style</label>
-                  <select
-                    className="form-select form-select-sm"
-                    value={selectedElement.fontStyle}
-                    onChange={(e) =>
-                      updateElement(selectedElement.id, {
-                        fontStyle: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="normal">Normal</option>
-                    <option value="italic">Italic</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Alignment */}
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">
-                  Alignment
-                </label>
-                <div className="btn-group w-100" role="group">
-                  {["left", "center", "right"].map((align) => (
-                    <input
-                      key={align}
-                      type="radio"
-                      className="btn-check"
-                      name="align"
-                      id={`align-${align}`}
-                      checked={selectedElement.textAlign === align}
-                      onChange={() =>
-                        updateElement(selectedElement.id, {
-                          textAlign: align,
-                        })
-                      }
-                    />
-                  ))}
-                  <label
-                    className="btn btn-outline-secondary btn-sm"
-                    htmlFor="align-left"
-                  >
-                    Left
-                  </label>
-                  <label
-                    className="btn btn-outline-secondary btn-sm"
-                    htmlFor="align-center"
-                  >
-                    Center
-                  </label>
-                  <label
-                    className="btn btn-outline-secondary btn-sm"
-                    htmlFor="align-right"
-                  >
-                    Right
-                  </label>
-                </div>
-              </div>
-
-              {/* Borders & Radius */}
-              <div className="mb-3">
-                <label className="form-label small fw-semibold">Borders</label>
-                <div className="mb-2">
-                  <label className="form-label small">Border Radius</label>
-                  <input
-                    type="number"
-                    className="form-control form-control-sm"
-                    value={selectedElement.borderRadius}
-                    onChange={(e) =>
-                      updateElement(selectedElement.id, {
-                        borderRadius: parseInt(e.target.value) || 0,
-                      })
-                    }
-                  />
-                </div>
-                <div className="mb-2">
-                  <label className="form-label small">Border Width</label>
-                  <input
-                    type="number"
-                    className="form-control form-control-sm"
-                    value={selectedElement.borderWidth}
-                    onChange={(e) =>
-                      updateElement(selectedElement.id, {
-                        borderWidth: parseInt(e.target.value) || 1,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <label className="form-label small">Border Color</label>
-                  <div className="d-flex gap-2">
-                    <input
-                      type="color"
-                      className="form-control form-control-color"
-                      value={selectedElement.borderColor}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          borderColor: e.target.value,
-                        })
-                      }
-                      style={{ width: "50px" }}
-                    />
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      value={selectedElement.borderColor}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          borderColor: e.target.value,
-                        })
-                      }
-                    />
+              {["text", "header", "footer"].includes(selectedElement.type) && (
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Typography</div>
+                  <div style={{ marginBottom: 6 }}>
+                    <span style={{ fontSize: 10, color: "#94a3b8" }}>Font Family</span>
+                    <select value={selectedElement.fontFamily} onChange={(e) => updateElement(selectedElement.id, { fontFamily: e.target.value })} style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}>
+                      {FONTS.map((f) => <option key={f} value={f}>{f.split(",")[0]}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ marginBottom: 6 }}>
+                    <span style={{ fontSize: 10, color: "#94a3b8" }}>Font Size</span>
+                    <input type="number" value={selectedElement.fontSize} onChange={(e) => updateElement(selectedElement.id, { fontSize: Number(e.target.value) })} style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }} />
+                  </div>
+                  <div style={{ marginBottom: 6 }}>
+                    <span style={{ fontSize: 10, color: "#94a3b8" }}>Font Weight</span>
+                    <select value={selectedElement.fontWeight} onChange={(e) => updateElement(selectedElement.id, { fontWeight: e.target.value })} style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}>
+                      <option value="100">Thin</option>
+                      <option value="300">Light</option>
+                      <option value="400">Normal</option>
+                      <option value="600">Semibold</option>
+                      <option value="700">Bold</option>
+                    </select>
+                  </div>
+                  <div style={{ marginBottom: 6 }}>
+                    <span style={{ fontSize: 10, color: "#94a3b8" }}>Line Height</span>
+                    <input type="number" value={selectedElement.lineHeight} onChange={(e) => updateElement(selectedElement.id, { lineHeight: Number(e.target.value) || 1 })} step="0.1" style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }} />
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Content / Field Selection */}
-              <div className="mb-3">
-                {selectedElement.type === "field" ? (
+              {/* Text Alignment */}
+              {["text", "header", "footer"].includes(selectedElement.type) && (
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Alignment</div>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {["left", "center", "right"].map((align) => (
+                      <button
+                        key={align}
+                        onClick={() => updateElement(selectedElement.id, { textAlign: align })}
+                        style={{
+                          flex: 1,
+                          height: 28,
+                          borderRadius: 6,
+                          border: selectedElement.textAlign === align ? "2px solid #a855f7" : "1px solid #e2e8f0",
+                          background: selectedElement.textAlign === align ? "#f3e8ff" : "#fff",
+                          color: selectedElement.textAlign === align ? "#a855f7" : "#475569",
+                          cursor: "pointer",
+                          fontSize: 11,
+                          fontWeight: selectedElement.textAlign === align ? 600 : 400,
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {align}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Borders & Spacing */}
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Appearance</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 6 }}>
+                  <div><span style={{ fontSize: 10, color: "#94a3b8" }}>Border Radius</span><input type="number" value={selectedElement.borderRadius} onChange={(e) => updateElement(selectedElement.id, { borderRadius: Number(e.target.value) })} style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }} /></div>
+                  <div><span style={{ fontSize: 10, color: "#94a3b8" }}>Border Width</span><input type="number" value={selectedElement.borderWidth} onChange={(e) => updateElement(selectedElement.id, { borderWidth: Number(e.target.value) })} style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }} /></div>
+                </div>
+                <div style={{ marginBottom: 6 }}>
+                  <span style={{ fontSize: 10, color: "#94a3b8" }}>Border Color</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <input type="color" value={selectedElement.borderColor === "transparent" ? "#000000" : selectedElement.borderColor} onChange={(e) => updateElement(selectedElement.id, { borderColor: e.target.value })} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", cursor: "pointer", padding: 2 }} />
+                    <input type="text" value={selectedElement.borderColor} onChange={(e) => updateElement(selectedElement.id, { borderColor: e.target.value })} style={{ width: 80, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 6px", fontFamily: "monospace", flex: 1 }} />
+                  </div>
+                </div>
+                {selectedElement.type !== "divider" && (
                   <>
-                    <label className="form-label small fw-semibold">
-                      Select Field to Map
-                    </label>
-                    <select
-                      className="form-select form-select-sm"
-                      value={selectedElement.mappedFieldId || ""}
-                      onChange={(e) => {
-                        const fieldId = e.target.value;
-                        const field = eventFields.find(
-                          (f) => f.fieldId === fieldId || f.id === fieldId,
-                        );
-                        updateElement(selectedElement.id, {
-                          mappedFieldId: fieldId,
-                          content: field
-                            ? field.fieldName || field.label
-                            : "Select Field",
-                        });
-                      }}
-                    >
-                      <option value="">Choose a field...</option>
-                      {eventFields.map((field) => (
-                        <option
-                          key={field.fieldId || field.id}
-                          value={field.fieldId || field.id}
-                        >
-                          {field.fieldName || field.label}
-                        </option>
-                      ))}
-                    </select>
-                    {eventFields.length === 0 && (
-                      <small className="text-muted d-block mt-2">
-                        No fields available for this event.
-                      </small>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <label className="form-label small fw-semibold">
-                      Content
-                    </label>
-                    <textarea
-                      className="form-control form-control-sm"
-                      rows="3"
-                      value={selectedElement.content}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          content: e.target.value,
-                        })
-                      }
-                    />
+                    <div style={{ marginBottom: 6 }}>
+                      <span style={{ fontSize: 10, color: "#94a3b8" }}>Opacity</span>
+                      <input type="number" min="0" max="1" step="0.1" value={selectedElement.opacity ?? 1} onChange={(e) => updateElement(selectedElement.id, { opacity: Number(e.target.value) })} style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: 10, color: "#94a3b8" }}>Z-Index</span>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <button onClick={() => sendToBack(selectedElement.id)} style={{ flex: 1, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#475569", cursor: "pointer", fontSize: 11 }}>Back</button>
+                        <button onClick={() => bringToFront(selectedElement.id)} style={{ flex: 1, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#475569", cursor: "pointer", fontSize: 11 }}>Front</button>
+                      </div>
+                    </div>
                   </>
                 )}
               </div>
+
+              {/* Content */}
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Content</div>
+                {["image", "logo"].includes(selectedElement.type) ? (
+                  <>
+                    <div style={{ marginBottom: 6 }}>
+                      <span style={{ fontSize: 10, color: "#94a3b8" }}>Image URL</span>
+                      <input type="text" value={selectedElement.imageUrl || ""} onChange={(e) => updateElement(selectedElement.id, { imageUrl: e.target.value })} placeholder="Paste image URL..." style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 6px" }} />
+                    </div>
+                    {selectedElement.imageUrl && (
+                      <div style={{ marginBottom: 6 }}>
+                        <span style={{ fontSize: 10, color: "#94a3b8" }}>Object Fit</span>
+                        <select value={selectedElement.objectFit || "cover"} onChange={(e) => updateElement(selectedElement.id, { objectFit: e.target.value })} style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}>
+                          <option value="cover">Cover</option>
+                          <option value="contain">Contain</option>
+                          <option value="fill">Fill</option>
+                        </select>
+                      </div>
+                    )}
+                  </>
+                ) : selectedElement.type !== "divider" ? (
+                  <textarea value={selectedElement.content} onChange={(e) => updateElement(selectedElement.id, { content: e.target.value })} placeholder="Enter text..." style={{ width: "100%", height: 72, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "6px", fontFamily: "monospace", resize: "none" }} />
+                ) : null}
+              </div>
             </div>
           ) : (
-            <div className="text-muted text-center py-5">
-              <FiSettings size={32} className="mb-2 opacity-50" />
-              <p className="small">Select an element to edit properties</p>
+            <div style={{ textAlign: "center", padding: "2rem 0", color: "#94a3b8" }}>
+              <i className="bi bi-cursor" style={{ fontSize: 28, display: "block", marginBottom: 8 }} />
+              <div style={{ fontSize: 12 }}>Click an element to edit properties</div>
             </div>
           )}
         </div>
@@ -769,40 +809,62 @@ const FormEditor = ({ formId, onBack }) => {
           className="modal d-block"
           style={{ background: "rgba(0,0,0,0.5)", zIndex: 1050 }}
         >
-          <div className="modal-dialog modal-sm">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Save as Template</h5>
+          <div className="modal-dialog" style={{ maxWidth: 460 }}>
+            <div className="modal-content border-0 shadow">
+              <div className="modal-header border-0 pb-0">
+                <h6 className="modal-title fw-semibold d-flex align-items-center gap-2">
+                  <i className="bi bi-bookmark" style={{ color: "#a855f7" }} />
+                  Save as Template
+                </h6>
                 <button
                   type="button"
                   className="btn-close"
                   onClick={() => setShowSaveTemplate(false)}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <label className="form-label">Template Name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={templateName}
-                  onChange={(e) => setTemplateName(e.target.value)}
-                  placeholder="e.g., VIP Registration"
                 />
               </div>
-              <div className="modal-footer">
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold mb-1">Template Name</label>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    placeholder="e.g., Standard Event Form"
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="form-label small fw-semibold mb-1">Description (Optional)</label>
+                  <textarea
+                    className="form-control form-control-sm"
+                    rows="3"
+                    value={templateDesc}
+                    onChange={(e) => setTemplateDesc(e.target.value)}
+                    placeholder="Describe this template..."
+                  />
+                </div>
+              </div>
+              <div className="modal-footer border-0 pt-0">
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn btn-outline-secondary btn-sm"
                   onClick={() => setShowSaveTemplate(false)}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  className="btn btn-primary"
+                  className="btn btn-primary btn-sm"
                   onClick={handleSaveTemplate}
+                  disabled={!templateName.trim() || saving}
                 >
-                  <FiCheck className="me-1" /> Save Template
+                  {saving ? (
+                    <span className="spinner-border spinner-border-sm me-1" />
+                  ) : (
+                    <i className="bi bi-bookmark-fill me-1" />
+                  )}
+                  Save Template
                 </button>
               </div>
             </div>

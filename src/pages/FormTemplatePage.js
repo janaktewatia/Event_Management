@@ -5,6 +5,8 @@ import {
   FiSearch,
   FiInfo,
   FiAlertCircle,
+  FiEdit2,
+  FiArrowLeft,
 } from "react-icons/fi";
 import { useForm } from "../context/FormContext";
 
@@ -20,6 +22,7 @@ const FormTemplatePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [editingTemplate, setEditingTemplate] = useState(null);
 
   const filteredTemplates = formTemplates.filter((template) =>
     template.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -157,9 +160,9 @@ const FormTemplatePage = () => {
                         <div className="d-flex gap-2">
                           <button
                             className="btn btn-sm btn-outline-primary flex-grow-1"
-                            onClick={() => setSelectedTemplate(template)}
+                            onClick={() => setEditingTemplate(template)}
                           >
-                            <FiInfo size={12} className="me-1" /> View Details
+                            <FiEdit2 size={12} className="me-1" /> Edit
                           </button>
                           <button
                             className="btn btn-sm btn-primary flex-grow-1"
@@ -169,7 +172,7 @@ const FormTemplatePage = () => {
                               );
                             }}
                           >
-                            <FiCopy size={12} className="me-1" /> Use Template
+                            <FiCopy size={12} className="me-1" /> Use
                           </button>
                         </div>
                       </div>
@@ -181,6 +184,98 @@ const FormTemplatePage = () => {
           )}
         </div>
       </div>
+
+      {/* Edit Template Modal */}
+      {editingTemplate && (
+        <div
+          className="modal d-block"
+          style={{ background: "rgba(0,0,0,0.5)", zIndex: 1050 }}
+        >
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header border-0 pb-0">
+                <h6 className="modal-title fw-semibold d-flex align-items-center gap-2">
+                  <FiEdit2 style={{ color: "#a855f7" }} />
+                  Edit Template: {editingTemplate.name}
+                </h6>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setEditingTemplate(null)}
+                />
+              </div>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold mb-1">Template Name</label>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    defaultValue={editingTemplate.name}
+                    placeholder="Template name"
+                  />
+                </div>
+                {editingTemplate.description && (
+                  <div className="mb-3">
+                    <label className="form-label small fw-semibold mb-1">Description</label>
+                    <textarea
+                      className="form-control form-control-sm"
+                      rows="2"
+                      defaultValue={editingTemplate.description}
+                      placeholder="Template description"
+                    />
+                  </div>
+                )}
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold mb-1">Elements ({editingTemplate.elements?.length || 0})</label>
+                  <div
+                    className="bg-light p-3 rounded"
+                    style={{ maxHeight: "300px", overflowY: "auto" }}
+                  >
+                    {editingTemplate.elements?.length === 0 ? (
+                      <div className="text-muted small">No elements</div>
+                    ) : (
+                      <div className="list-group list-group-flush">
+                        {editingTemplate.elements?.map((el, idx) => (
+                          <div key={idx} className="list-group-item d-flex justify-content-between align-items-center p-2">
+                            <div className="small">
+                              <strong style={{ color: "#a855f7" }}>{el.type || el.label}</strong>
+                              <div className="text-muted" style={{ fontSize: 11 }}>
+                                {el.content ? el.content.substring(0, 40) : "No content"}
+                              </div>
+                            </div>
+                            <small className="text-muted">
+                              {el.w || el.width}×{el.h || el.height}
+                            </small>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer border-0 pt-0">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={() => setEditingTemplate(null)}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={() => {
+                    alert("Template updated successfully!");
+                    setEditingTemplate(null);
+                  }}
+                >
+                  <FiCopy size={12} className="me-1" /> Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Template Details Modal */}
       {selectedTemplate && (

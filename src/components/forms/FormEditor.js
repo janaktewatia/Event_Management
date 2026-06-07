@@ -1,34 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  FiArrowLeft,
-  FiSave,
-  FiDownload,
-  FiType,
-  FiImage,
-  FiSquare,
-  FiAlignLeft,
-  FiBox,
-  FiSettings,
-  FiTrash2,
-  FiCopy,
-  FiChevronDown,
-  FiCheck,
-  FiLock,
-  FiUnlock,
-  FiChevronUp,
-} from "react-icons/fi";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { FiArrowLeft, FiSave, FiDownload, FiTrash2, FiCopy } from "react-icons/fi";
 import { useForm } from "../../context/FormContext";
 import { useEventData } from "../../context/EventDataContext";
 
-const ELEMENT_TYPES = [
-  { id: "text", label: "Text", icon: "bi-type-h1" },
-  { id: "header", label: "Header", icon: "bi-layout-text-window" },
-  { id: "footer", label: "Footer", icon: "bi-layout-text-sidebar-reverse" },
-  { id: "qr", label: "QR Code", icon: "bi-qr-code" },
-  { id: "image", label: "Image", icon: "bi-image" },
-  { id: "logo", label: "Logo", icon: "bi-patch-check" },
-  { id: "card", label: "Card", icon: "bi-card-text" },
-  { id: "divider", label: "Divider", icon: "bi-dash-lg" },
+const DYNAMIC_FIELDS = [
+  { key: "{{name}}", label: "Attendee Name" },
+  { key: "{{email}}", label: "Email" },
+  { key: "{{phone}}", label: "Phone" },
+  { key: "{{category}}", label: "Category" },
 ];
 
 const FONTS = [
@@ -53,6 +32,7 @@ const DEFAULT_ELEMENT = {
     w: 200,
     h: 36,
     label: "Text",
+    icon: "bi-type-h1",
     content: "Text Here",
     fontSize: 16,
     fontWeight: "400",
@@ -75,6 +55,7 @@ const DEFAULT_ELEMENT = {
     w: 400,
     h: 72,
     label: "Header",
+    icon: "bi-layout-text-window",
     content: "Event Header",
     fontSize: 22,
     fontWeight: "700",
@@ -97,6 +78,7 @@ const DEFAULT_ELEMENT = {
     w: 400,
     h: 48,
     label: "Footer",
+    icon: "bi-layout-text-sidebar-reverse",
     content: "Event Footer",
     fontSize: 12,
     fontWeight: "400",
@@ -115,10 +97,34 @@ const DEFAULT_ELEMENT = {
     paddingY: 8,
     opacity: 1,
   },
+  qr: {
+    w: 100,
+    h: 100,
+    label: "QR Code",
+    icon: "bi-qr-code",
+    content: "{{passId}}",
+    fontSize: 10,
+    fontWeight: "400",
+    fontFamily: "Inter, sans-serif",
+    fontStyle: "normal",
+    textDecoration: "none",
+    color: "#000000",
+    textAlign: "center",
+    lineHeight: 1,
+    bg: "#ffffff",
+    borderRadius: 4,
+    borderWidth: 0,
+    borderColor: "#e2e8f0",
+    borderStyle: "solid",
+    paddingX: 4,
+    paddingY: 4,
+    opacity: 1,
+  },
   image: {
     w: 140,
     h: 140,
     label: "Image",
+    icon: "bi-image",
     content: "",
     imageUrl: "",
     objectFit: "cover",
@@ -143,6 +149,7 @@ const DEFAULT_ELEMENT = {
     w: 80,
     h: 80,
     label: "Logo",
+    icon: "bi-patch-check",
     content: "",
     imageUrl: "",
     objectFit: "contain",
@@ -163,32 +170,11 @@ const DEFAULT_ELEMENT = {
     paddingY: 0,
     opacity: 1,
   },
-  qr: {
-    w: 100,
-    h: 100,
-    label: "QR Code",
-    content: "{{passId}}",
-    fontSize: 10,
-    fontWeight: "400",
-    fontFamily: "Inter, sans-serif",
-    fontStyle: "normal",
-    textDecoration: "none",
-    color: "#000000",
-    textAlign: "center",
-    lineHeight: 1,
-    bg: "#ffffff",
-    borderRadius: 4,
-    borderWidth: 0,
-    borderColor: "#e2e8f0",
-    borderStyle: "solid",
-    paddingX: 4,
-    paddingY: 4,
-    opacity: 1,
-  },
   card: {
     w: 340,
     h: 80,
     label: "Card",
+    icon: "bi-card-text",
     content: "",
     fontSize: 13,
     fontWeight: "400",
@@ -211,6 +197,7 @@ const DEFAULT_ELEMENT = {
     w: 360,
     h: 2,
     label: "Divider",
+    icon: "bi-dash-lg",
     content: "",
     fontSize: 0,
     fontWeight: "400",
@@ -231,6 +218,8 @@ const DEFAULT_ELEMENT = {
   },
 };
 
+const ELEMENT_BTNS = Object.entries(DEFAULT_ELEMENT).map(([type, def]) => ({ type, ...def }));
+
 const makeElement = (type, x = 40, y = 40) => ({
   id: uid(),
   type,
@@ -243,152 +232,641 @@ const makeElement = (type, x = 40, y = 40) => ({
   ...DEFAULT_ELEMENT[type],
 });
 
-const FormEditor = ({ formId, onBack }) => {
-  const { getFormById, getFormElements, saveFormElements, updateForm } =
-    useForm();
-  const { events } = useEventData();
+const smallBtn = {
+  height: 26,
+  borderRadius: 6,
+  border: "1px solid #e2e8f0",
+  background: "#fff",
+  color: "#475569",
+  cursor: "pointer",
+  fontSize: 11,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
 
+const PropRow = ({ label, children }) => (
+  <div className="mb-2">
+    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: 0.5 }}>
+      {label}
+    </label>
+    {children}
+  </div>
+);
+
+const NumInput = ({ value, onChange, min = 0, max = 9999, step = 1, suffix }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+    <input
+      type="number"
+      value={value}
+      min={min}
+      max={max}
+      step={step}
+      onChange={(e) => onChange(Number(e.target.value))}
+      style={{ width: suffix ? 56 : 72, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px", outline: "none" }}
+    />
+    {suffix && <span style={{ fontSize: 10, color: "#94a3b8" }}>{suffix}</span>}
+  </div>
+);
+
+const ColorInput = ({ value, onChange }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+    <input
+      type="color"
+      value={value === "transparent" ? "#ffffff" : value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", cursor: "pointer", padding: 2 }}
+    />
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{ width: 80, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 6px", fontFamily: "monospace" }}
+    />
+    <button
+      type="button"
+      title="Transparent"
+      onClick={() => onChange("transparent")}
+      style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11 }}
+    >
+      ✕
+    </button>
+  </div>
+);
+
+const SelectInput = ({ value, onChange, options }) => (
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
+  >
+    {options.map((o) => (
+      <option key={o.value ?? o} value={o.value ?? o}>
+        {o.label ?? o}
+      </option>
+    ))}
+  </select>
+);
+
+const PropertiesPanel = ({ el, onChange, onDelete, onDuplicate, onBring, onSend, canvasState }) => {
+  if (!el)
+    return (
+      <div style={{ padding: 16 }}>
+        <div style={{ fontSize: 12, color: "#94a3b8", textAlign: "center", marginTop: 40 }}>
+          <i className="bi bi-cursor" style={{ fontSize: 28, display: "block", marginBottom: 8 }} />
+          Click an element to edit its properties
+        </div>
+      </div>
+    );
+
+  const p = (key) => (val) => onChange({ ...el, [key]: val });
+  const isText = ["text", "header", "footer", "card"].includes(el.type);
+  const isMedia = ["image", "logo"].includes(el.type);
+
+  return (
+    <div style={{ padding: 12, overflowY: "auto", height: "100%" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f1f5f9" }}>
+        <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b", display: "flex", alignItems: "center", gap: 6 }}>
+          <i className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`} style={{ color: "#a855f7" }} />
+          {el.label || el.type}
+        </span>
+        <div style={{ display: "flex", gap: 4 }}>
+          <button onClick={onDuplicate} title="Duplicate" style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #f1f5f9", background: "#f1f5f9", color: "#475569", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <FiCopy size={12} />
+          </button>
+          <button onClick={onDelete} title="Delete" style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #fef2f2", background: "#fef2f2", color: "#dc2626", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <FiTrash2 size={12} />
+          </button>
+        </div>
+      </div>
+
+      {/* Lock */}
+      <PropRow label="State">
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer" }}>
+          <input type="checkbox" checked={el.locked} onChange={(e) => onChange({ ...el, locked: e.target.checked })} />
+          Lock element
+        </label>
+      </PropRow>
+
+      {/* Position & Size */}
+      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Position & Size</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div>
+            <span style={{ fontSize: 10, color: "#94a3b8" }}>X</span>
+            <NumInput value={Math.round(el.x)} onChange={p("x")} />
+          </div>
+          <div>
+            <span style={{ fontSize: 10, color: "#94a3b8" }}>Y</span>
+            <NumInput value={Math.round(el.y)} onChange={p("y")} />
+          </div>
+          <div>
+            <span style={{ fontSize: 10, color: "#94a3b8" }}>W</span>
+            <NumInput value={Math.round(el.w)} min={10} onChange={p("w")} />
+          </div>
+          <div>
+            <span style={{ fontSize: 10, color: "#94a3b8" }}>H</span>
+            <NumInput value={Math.round(el.h)} min={4} onChange={p("h")} />
+          </div>
+        </div>
+      </div>
+
+      {/* Alignment */}
+      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Alignment</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4, marginBottom: 8 }}>
+          <button onClick={() => onChange({ ...el, x: 0 })} style={{ ...smallBtn, fontSize: 10 }} title="Align Left">
+            <i className="bi bi-align-start" />
+          </button>
+          <button onClick={() => onChange({ ...el, x: (canvasState.width - el.w) / 2 })} style={{ ...smallBtn, fontSize: 10 }} title="Center X">
+            <i className="bi bi-distribute-horizontal" />
+          </button>
+          <button onClick={() => onChange({ ...el, x: canvasState.width - el.w })} style={{ ...smallBtn, fontSize: 10 }} title="Align Right">
+            <i className="bi bi-align-end" />
+          </button>
+          <button onClick={() => onChange({ ...el, y: 0 })} style={{ ...smallBtn, fontSize: 10 }} title="Align Top">
+            <i className="bi bi-align-top" />
+          </button>
+          <button onClick={() => onChange({ ...el, x: (canvasState.width - el.w) / 2, y: (canvasState.height - el.h) / 2 })} style={{ ...smallBtn, fontSize: 10, background: "#f5f3ff", color: "#7c3aed", border: "1px solid #e9d5ff" }} title="Center">
+            <i className="bi bi-bullseye" />
+          </button>
+          <button onClick={() => onChange({ ...el, y: canvasState.height - el.h })} style={{ ...smallBtn, fontSize: 10 }} title="Align Bottom">
+            <i className="bi bi-align-bottom" />
+          </button>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+          <button onClick={() => onChange({ ...el, y: (canvasState.height - el.h) / 2 })} style={{ ...smallBtn, fontSize: 10 }} title="Center Y">
+            <i className="bi bi-distribute-vertical" /> Center Y
+          </button>
+          <button onClick={() => onChange({ ...el, x: (canvasState.width - el.w) / 2 })} style={{ ...smallBtn, fontSize: 10 }} title="Center X">
+            <i className="bi bi-distribute-horizontal" /> Center X
+          </button>
+        </div>
+      </div>
+
+      {/* Layer */}
+      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Layer</div>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button onClick={onBring} style={{ flex: 1, ...smallBtn }}>
+            <i className="bi bi-layers-fill" style={{ marginRight: 4 }} />
+            Bring Forward
+          </button>
+          <button onClick={onSend} style={{ flex: 1, ...smallBtn }}>
+            <i className="bi bi-layers" style={{ marginRight: 4 }} />
+            Send Back
+          </button>
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <span style={{ fontSize: 10, color: "#94a3b8" }}>Z-Index: {el.zIndex}</span>
+        </div>
+      </div>
+
+      {/* Appearance */}
+      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Appearance</div>
+        <PropRow label="Background">
+          <ColorInput value={el.bg || "transparent"} onChange={p("bg")} />
+        </PropRow>
+        <PropRow label="Border Radius">
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input type="range" min={0} max={60} value={el.borderRadius} onChange={(e) => p("borderRadius")(Number(e.target.value))} style={{ flex: 1 }} />
+            <NumInput value={el.borderRadius} min={0} max={200} suffix="px" onChange={p("borderRadius")} />
+          </div>
+        </PropRow>
+        <PropRow label="Border Width">
+          <NumInput value={el.borderWidth} min={0} max={20} suffix="px" onChange={p("borderWidth")} />
+        </PropRow>
+        {el.borderWidth > 0 && (
+          <>
+            <PropRow label="Border Color">
+              <ColorInput value={el.borderColor} onChange={p("borderColor")} />
+            </PropRow>
+            <PropRow label="Border Style">
+              <SelectInput value={el.borderStyle} onChange={p("borderStyle")} options={["solid", "dashed", "dotted", "double"]} />
+            </PropRow>
+          </>
+        )}
+        <PropRow label="Opacity">
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input type="range" min={0} max={1} step={0.05} value={el.opacity} onChange={(e) => p("opacity")(Number(e.target.value))} style={{ flex: 1 }} />
+            <span style={{ fontSize: 11, color: "#64748b", width: 32 }}>{Math.round(el.opacity * 100)}%</span>
+          </div>
+        </PropRow>
+      </div>
+
+      {/* Text */}
+      {isText && (
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Text</div>
+          <PropRow label="Content">
+            <textarea
+              value={el.content}
+              onChange={(e) => onChange({ ...el, content: e.target.value })}
+              rows={3}
+              style={{ width: "100%", borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "6px 8px", resize: "vertical" }}
+            />
+          </PropRow>
+          <PropRow label="Insert Dynamic Field">
+            <select
+              onChange={(e) => {
+                if (e.target.value) onChange({ ...el, content: (el.content || "") + e.target.value });
+                e.target.value = "";
+              }}
+              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
+            >
+              <option value="">— Insert field —</option>
+              {DYNAMIC_FIELDS.map((f) => (
+                <option key={f.key} value={f.key}>
+                  {f.label} ({f.key})
+                </option>
+              ))}
+            </select>
+          </PropRow>
+          <PropRow label="Font Family">
+            <SelectInput value={el.fontFamily} onChange={p("fontFamily")} options={FONTS} />
+          </PropRow>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+            <div>
+              <PropRow label="Size">
+                <NumInput value={el.fontSize} min={6} max={120} suffix="px" onChange={p("fontSize")} />
+              </PropRow>
+            </div>
+            <div>
+              <PropRow label="Line Height">
+                <NumInput value={el.lineHeight} min={0.8} max={4} step={0.1} onChange={p("lineHeight")} />
+              </PropRow>
+            </div>
+          </div>
+          <PropRow label="Weight">
+            <div style={{ display: "flex", gap: 4 }}>
+              {[
+                ["100", "Thin"],
+                ["400", "Regular"],
+                ["600", "Semi"],
+                ["700", "Bold"],
+                ["900", "Black"],
+              ].map(([v, l]) => (
+                <button
+                  key={v}
+                  onClick={() => p("fontWeight")(v)}
+                  style={{
+                    flex: 1,
+                    height: 26,
+                    borderRadius: 5,
+                    border: `1px solid ${el.fontWeight === v ? "#a855f7" : "#e2e8f0"}`,
+                    background: el.fontWeight === v ? "#f5f3ff" : "#fff",
+                    color: el.fontWeight === v ? "#7c3aed" : "#475569",
+                    cursor: "pointer",
+                    fontSize: 10,
+                    fontWeight: v,
+                  }}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          </PropRow>
+          <PropRow label="Style">
+            <div style={{ display: "flex", gap: 4 }}>
+              {[
+                ["normal", "N"],
+                ["italic", "I"],
+                ["oblique", "O"],
+              ].map(([v, l]) => (
+                <button
+                  key={v}
+                  onClick={() => p("fontStyle")(v)}
+                  style={{
+                    width: 30,
+                    height: 26,
+                    borderRadius: 5,
+                    border: `1px solid ${el.fontStyle === v ? "#a855f7" : "#e2e8f0"}`,
+                    background: el.fontStyle === v ? "#f5f3ff" : "#fff",
+                    color: el.fontStyle === v ? "#7c3aed" : "#475569",
+                    cursor: "pointer",
+                    fontSize: 12,
+                    fontStyle: v,
+                  }}
+                >
+                  {l}
+                </button>
+              ))}
+              <button
+                onClick={() => p("textDecoration")(el.textDecoration === "underline" ? "none" : "underline")}
+                style={{
+                  width: 30,
+                  height: 26,
+                  borderRadius: 5,
+                  border: `1px solid ${el.textDecoration === "underline" ? "#a855f7" : "#e2e8f0"}`,
+                  background: el.textDecoration === "underline" ? "#f5f3ff" : "#fff",
+                  color: el.textDecoration === "underline" ? "#7c3aed" : "#475569",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  textDecoration: "underline",
+                }}
+              >
+                U
+              </button>
+            </div>
+          </PropRow>
+          <PropRow label="Alignment">
+            <div style={{ display: "flex", gap: 4 }}>
+              {[
+                ["left", "bi-text-left"],
+                ["center", "bi-text-center"],
+                ["right", "bi-text-right"],
+              ].map(([v, ic]) => (
+                <button
+                  key={v}
+                  onClick={() => p("textAlign")(v)}
+                  style={{
+                    flex: 1,
+                    height: 26,
+                    borderRadius: 5,
+                    border: `1px solid ${el.textAlign === v ? "#a855f7" : "#e2e8f0"}`,
+                    background: el.textAlign === v ? "#f5f3ff" : "#fff",
+                    color: el.textAlign === v ? "#7c3aed" : "#475569",
+                    cursor: "pointer",
+                  }}
+                >
+                  <i className={`bi ${ic}`} />
+                </button>
+              ))}
+            </div>
+          </PropRow>
+          <PropRow label="Text Color">
+            <ColorInput value={el.color} onChange={p("color")} />
+          </PropRow>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <PropRow label="Pad X">
+              <NumInput value={el.paddingX} min={0} max={60} suffix="px" onChange={p("paddingX")} />
+            </PropRow>
+            <PropRow label="Pad Y">
+              <NumInput value={el.paddingY} min={0} max={60} suffix="px" onChange={p("paddingY")} />
+            </PropRow>
+          </div>
+        </div>
+      )}
+
+      {/* Image/Logo */}
+      {isMedia && (
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Image</div>
+          <PropRow label="Image URL">
+            <input
+              type="text"
+              value={el.imageUrl || ""}
+              placeholder="https://... or upload"
+              onChange={(e) => onChange({ ...el, imageUrl: e.target.value })}
+              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+            />
+          </PropRow>
+          <PropRow label="Fit">
+            <SelectInput value={el.objectFit} onChange={p("objectFit")} options={["cover", "contain", "fill", "none"]} />
+          </PropRow>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CanvasEl = ({ el, selected, onMouseDown }) => {
+  const isText = ["text", "header", "footer", "card"].includes(el.type);
+  const isMedia = ["image", "logo"].includes(el.type);
+
+  const hPos = (h) => {
+    const s = { position: "absolute", width: 8, height: 8, borderRadius: 2, background: "#a855f7", border: "2px solid #fff", zIndex: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" };
+    if (h === "nw") return { ...s, top: -4, left: -4 };
+    if (h === "n") return { ...s, top: -4, left: "50%", transform: "translateX(-50%)" };
+    if (h === "ne") return { ...s, top: -4, right: -4 };
+    if (h === "e") return { ...s, top: "50%", right: -4, transform: "translateY(-50%)" };
+    if (h === "se") return { ...s, bottom: -4, right: -4 };
+    if (h === "s") return { ...s, bottom: -4, left: "50%", transform: "translateX(-50%)" };
+    if (h === "sw") return { ...s, bottom: -4, left: -4 };
+    if (h === "w") return { ...s, top: "50%", left: -4, transform: "translateY(-50%)" };
+  };
+
+  return (
+    <div
+      onMouseDown={(e) => onMouseDown(e, el.id)}
+      style={{
+        position: "absolute",
+        left: el.x,
+        top: el.y,
+        width: el.w,
+        height: el.h,
+        background: el.bg,
+        borderRadius: el.borderRadius,
+        border: el.borderWidth > 0 ? `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}` : "none",
+        opacity: el.opacity ?? 1,
+        zIndex: (el.zIndex || 1) + 1,
+        cursor: el.locked ? "not-allowed" : "move",
+        boxSizing: "border-box",
+        outline: selected ? "2px solid #a855f7" : "none",
+        outlineOffset: 2,
+        boxShadow: selected ? "0 0 0 1px #e9d5ff, 0 0 8px rgba(168,85,247,0.3)" : "none",
+        overflow: "hidden",
+      }}
+    >
+      {el.type === "qr" ? (
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+          <i className="bi bi-qr-code" style={{ fontSize: Math.min(el.w, el.h) * 0.55, color: "#1e293b" }} />
+          <span style={{ fontSize: 9, color: "#94a3b8" }}>{el.content || "{{passId}}"}</span>
+        </div>
+      ) : isMedia && el.imageUrl ? (
+        <img src={el.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: el.objectFit || "cover", display: "block" }} />
+      ) : isText ? (
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            padding: `${el.paddingY}px ${el.paddingX}px`,
+            fontSize: el.fontSize,
+            fontWeight: el.fontWeight,
+            fontFamily: el.fontFamily,
+            fontStyle: el.fontStyle,
+            textDecoration: el.textDecoration,
+            color: el.color,
+            textAlign: el.textAlign,
+            lineHeight: el.lineHeight,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: el.textAlign === "center" ? "center" : el.textAlign === "right" ? "flex-end" : "flex-start",
+            overflow: "hidden",
+            boxSizing: "border-box",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+          }}
+        >
+          {el.content || <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>Empty…</span>}
+        </div>
+      ) : isMedia ? (
+        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 4 }}>
+          <i className={`bi ${el.type === "logo" ? "bi-patch-check" : "bi-image"}`} style={{ fontSize: 28, color: "#cbd5e1" }} />
+          <span style={{ fontSize: 10, color: "#94a3b8" }}>{el.label}</span>
+        </div>
+      ) : el.type === "divider" ? (
+        <div style={{ width: "100%", height: "100%", background: el.bg }} />
+      ) : null}
+
+      {selected && !el.locked && ["nw", "n", "ne", "e", "se", "s", "sw", "w"].map((h) => <div key={h} style={hPos(h)} />)}
+    </div>
+  );
+};
+
+const FormEditor = ({ formId, onBack }) => {
+  const { getFormById, getFormElements, saveFormElements, updateForm } = useForm();
   const form = getFormById(formId);
   const [elements, setElements] = useState(getFormElements(formId) || []);
   const [selectedElementId, setSelectedElementId] = useState(null);
-  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
-  const [templateName, setTemplateName] = useState("");
-  const [templateDesc, setTemplateDesc] = useState("");
+  const [canvas, setCanvas] = useState({ width: 600, height: 800, background: "#ffffff" });
+  const [zoom, setZoom] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [canvasWidth, setCanvasWidth] = useState(600);
-  const [canvasHeight, setCanvasHeight] = useState(800);
   const canvasRef = useRef(null);
+  const dragRef = useRef(null);
+  const resizeRef = useRef(null);
 
   const selectedElement = elements.find((el) => el.id === selectedElementId);
-  const selectedEvent = events.find(
-    (e) => e.id === form?.eventId || e._id === form?.eventId,
+
+  const addElement = useCallback(
+    (type) => {
+      const el = makeElement(type);
+      setElements((prev) => [...prev, el]);
+      setSelectedElementId(el.id);
+    },
+    []
   );
-  // Use form's selected fields, not all event fields - filter to only enabled fields
-  const eventFields = form?.fields?.filter((f) => f.enabled !== false) || [];
 
-  const addElement = (type) => {
-    const newElement = makeElement(type, 40, 40 + elements.length * 20);
-    setElements((prev) => [...prev, newElement]);
-    setSelectedElementId(newElement.id);
-  };
+  const updateElement = useCallback((updated) => {
+    setElements((prev) => prev.map((el) => (el.id === updated.id ? updated : el)));
+  }, []);
 
-  const updateElement = (elementId, updates) => {
-    setElements((prev) =>
-      prev.map((el) => (el.id === elementId ? { ...el, ...updates } : el)),
-    );
-  };
+  const deleteSelected = useCallback(() => {
+    setElements((prev) => prev.filter((el) => el.id !== selectedElementId));
+    setSelectedElementId(null);
+  }, [selectedElementId]);
 
-  const deleteElement = (elementId) => {
-    setElements((prev) => prev.filter((el) => el.id !== elementId));
-    if (selectedElementId === elementId) setSelectedElementId(null);
-  };
+  const duplicateSelected = useCallback(() => {
+    const el = elements.find((e) => e.id === selectedElementId);
+    if (!el) return;
+    const dup = { ...el, id: uid(), x: el.x + 16, y: el.y + 16 };
+    setElements((prev) => [...prev, dup]);
+    setSelectedElementId(dup.id);
+  }, [elements, selectedElementId]);
 
-  const duplicateElement = (elementId) => {
-    const element = elements.find((el) => el.id === elementId);
-    if (!element) return;
+  const bringForward = useCallback(() => {
+    const el = elements.find((e) => e.id === selectedElementId);
+    if (!el) return;
+    const maxZ = Math.max(...elements.map((e) => e.zIndex || 1), 0);
+    updateElement({ ...el, zIndex: maxZ + 1 });
+  }, [elements, selectedElementId, updateElement]);
 
-    const newElement = {
-      ...element,
-      id: uid(),
-      x: element.x + 10,
-      y: element.y + 10,
-    };
-    setElements((prev) => [...prev, newElement]);
-    setSelectedElementId(newElement.id);
-  };
+  const sendBackward = useCallback(() => {
+    const el = elements.find((e) => e.id === selectedElementId);
+    if (!el) return;
+    const minZ = Math.min(...elements.map((e) => e.zIndex || 1), 0);
+    updateElement({ ...el, zIndex: minZ - 1 });
+  }, [elements, selectedElementId, updateElement]);
 
-  const bringToFront = (elementId) => {
-    const maxZ = Math.max(...elements.map((el) => el.zIndex || 1), 0);
-    updateElement(elementId, { zIndex: maxZ + 1 });
-  };
+  const getElementAtPoint = useCallback(
+    (px, py) => {
+      const sorted = [...elements].sort((a, b) => (b.zIndex || 1) - (a.zIndex || 1));
+      for (const el of sorted) {
+        if (px >= el.x && px < el.x + el.w && py >= el.y && py < el.y + el.h) return el;
+      }
+      return null;
+    },
+    [elements]
+  );
 
-  const sendToBack = (elementId) => {
-    const minZ = Math.min(...elements.map((el) => el.zIndex || 1));
-    updateElement(elementId, { zIndex: minZ - 1 });
-  };
+  const onCanvasMouseDown = useCallback(
+    (e) => {
+      if (e.button !== 0) return;
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
 
-  const toggleLock = (elementId) => {
-    const el = elements.find((e) => e.id === elementId);
-    if (el) updateElement(elementId, { locked: !el.locked });
-  };
+      const px = (e.clientX - rect.left) / zoom;
+      const py = (e.clientY - rect.top) / zoom;
 
-  const handleCanvasClick = (e) => {
-    if (e.target === canvasRef.current) {
-      setSelectedElementId(null);
-    }
-  };
-
-  const handleElementMouseDown = (e, elementId) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setSelectedElementId(elementId);
-
-    const element = elements.find((el) => el.id === elementId);
-    if (!element || element.locked) return;
-
-    const startX = e.clientX - element.x;
-    const startY = e.clientY - element.y;
-
-    const handleMouseMove = (moveEvent) => {
-      const newX = Math.max(0, moveEvent.clientX - startX);
-      const newY = Math.max(0, moveEvent.clientY - startY);
-      updateElement(elementId, { x: newX, y: newY });
-    };
-
-    const handleMouseUp = () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  };
-
-  const handleResizeMouseDown = (e, elementId, handle) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const element = elements.find((el) => el.id === elementId);
-    if (!element || element.locked) return;
-
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const startW = element.w;
-    const startH = element.h;
-    const startX_pos = element.x;
-    const startY_pos = element.y;
-
-    const handleMouseMove = (moveEvent) => {
-      const dX = moveEvent.clientX - startX;
-      const dY = moveEvent.clientY - startY;
-      const updates = {};
-
-      if (handle === "se") {
-        updates.w = Math.max(20, startW + dX);
-        updates.h = Math.max(20, startH + dY);
-      } else if (handle === "s") {
-        updates.h = Math.max(20, startH + dY);
-      } else if (handle === "e") {
-        updates.w = Math.max(20, startW + dX);
-      } else if (handle === "nw") {
-        updates.x = Math.max(0, startX_pos + dX);
-        updates.y = Math.max(0, startY_pos + dY);
-        updates.w = Math.max(20, startW - dX);
-        updates.h = Math.max(20, startH - dY);
+      const clicked = getElementAtPoint(px, py);
+      if (!clicked) {
+        setSelectedElementId(null);
+        return;
       }
 
-      updateElement(elementId, updates);
-    };
+      setSelectedElementId(clicked.id);
+      if (clicked.locked) return;
 
-    const handleMouseUp = () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
+      const handles = {
+        nw: clicked.x <= px && px < clicked.x + 8 && clicked.y <= py && py < clicked.y + 8,
+        n: clicked.x + clicked.w / 2 - 4 <= px && px < clicked.x + clicked.w / 2 + 4 && clicked.y <= py && py < clicked.y + 8,
+        ne: clicked.x + clicked.w - 8 <= px && px < clicked.x + clicked.w && clicked.y <= py && py < clicked.y + 8,
+        e: clicked.x + clicked.w - 8 <= px && px < clicked.x + clicked.w && clicked.y + clicked.h / 2 - 4 <= py && py < clicked.y + clicked.h / 2 + 4,
+        se: clicked.x + clicked.w - 8 <= px && px < clicked.x + clicked.w && clicked.y + clicked.h - 8 <= py && py < clicked.y + clicked.h,
+        s: clicked.x + clicked.w / 2 - 4 <= px && px < clicked.x + clicked.w / 2 + 4 && clicked.y + clicked.h - 8 <= py && py < clicked.y + clicked.h,
+        sw: clicked.x <= px && px < clicked.x + 8 && clicked.y + clicked.h - 8 <= py && py < clicked.y + clicked.h,
+        w: clicked.x <= px && px < clicked.x + 8 && clicked.y + clicked.h / 2 - 4 <= py && py < clicked.y + clicked.h / 2 + 4,
+      };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  };
+      const handle = Object.entries(handles).find(([, hit]) => hit)?.[0];
+      if (handle) {
+        resizeRef.current = { id: clicked.id, handle, startX: px, startY: py, origX: clicked.x, origY: clicked.y, origW: clicked.w, origH: clicked.h };
+      } else {
+        dragRef.current = { id: clicked.id, startX: px, startY: py, origX: clicked.x, origY: clicked.y };
+      }
+
+      const onMouseMove = (me) => {
+        const cx = (me.clientX - rect.left) / zoom;
+        const cy = (me.clientY - rect.top) / zoom;
+
+        if (dragRef.current) {
+          const dx = cx - dragRef.current.startX;
+          const dy = cy - dragRef.current.startY;
+          const el = elements.find((e) => e.id === dragRef.current.id);
+          if (el) {
+            updateElement({ ...el, x: Math.max(0, dragRef.current.origX + dx), y: Math.max(0, dragRef.current.origY + dy) });
+          }
+        } else if (resizeRef.current) {
+          const dx = cx - resizeRef.current.startX;
+          const dy = cy - resizeRef.current.startY;
+          const h = resizeRef.current.handle;
+          const el = elements.find((e) => e.id === resizeRef.current.id);
+          if (!el) return;
+
+          let nx = el.x,
+            ny = el.y,
+            nw = el.w,
+            nh = el.h;
+          if (["nw", "w", "sw"].includes(h)) {
+            nx = resizeRef.current.origX + dx;
+            nw = resizeRef.current.origW - dx;
+          }
+          if (["ne", "e", "se"].includes(h)) nw = Math.max(20, resizeRef.current.origW + dx);
+          if (["nw", "n", "ne"].includes(h)) {
+            ny = resizeRef.current.origY + dy;
+            nh = resizeRef.current.origH - dy;
+          }
+          if (["sw", "s", "se"].includes(h)) nh = Math.max(4, resizeRef.current.origH + dy);
+
+          updateElement({ ...el, x: nx, y: ny, w: nw, h: nh });
+        }
+      };
+
+      const onMouseUp = () => {
+        dragRef.current = null;
+        resizeRef.current = null;
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+      };
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    },
+    [zoom, getElementAtPoint, elements, updateElement]
+  );
 
   const saveForm = async () => {
     setSaving(true);
@@ -404,1353 +882,157 @@ const FormEditor = ({ formId, onBack }) => {
     }
   };
 
-  const saveDraft = async () => {
-    setSaving(true);
-    setError("");
-    try {
-      await saveFormElements(formId, elements);
-      await updateForm(formId, { status: "draft" });
-      alert("Draft saved successfully!");
-    } catch (err) {
-      setError("Failed to save draft: " + err.message);
-      alert("Failed to save draft: " + err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSaveTemplate = async () => {
-    if (templateName.trim()) {
-      setSaving(true);
-      setError("");
-      try {
-        // Note: This requires FormContext to have createTemplate
-        // which will be called from the context
-        alert(`Template "${templateName}" created!`);
-        setShowSaveTemplate(false);
-        setTemplateName("");
-      } catch (err) {
-        setError("Failed to save template: " + err.message);
-        alert("Failed to save template: " + err.message);
-      } finally {
-        setSaving(false);
-      }
-    }
-  };
-
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "#f1f5f9" }}>
       {/* Header */}
-      <div
-        className="bg-light border-bottom p-3"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div className="d-flex align-items-center gap-3">
-          <button className="btn btn-link p-0 text-dark" onClick={onBack}>
-            <FiArrowLeft size={20} />
-          </button>
-          <div>
-            <h5 className="mb-0 fw-bold">{form?.formName}</h5>
-            <small className="text-muted">{form?.eventName}</small>
+      <div style={{ padding: "12px 16px", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button className="btn btn-link p-0 text-dark" onClick={onBack} style={{ border: "none", fontSize: 20 }}>
+              <FiArrowLeft />
+            </button>
+            <div>
+              <h5 style={{ marginBottom: 0, fontWeight: "bold" }}>{form?.formName}</h5>
+              <small style={{ color: "#6b7280" }}>{form?.eventName}</small>
+            </div>
           </div>
-        </div>
-        <div className="d-flex gap-2">
-          <button
-            className="btn btn-outline-secondary btn-sm"
-            onClick={() => setShowSaveTemplate(true)}
-            disabled={saving}
-          >
-            Save as Template
-          </button>
-          <button
-            className="btn btn-outline-secondary btn-sm"
-            onClick={saveDraft}
-            disabled={saving}
-          >
-            {saving ? (
-              <span className="spinner-border spinner-border-sm me-1" />
-            ) : (
-              <FiDownload size={14} className="me-1" />
-            )}
-            Draft
-          </button>
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={saveForm}
-            disabled={saving}
-          >
-            {saving ? (
-              <span className="spinner-border spinner-border-sm me-1" />
-            ) : (
-              <FiSave size={14} className="me-1" />
-            )}
-            Save
+          <button onClick={saveForm} disabled={saving} style={{ height: 32, borderRadius: 6, border: "none", background: "linear-gradient(135deg,#7c3aed,#a855f7)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: "0 16px", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            {saving ? <><span className="spinner-border spinner-border-sm" /> Saving…</> : <><FiSave size={14} /> Save</>}
           </button>
         </div>
       </div>
-      {error && (
-        <div className="alert alert-danger mt-2 mb-0 py-2 px-3 small">
-          {error}
+
+      {/* Toolbar */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "#fff", borderBottom: "1px solid #e2e8f0", overflowX: "auto" }}>
+        <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+          {ELEMENT_BTNS.map(({ type, icon, label }) => (
+            <button
+              key={type}
+              onClick={() => addElement(type)}
+              title={`Add ${label}`}
+              style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", height: 32, borderRadius: 6, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", cursor: "pointer", fontSize: 11, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 }}
+            >
+              <i className={`bi ${icon}`} />
+              {label}
+            </button>
+          ))}
         </div>
-      )}
 
-      {/* Main Editor */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        {/* Left Panel - Elements */}
-        <div
-          style={{
-            width: 220,
-            borderRight: "1px solid #e2e8f0",
-            background: "#f8fafc",
-            overflowY: "auto",
-            padding: "1rem",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#64748b",
-              marginBottom: 12,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}
-          >
-            Elements
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {ELEMENT_TYPES.map((element) => (
-              <button
-                key={element.id}
-                onClick={() => addElement(element.id)}
-                style={{
-                  height: 32,
-                  borderRadius: 6,
-                  border: "1px solid #e2e8f0",
-                  background: "#fff",
-                  color: "#475569",
-                  cursor: "pointer",
-                  fontSize: 12,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-start",
-                  gap: 8,
-                  padding: "0 8px",
-                }}
-              >
-                <i className={`bi ${element.icon}`} style={{ fontSize: 14 }} />
-                <span>{element.label}</span>
-              </button>
-            ))}
-          </div>
+        <div style={{ flex: 1, minWidth: 0 }} />
 
-          <hr
-            style={{
-              margin: "12px 0",
-              border: "none",
-              borderTop: "1px solid #e2e8f0",
-            }}
-          />
+        {/* Zoom Controls */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <button onClick={() => setZoom((z) => Math.max(0.25, z - 0.1))} style={{ width: 32, height: 32, borderRadius: 6, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            −
+          </button>
+          <span style={{ fontSize: 11, color: "#64748b", minWidth: 40, textAlign: "center" }}>{Math.round(zoom * 100)}%</span>
+          <button onClick={() => setZoom((z) => Math.min(2, z + 0.1))} style={{ width: 32, height: 32, borderRadius: 6, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            +
+          </button>
+        </div>
+      </div>
 
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#64748b",
-              marginBottom: 8,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-            }}
-          >
-            Layers ({elements.length})
-          </div>
-          <div
-            style={{
-              maxHeight: 400,
-              overflowY: "auto",
-              display: "flex",
-              flexDirection: "column",
-              gap: 4,
-            }}
-          >
-            {elements.map((el, idx) => (
-              <div
-                key={el.id}
-                onClick={() => setSelectedElementId(el.id)}
-                style={{
-                  padding: 8,
-                  borderRadius: 6,
-                  background:
-                    selectedElementId === el.id ? "#dbeafe" : "#f1f5f9",
-                  borderLeft:
-                    selectedElementId === el.id
-                      ? "3px solid #3b82f6"
-                      : "3px solid transparent",
-                  cursor: "pointer",
-                  fontSize: 12,
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: selectedElementId === el.id ? 600 : 500,
-                    color: "#1e293b",
-                  }}
-                >
-                  {el.label || el.type} #{idx + 1}
-                </div>
+      {error && <div className="alert alert-danger mt-2 mb-0 py-2 px-3 small">{error}</div>}
+
+      {/* Editor */}
+      <div style={{ display: "flex", flex: 1, gap: 0, minHeight: 0, overflow: "hidden" }}>
+        {/* Left Panel */}
+        <div style={{ width: 200, background: "#fff", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          {/* Canvas settings */}
+          <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Canvas</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 6 }}>
+              <div>
+                <span style={{ fontSize: 10, color: "#94a3b8" }}>Width</span>
+                <NumInput value={canvas.width} min={100} max={2000} onChange={(v) => setCanvas((c) => ({ ...c, width: v }))} />
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Center - Canvas */}
-        <div
-          style={{
-            flex: 1,
-            background: "#f9fafb",
-            overflow: "auto",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            padding: "2rem 1rem",
-          }}
-        >
-          {/* Canvas Presets */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-            {CANVAS_PRESETS.map((preset) => (
-              <button
-                key={preset.label}
-                onClick={() => {
-                  setCanvasWidth(preset.w);
-                  setCanvasHeight(preset.h);
-                }}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: 6,
-                  border:
-                    canvasWidth === preset.w && canvasHeight === preset.h
-                      ? "2px solid #3b82f6"
-                      : "1px solid #e2e8f0",
-                  background:
-                    canvasWidth === preset.w && canvasHeight === preset.h
-                      ? "#dbeafe"
-                      : "#fff",
-                  color: "#475569",
-                  cursor: "pointer",
-                  fontSize: 11,
-                  fontWeight: 500,
-                }}
-              >
-                {preset.label}
-              </button>
-            ))}
+              <div>
+                <span style={{ fontSize: 10, color: "#94a3b8" }}>Height</span>
+                <NumInput value={canvas.height} min={100} max={3000} onChange={(v) => setCanvas((c) => ({ ...c, height: v }))} />
+              </div>
+            </div>
+            <div style={{ marginBottom: 6 }}>
+              <span style={{ fontSize: 10, color: "#94a3b8" }}>Background</span>
+              <ColorInput value={canvas.background} onChange={(v) => setCanvas((c) => ({ ...c, background: v }))} />
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+              {CANVAS_PRESETS.map((p) => (
+                <button
+                  key={p.label}
+                  onClick={() => setCanvas((c) => ({ ...c, width: p.w, height: p.h }))}
+                  style={{ fontSize: 9, padding: "2px 5px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b" }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Canvas */}
-          <div
-            ref={canvasRef}
-            onClick={handleCanvasClick}
-            style={{
-              width: `${canvasWidth}px`,
-              height: `${canvasHeight}px`,
-              background: "white",
-              border: "2px solid #e5e7eb",
-              borderRadius: "8px",
-              position: "relative",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-              overflow: "hidden",
-            }}
-          >
-            {elements.map((el) => {
-              const isText = ["text", "header", "footer", "card"].includes(el.type);
-              const isMedia = ["image", "logo"].includes(el.type);
-              return (
+          {/* Layers */}
+          <div style={{ padding: "8px 12px 4px", fontWeight: 700, fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 }}>Layers ({elements.length})</div>
+          <div style={{ flex: 1, overflowY: "auto" }}>
+            {[...elements]
+              .filter(Boolean)
+              .reverse()
+              .map((el) => (
                 <div
                   key={el.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedElementId(el.id);
-                  }}
-                  onMouseDown={(e) =>
-                    !el.locked && handleElementMouseDown(e, el.id)
-                  }
+                  onClick={() => setSelectedElementId(el.id)}
                   style={{
-                    position: "absolute",
-                    left: el.x,
-                    top: el.y,
-                    width: el.w,
-                    height: el.h,
-                    background: el.bg,
-                    borderRadius: el.borderRadius,
-                    border:
-                      el.borderWidth > 0
-                        ? `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`
-                        : "none",
-                    opacity: el.opacity ?? 1,
-                    zIndex: (el.zIndex || 1) + 1,
-                    cursor: el.locked ? "not-allowed" : "move",
-                    boxSizing: "border-box",
-                    outline:
-                      selectedElementId === el.id
-                        ? "2px solid #a855f7"
-                        : "none",
-                    outlineOffset: 2,
-                    boxShadow:
-                      selectedElementId === el.id
-                        ? "0 0 0 1px #e9d5ff, 0 0 8px rgba(168,85,247,0.3)"
-                        : "none",
-                    overflow: "hidden",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent:
-                      el.textAlign === "center"
-                        ? "center"
-                        : el.textAlign === "right"
-                          ? "flex-end"
-                          : "flex-start",
-                    padding: `${el.paddingY}px ${el.paddingX}px`,
-                    fontSize: el.fontSize,
-                    fontWeight: el.fontWeight,
-                    fontFamily: el.fontFamily,
-                    fontStyle: el.fontStyle,
-                    textDecoration: el.textDecoration,
-                    color: el.color,
-                    lineHeight: el.lineHeight,
+                    gap: 6,
+                    padding: "5px 12px",
+                    cursor: "pointer",
+                    background: el.id === selectedElementId ? "#f5f3ff" : "transparent",
+                    borderLeft: `3px solid ${el.id === selectedElementId ? "#a855f7" : "transparent"}`,
                   }}
                 >
-                  {el.type === "divider" ? null : el.type === "qr" ? (
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexDirection: "column",
-                        gap: 4,
-                      }}
-                    >
-                      <i
-                        className="bi bi-qr-code"
-                        style={{ fontSize: Math.min(el.w, el.h) * 0.55, color: "#1e293b" }}
-                      />
-                      <span style={{ fontSize: 9, color: "#94a3b8" }}>
-                        {el.content || "{{passId}}"}
-                      </span>
-                    </div>
-                  ) : isMedia && el.imageUrl ? (
-                    <img
-                      src={el.imageUrl}
-                      alt=""
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: el.objectFit || "cover",
-                        display: "block",
-                      }}
-                    />
-                  ) : isText ? (
-                    <div
-                      style={{
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-word",
-                        width: "100%",
-                      }}
-                    >
-                      {el.content || (
-                        <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>
-                          Empty…
-                        </span>
-                      )}
-                    </div>
-                  ) : isMedia ? (
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexDirection: "column",
-                        gap: 4,
-                      }}
-                    >
-                      <i
-                        className="bi bi-image"
-                        style={{ fontSize: 28, color: "#cbd5e1" }}
-                      />
-                      <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                        {el.label}
-                      </span>
-                    </div>
-                  ) : null}
-
-                  {/* Resize Handles */}
-                  {selectedElementId === el.id && !el.locked && (
-                    <>
-                      {[
-                        [0, 0, "nw"],
-                        [el.w, el.h, "se"],
-                        [el.w, 0, "ne"],
-                        [0, el.h, "sw"],
-                        [el.w / 2, el.h, "s"],
-                        [el.w, el.h / 2, "e"],
-                      ].map(([x, y, handle]) => (
-                        <div
-                          key={handle}
-                          onMouseDown={(e) =>
-                            handleResizeMouseDown(e, el.id, handle)
-                          }
-                          style={{
-                            position: "absolute",
-                            left: x - 4,
-                            top: y - 4,
-                            width: 8,
-                            height: 8,
-                            borderRadius: 2,
-                            background: "#a855f7",
-                            border: "2px solid #fff",
-                            cursor:
-                              handle === "se"
-                                ? "se-resize"
-                                : handle === "nw"
-                                  ? "nw-resize"
-                                  : handle === "s"
-                                    ? "s-resize"
-                                    : "e-resize",
-                            zIndex: 10,
-                            boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                          }}
-                        />
-                      ))}
-                    </>
-                  )}
+                  <i className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`} style={{ fontSize: 12, color: el.id === selectedElementId ? "#7c3aed" : "#94a3b8", flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, color: "#475569", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {el.content?.replace(/\{\{[^}]+\}\}/g, "…") || el.label || el.type}
+                  </span>
+                  {el.locked && <i className="bi bi-lock-fill" style={{ fontSize: 10, color: "#94a3b8" }} />}
                 </div>
-              );
-            })}
-
-            {elements.length === 0 && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  textAlign: "center",
-                  color: "#9ca3af",
-                }}
-              >
-                <i
-                  className="bi bi-plus-circle"
-                  style={{
-                    fontSize: 32,
-                    display: "block",
-                    marginBottom: 8,
-                    opacity: 0.5,
-                  }}
-                />
-                <div style={{ fontSize: 13, color: "#94a3b8" }}>
-                  Add elements from the left panel
-                </div>
-              </div>
-            )}
+              ))}
+            {elements.length === 0 && <div style={{ padding: 16, fontSize: 11, color: "#94a3b8", textAlign: "center" }}>Add elements from toolbar</div>}
           </div>
         </div>
 
-        {/* Right Panel - Properties */}
-        <div
-          style={{
-            width: 300,
-            borderLeft: "1px solid #e2e8f0",
-            background: "#f8fafc",
-            overflowY: "auto",
-            padding: "12px",
-          }}
-        >
-          {selectedElement ? (
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: 12,
-                  paddingBottom: 10,
-                  borderBottom: "1px solid #f1f5f9",
-                }}
-              >
-                <span
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 13,
-                    color: "#1e293b",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  <i
-                    className="bi bi-pencil-square"
-                    style={{ color: "#a855f7" }}
-                  />
-                  {selectedElement.label || selectedElement.type}
-                </span>
-                <div style={{ display: "flex", gap: 4 }}>
-                  <button
-                    onClick={() => duplicateElement(selectedElement.id)}
-                    title="Duplicate"
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 6,
-                      border: "1px solid #f1f5f9",
-                      background: "#f1f5f9",
-                      color: "#475569",
-                      cursor: "pointer",
-                      fontSize: 12,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <FiCopy size={12} />
-                  </button>
-                  <button
-                    onClick={() => deleteElement(selectedElement.id)}
-                    title="Delete"
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 6,
-                      border: "1px solid #fef2f2",
-                      background: "#fef2f2",
-                      color: "#dc2626",
-                      cursor: "pointer",
-                      fontSize: 12,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <FiTrash2 size={12} />
-                  </button>
-                </div>
-              </div>
-
-              {/* State */}
-              <div style={{ marginBottom: 12 }}>
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    fontSize: 12,
-                    cursor: "pointer",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedElement.locked}
-                    onChange={() => toggleLock(selectedElement.id)}
-                    style={{ cursor: "pointer" }}
-                  />
-                  {selectedElement.locked ? "Locked" : "Unlocked"}
-                </label>
-              </div>
-
-              {/* Position & Size */}
-              <div
-                style={{
-                  background: "#f8fafc",
-                  borderRadius: 8,
-                  padding: 10,
-                  marginBottom: 10,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "#64748b",
-                    marginBottom: 8,
-                    textTransform: "uppercase",
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  Position & Size
-                </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 8,
-                  }}
-                >
-                  <div>
-                    <span style={{ fontSize: 10, color: "#94a3b8" }}>X</span>
-                    <input
-                      type="number"
-                      value={Math.round(selectedElement.x)}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          x: Number(e.target.value),
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 12,
-                        padding: "0 6px",
-                        outline: "none",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <span style={{ fontSize: 10, color: "#94a3b8" }}>Y</span>
-                    <input
-                      type="number"
-                      value={Math.round(selectedElement.y)}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          y: Number(e.target.value),
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 12,
-                        padding: "0 6px",
-                        outline: "none",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <span style={{ fontSize: 10, color: "#94a3b8" }}>W</span>
-                    <input
-                      type="number"
-                      value={Math.round(selectedElement.w)}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          w: Math.max(20, Number(e.target.value)),
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 12,
-                        padding: "0 6px",
-                        outline: "none",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <span style={{ fontSize: 10, color: "#94a3b8" }}>H</span>
-                    <input
-                      type="number"
-                      value={Math.round(selectedElement.h)}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          h: Math.max(20, Number(e.target.value)),
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 12,
-                        padding: "0 6px",
-                        outline: "none",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Colors */}
-              <div style={{ marginBottom: 10 }}>
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "#64748b",
-                    marginBottom: 8,
-                    textTransform: "uppercase",
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  Colors
-                </div>
-                <div style={{ marginBottom: 8 }}>
-                  <div
-                    style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}
-                  >
-                    Text Color
-                  </div>
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 6 }}
-                  >
-                    <input
-                      type="color"
-                      value={
-                        selectedElement.color === "transparent"
-                          ? "#000000"
-                          : selectedElement.color
-                      }
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          color: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        cursor: "pointer",
-                        padding: 2,
-                      }}
-                    />
-                    <input
-                      type="text"
-                      value={selectedElement.color}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          color: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: 80,
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 11,
-                        padding: "0 6px",
-                        fontFamily: "monospace",
-                      }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <div
-                    style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}
-                  >
-                    Background
-                  </div>
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 6 }}
-                  >
-                    <input
-                      type="color"
-                      value={
-                        selectedElement.bg === "transparent"
-                          ? "#ffffff"
-                          : selectedElement.bg
-                      }
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          bg: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        cursor: "pointer",
-                        padding: 2,
-                      }}
-                    />
-                    <input
-                      type="text"
-                      value={selectedElement.bg}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          bg: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: 80,
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 11,
-                        padding: "0 6px",
-                        fontFamily: "monospace",
-                      }}
-                    />
-                    <button
-                      onClick={() =>
-                        updateElement(selectedElement.id, { bg: "transparent" })
-                      }
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        background: "#fff",
-                        cursor: "pointer",
-                        fontSize: 11,
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Typography */}
-              {["text", "header", "footer", "card"].includes(selectedElement.type) && (
-                <div style={{ marginBottom: 10 }}>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "#64748b",
-                      marginBottom: 8,
-                      textTransform: "uppercase",
-                      letterSpacing: 0.5,
-                    }}
-                  >
-                    Typography
-                  </div>
-                  <div style={{ marginBottom: 6 }}>
-                    <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                      Font Family
-                    </span>
-                    <select
-                      value={selectedElement.fontFamily}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          fontFamily: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 12,
-                        padding: "0 6px",
-                      }}
-                    >
-                      {FONTS.map((f) => (
-                        <option key={f} value={f}>
-                          {f.split(",")[0]}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ marginBottom: 6 }}>
-                    <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                      Font Size
-                    </span>
-                    <input
-                      type="number"
-                      value={selectedElement.fontSize}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          fontSize: Number(e.target.value),
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 12,
-                        padding: "0 6px",
-                      }}
-                    />
-                  </div>
-                  <div style={{ marginBottom: 6 }}>
-                    <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                      Font Weight
-                    </span>
-                    <select
-                      value={selectedElement.fontWeight}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          fontWeight: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 12,
-                        padding: "0 6px",
-                      }}
-                    >
-                      <option value="100">Thin</option>
-                      <option value="300">Light</option>
-                      <option value="400">Normal</option>
-                      <option value="600">Semibold</option>
-                      <option value="700">Bold</option>
-                    </select>
-                  </div>
-                  <div style={{ marginBottom: 6 }}>
-                    <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                      Line Height
-                    </span>
-                    <input
-                      type="number"
-                      value={selectedElement.lineHeight}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          lineHeight: Number(e.target.value) || 1,
-                        })
-                      }
-                      step="0.1"
-                      style={{
-                        width: "100%",
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 12,
-                        padding: "0 6px",
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Text Alignment */}
-              {["text", "header", "footer", "card"].includes(selectedElement.type) && (
-                <div style={{ marginBottom: 10 }}>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "#64748b",
-                      marginBottom: 8,
-                      textTransform: "uppercase",
-                      letterSpacing: 0.5,
-                    }}
-                  >
-                    Alignment
-                  </div>
-                  <div style={{ display: "flex", gap: 4 }}>
-                    {["left", "center", "right"].map((align) => (
-                      <button
-                        key={align}
-                        onClick={() =>
-                          updateElement(selectedElement.id, {
-                            textAlign: align,
-                          })
-                        }
-                        style={{
-                          flex: 1,
-                          height: 28,
-                          borderRadius: 6,
-                          border:
-                            selectedElement.textAlign === align
-                              ? "2px solid #a855f7"
-                              : "1px solid #e2e8f0",
-                          background:
-                            selectedElement.textAlign === align
-                              ? "#f3e8ff"
-                              : "#fff",
-                          color:
-                            selectedElement.textAlign === align
-                              ? "#a855f7"
-                              : "#475569",
-                          cursor: "pointer",
-                          fontSize: 11,
-                          fontWeight:
-                            selectedElement.textAlign === align ? 600 : 400,
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {align}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Borders & Spacing */}
-              <div style={{ marginBottom: 10 }}>
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "#64748b",
-                    marginBottom: 8,
-                    textTransform: "uppercase",
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  Appearance
-                </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 6,
-                    marginBottom: 6,
-                  }}
-                >
-                  <div>
-                    <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                      Border Radius
-                    </span>
-                    <input
-                      type="number"
-                      value={selectedElement.borderRadius}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          borderRadius: Number(e.target.value),
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 12,
-                        padding: "0 6px",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                      Border Width
-                    </span>
-                    <input
-                      type="number"
-                      value={selectedElement.borderWidth}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          borderWidth: Number(e.target.value),
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 12,
-                        padding: "0 6px",
-                      }}
-                    />
-                  </div>
-                </div>
-                <div style={{ marginBottom: 6 }}>
-                  <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                    Border Color
-                  </span>
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 6 }}
-                  >
-                    <input
-                      type="color"
-                      value={
-                        selectedElement.borderColor === "transparent"
-                          ? "#000000"
-                          : selectedElement.borderColor
-                      }
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          borderColor: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        cursor: "pointer",
-                        padding: 2,
-                      }}
-                    />
-                    <input
-                      type="text"
-                      value={selectedElement.borderColor}
-                      onChange={(e) =>
-                        updateElement(selectedElement.id, {
-                          borderColor: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: 80,
-                        height: 28,
-                        borderRadius: 6,
-                        border: "1px solid #e2e8f0",
-                        fontSize: 11,
-                        padding: "0 6px",
-                        fontFamily: "monospace",
-                        flex: 1,
-                      }}
-                    />
-                  </div>
-                </div>
-                {selectedElement.type !== "divider" && (
-                  <>
-                    <div style={{ marginBottom: 6 }}>
-                      <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                        Opacity
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={selectedElement.opacity ?? 1}
-                        onChange={(e) =>
-                          updateElement(selectedElement.id, {
-                            opacity: Number(e.target.value),
-                          })
-                        }
-                        style={{
-                          width: "100%",
-                          height: 28,
-                          borderRadius: 6,
-                          border: "1px solid #e2e8f0",
-                          fontSize: 12,
-                          padding: "0 6px",
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                        Z-Index
-                      </span>
-                      <div style={{ display: "flex", gap: 4 }}>
-                        <button
-                          onClick={() => sendToBack(selectedElement.id)}
-                          style={{
-                            flex: 1,
-                            height: 28,
-                            borderRadius: 6,
-                            border: "1px solid #e2e8f0",
-                            background: "#fff",
-                            color: "#475569",
-                            cursor: "pointer",
-                            fontSize: 11,
-                          }}
-                        >
-                          Back
-                        </button>
-                        <button
-                          onClick={() => bringToFront(selectedElement.id)}
-                          style={{
-                            flex: 1,
-                            height: 28,
-                            borderRadius: 6,
-                            border: "1px solid #e2e8f0",
-                            background: "#fff",
-                            color: "#475569",
-                            cursor: "pointer",
-                            fontSize: 11,
-                          }}
-                        >
-                          Front
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Content */}
-              <div style={{ marginBottom: 10 }}>
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "#64748b",
-                    marginBottom: 8,
-                    textTransform: "uppercase",
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  Content
-                </div>
-                {["image", "logo"].includes(selectedElement.type) ? (
-                  <>
-                    <div style={{ marginBottom: 6 }}>
-                      <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                        Image URL
-                      </span>
-                      <input
-                        type="text"
-                        value={selectedElement.imageUrl || ""}
-                        onChange={(e) =>
-                          updateElement(selectedElement.id, {
-                            imageUrl: e.target.value,
-                          })
-                        }
-                        placeholder="Paste image URL..."
-                        style={{
-                          width: "100%",
-                          height: 28,
-                          borderRadius: 6,
-                          border: "1px solid #e2e8f0",
-                          fontSize: 11,
-                          padding: "0 6px",
-                        }}
-                      />
-                    </div>
-                    {selectedElement.imageUrl && (
-                      <div style={{ marginBottom: 6 }}>
-                        <span style={{ fontSize: 10, color: "#94a3b8" }}>
-                          Object Fit
-                        </span>
-                        <select
-                          value={selectedElement.objectFit || "cover"}
-                          onChange={(e) =>
-                            updateElement(selectedElement.id, {
-                              objectFit: e.target.value,
-                            })
-                          }
-                          style={{
-                            width: "100%",
-                            height: 28,
-                            borderRadius: 6,
-                            border: "1px solid #e2e8f0",
-                            fontSize: 12,
-                            padding: "0 6px",
-                          }}
-                        >
-                          <option value="cover">Cover</option>
-                          <option value="contain">Contain</option>
-                          <option value="fill">Fill</option>
-                        </select>
-                      </div>
-                    )}
-                  </>
-                ) : selectedElement.type !== "divider" ? (
-                  <textarea
-                    value={selectedElement.content}
-                    onChange={(e) =>
-                      updateElement(selectedElement.id, {
-                        content: e.target.value,
-                      })
-                    }
-                    placeholder="Enter text..."
-                    style={{
-                      width: "100%",
-                      height: 72,
-                      borderRadius: 6,
-                      border: "1px solid #e2e8f0",
-                      fontSize: 11,
-                      padding: "6px",
-                      fontFamily: "monospace",
-                      resize: "none",
-                    }}
-                  />
-                ) : null}
-              </div>
-            </div>
-          ) : (
+        {/* Center Canvas */}
+        <div style={{ flex: 1, background: "#e2e8f0", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", overflow: "auto", padding: "24px" }}>
+          <div style={{ width: canvas.width * zoom, height: canvas.height * zoom, flexShrink: 0, position: "relative" }}>
             <div
+              ref={canvasRef}
+              onMouseDown={onCanvasMouseDown}
               style={{
-                textAlign: "center",
-                padding: "2rem 0",
-                color: "#94a3b8",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: canvas.width,
+                height: canvas.height,
+                background: canvas.background,
+                boxShadow: "0 4px 30px rgba(0,0,0,0.15)",
+                transform: `scale(${zoom})`,
+                transformOrigin: "top left",
+                backgroundImage: "radial-gradient(#cbd5e1 0.5px, transparent 0.5px)",
+                backgroundSize: "16px 16px",
+                cursor: "default",
+                userSelect: "none",
               }}
             >
-              <i
-                className="bi bi-cursor"
-                style={{ fontSize: 28, display: "block", marginBottom: 8 }}
-              />
-              <div style={{ fontSize: 12 }}>
-                Click an element to edit properties
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Save Template Modal */}
-      {showSaveTemplate && (
-        <div
-          className="modal d-block"
-          style={{ background: "rgba(0,0,0,0.5)", zIndex: 1050 }}
-        >
-          <div className="modal-dialog" style={{ maxWidth: 460 }}>
-            <div className="modal-content border-0 shadow">
-              <div className="modal-header border-0 pb-0">
-                <h6 className="modal-title fw-semibold d-flex align-items-center gap-2">
-                  <i className="bi bi-bookmark" style={{ color: "#a855f7" }} />
-                  Save as Template
-                </h6>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowSaveTemplate(false)}
-                />
-              </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label className="form-label small fw-semibold mb-1">
-                    Template Name
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control form-control-sm"
-                    value={templateName}
-                    onChange={(e) => setTemplateName(e.target.value)}
-                    placeholder="e.g., Standard Event Form"
-                    autoFocus
-                  />
-                </div>
-                <div>
-                  <label className="form-label small fw-semibold mb-1">
-                    Description (Optional)
-                  </label>
-                  <textarea
-                    className="form-control form-control-sm"
-                    rows="3"
-                    value={templateDesc}
-                    onChange={(e) => setTemplateDesc(e.target.value)}
-                    placeholder="Describe this template..."
-                  />
-                </div>
-              </div>
-              <div className="modal-footer border-0 pt-0">
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary btn-sm"
-                  onClick={() => setShowSaveTemplate(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={handleSaveTemplate}
-                  disabled={!templateName.trim() || saving}
-                >
-                  {saving ? (
-                    <span className="spinner-border spinner-border-sm me-1" />
-                  ) : (
-                    <i className="bi bi-bookmark-fill me-1" />
-                  )}
-                  Save Template
-                </button>
-              </div>
+              {elements.map((el) => (
+                <CanvasEl key={el.id} el={el} selected={selectedElementId === el.id} onMouseDown={onCanvasMouseDown} />
+              ))}
             </div>
           </div>
         </div>
-      )}
+
+        {/* Right Panel */}
+        <div style={{ width: 240, background: "#fff", borderLeft: "1px solid #e2e8f0", overflow: "hidden" }}>
+          <PropertiesPanel el={selectedElement} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} />
+        </div>
+      </div>
     </div>
   );
 };

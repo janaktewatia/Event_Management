@@ -792,11 +792,14 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
               style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
             >
               <option value="">— Select a field —</option>
-              {form?.fields?.filter(f => f.enabled !== false).map(field => (
-                <option key={field.fieldId} value={field.fieldId}>
-                  {field.label} ({field.fieldName || field.fieldId})
-                </option>
-              ))}
+              {(form?.fields || [])
+                .filter(f => f.enabled === true)
+                .map(field => (
+                  <option key={field.fieldId} value={field.fieldId}>
+                    {field.label} ({field.fieldName || field.fieldId})
+                  </option>
+                ))}
+
             </select>
           </PropRow>
           <PropRow label="Placeholder">

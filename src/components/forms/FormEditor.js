@@ -308,7 +308,7 @@ const SelectInput = ({ value, onChange, options }) => (
   </select>
 );
 
-const PropertiesPanel = ({ el, onChange, onDelete, onDuplicate, onBring, onSend, canvasState }) => {
+const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate, onBring, onSend, canvasState, alignElements, distributeHorizontally, distributeVertically }) => {
   if (!el)
     return (
       <div style={{ padding: 16 }}>
@@ -341,10 +341,41 @@ const PropertiesPanel = ({ el, onChange, onDelete, onDuplicate, onBring, onSend,
         </div>
       </div>
 
+      {/* Multi-Select Controls */}
+      {selectedElements && selectedElements.length > 1 && (
+        <div style={{ background: "#f0fdf4", borderRadius: 8, padding: 10, marginBottom: 10, border: "1px solid #bbf7d0" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#22c55e", marginBottom: 8 }}>
+            {selectedElements.length} Elements Selected
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 6 }}>
+            <button onClick={() => alignElements("left")} style={{ ...smallBtn, fontSize: 9 }} title="Align Left">
+              <i className="bi bi-align-start" /> Left
+            </button>
+            <button onClick={() => alignElements("centerX")} style={{ ...smallBtn, fontSize: 9 }} title="Align Center">
+              <i className="bi bi-distribute-horizontal" /> Center
+            </button>
+            <button onClick={() => alignElements("top")} style={{ ...smallBtn, fontSize: 9 }} title="Align Top">
+              <i className="bi bi-align-top" /> Top
+            </button>
+            <button onClick={() => alignElements("centerY")} style={{ ...smallBtn, fontSize: 9 }} title="Align Middle">
+              <i className="bi bi-distribute-vertical" /> Middle
+            </button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+            <button onClick={() => distributeHorizontally()} style={{ ...smallBtn, fontSize: 9 }} title="Distribute Horizontally">
+              <i className="bi bi-columns-gap" /> Dist H
+            </button>
+            <button onClick={() => distributeVertically()} style={{ ...smallBtn, fontSize: 9 }} title="Distribute Vertically">
+              <i className="bi bi-rows-gap" /> Dist V
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Lock */}
       <PropRow label="State">
         <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer" }}>
-          <input type="checkbox" checked={el.locked} onChange={(e) => onChange({ ...el, locked: e.target.checked })} />
+          <input type="checkbox" checked={el?.locked} onChange={(e) => onChange({ ...el, locked: e.target.checked })} />
           Lock element
         </label>
       </PropRow>
@@ -642,9 +673,21 @@ const PropertiesPanel = ({ el, onChange, onDelete, onDuplicate, onBring, onSend,
 const CanvasEl = ({ el, selected, onMouseDown }) => {
   const isText = ["text", "header", "footer", "card"].includes(el.type);
   const isMedia = ["image", "logo"].includes(el.type);
+  const [hoveredHandle, setHoveredHandle] = useState(null);
+
+  const handleCursor = {
+    nw: "nw-resize",
+    n: "n-resize",
+    ne: "ne-resize",
+    e: "e-resize",
+    se: "se-resize",
+    s: "s-resize",
+    sw: "sw-resize",
+    w: "w-resize",
+  };
 
   const hPos = (h) => {
-    const s = { position: "absolute", width: 8, height: 8, borderRadius: 2, background: "#a855f7", border: "2px solid #fff", zIndex: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" };
+    const s = { position: "absolute", width: 8, height: 8, borderRadius: 2, background: "#a855f7", border: "2px solid #fff", zIndex: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.2)", cursor: handleCursor[h] };
     if (h === "nw") return { ...s, top: -4, left: -4 };
     if (h === "n") return { ...s, top: -4, left: "50%", transform: "translateX(-50%)" };
     if (h === "ne") return { ...s, top: -4, right: -4 };
@@ -718,7 +761,14 @@ const CanvasEl = ({ el, selected, onMouseDown }) => {
         <div style={{ width: "100%", height: "100%", background: el.bg }} />
       ) : null}
 
-      {selected && !el.locked && ["nw", "n", "ne", "e", "se", "s", "sw", "w"].map((h) => <div key={h} style={hPos(h)} />)}
+      {selected && !el.locked && ["nw", "n", "ne", "e", "se", "s", "sw", "w"].map((h) => (
+        <div
+          key={h}
+          style={hPos(h)}
+          onMouseEnter={() => setHoveredHandle(h)}
+          onMouseLeave={() => setHoveredHandle(null)}
+        />
+      ))}
     </div>
   );
 };
@@ -727,8 +777,8 @@ const FormEditor = ({ formId, onBack }) => {
   const { getFormById, getFormElements, saveFormElements, updateForm } = useForm();
   const form = getFormById(formId);
   const [elements, setElements] = useState(getFormElements(formId) || []);
-  const [selectedElementId, setSelectedElementId] = useState(null);
-  const [canvas, setCanvas] = useState({ width: 600, height: 800, background: "#ffffff" });
+  const [selectedElementIds, setSelectedElementIds] = useState([]);
+  const [canvas, setCanvas] = useState({ width: 600, height: 800, background: "#ffffff", borderRadius: 0 });
   const [zoom, setZoom] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -736,13 +786,14 @@ const FormEditor = ({ formId, onBack }) => {
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
 
-  const selectedElement = elements.find((el) => el.id === selectedElementId);
+  const selectedElement = elements.find((el) => el.id === selectedElementIds[0]);
+  const selectedElements = elements.filter((el) => selectedElementIds.includes(el.id));
 
   const addElement = useCallback(
     (type) => {
       const el = makeElement(type);
       setElements((prev) => [...prev, el]);
-      setSelectedElementId(el.id);
+      setSelectedElementIds([el.id]);
     },
     []
   );
@@ -752,31 +803,81 @@ const FormEditor = ({ formId, onBack }) => {
   }, []);
 
   const deleteSelected = useCallback(() => {
-    setElements((prev) => prev.filter((el) => el.id !== selectedElementId));
-    setSelectedElementId(null);
-  }, [selectedElementId]);
+    setElements((prev) => prev.filter((el) => !selectedElementIds.includes(el.id)));
+    setSelectedElementIds([]);
+  }, [selectedElementIds]);
 
   const duplicateSelected = useCallback(() => {
-    const el = elements.find((e) => e.id === selectedElementId);
+    const el = elements.find((e) => e.id === selectedElementIds[0]);
     if (!el) return;
     const dup = { ...el, id: uid(), x: el.x + 16, y: el.y + 16 };
     setElements((prev) => [...prev, dup]);
-    setSelectedElementId(dup.id);
-  }, [elements, selectedElementId]);
+    setSelectedElementIds([dup.id]);
+  }, [elements, selectedElementIds]);
 
   const bringForward = useCallback(() => {
-    const el = elements.find((e) => e.id === selectedElementId);
+    const el = elements.find((e) => e.id === selectedElementIds[0]);
     if (!el) return;
     const maxZ = Math.max(...elements.map((e) => e.zIndex || 1), 0);
     updateElement({ ...el, zIndex: maxZ + 1 });
-  }, [elements, selectedElementId, updateElement]);
+  }, [elements, selectedElementIds, updateElement]);
 
   const sendBackward = useCallback(() => {
-    const el = elements.find((e) => e.id === selectedElementId);
+    const el = elements.find((e) => e.id === selectedElementIds[0]);
     if (!el) return;
     const minZ = Math.min(...elements.map((e) => e.zIndex || 1), 0);
     updateElement({ ...el, zIndex: minZ - 1 });
-  }, [elements, selectedElementId, updateElement]);
+  }, [elements, selectedElementIds, updateElement]);
+
+  // Distribute elements horizontally with equal gap
+  const distributeHorizontally = useCallback((gap = 10) => {
+    if (selectedElements.length < 2) return;
+    const sorted = [...selectedElements].sort((a, b) => a.x - b.x);
+    let currentX = sorted[0].x;
+    const updated = sorted.map((el) => {
+      const newEl = { ...el, x: currentX };
+      currentX += el.w + gap;
+      return newEl;
+    });
+    updated.forEach((el) => updateElement(el));
+  }, [selectedElements, updateElement]);
+
+  // Distribute elements vertically with equal gap
+  const distributeVertically = useCallback((gap = 10) => {
+    if (selectedElements.length < 2) return;
+    const sorted = [...selectedElements].sort((a, b) => a.y - b.y);
+    let currentY = sorted[0].y;
+    const updated = sorted.map((el) => {
+      const newEl = { ...el, y: currentY };
+      currentY += el.h + gap;
+      return newEl;
+    });
+    updated.forEach((el) => updateElement(el));
+  }, [selectedElements, updateElement]);
+
+  // Align all selected elements
+  const alignElements = useCallback((direction) => {
+    if (selectedElements.length < 2) return;
+    const updated = selectedElements.map((el) => {
+      switch (direction) {
+        case "left":
+          return { ...el, x: Math.min(...selectedElements.map((e) => e.x)) };
+        case "centerX":
+          return { ...el, x: selectedElements.reduce((sum, e) => sum + e.x + e.w / 2, 0) / selectedElements.length - el.w / 2 };
+        case "right":
+          return { ...el, x: Math.max(...selectedElements.map((e) => e.x + e.w)) - el.w };
+        case "top":
+          return { ...el, y: Math.min(...selectedElements.map((e) => e.y)) };
+        case "centerY":
+          return { ...el, y: selectedElements.reduce((sum, e) => sum + e.y + e.h / 2, 0) / selectedElements.length - el.h / 2 };
+        case "bottom":
+          return { ...el, y: Math.max(...selectedElements.map((e) => e.y + e.h)) - el.h };
+        default:
+          return el;
+      }
+    });
+    updated.forEach((el) => updateElement(el));
+  }, [selectedElements, updateElement]);
 
   const getElementAtPoint = useCallback(
     (px, py) => {
@@ -800,11 +901,18 @@ const FormEditor = ({ formId, onBack }) => {
 
       const clicked = getElementAtPoint(px, py);
       if (!clicked) {
-        setSelectedElementId(null);
+        setSelectedElementIds([]);
         return;
       }
 
-      setSelectedElementId(clicked.id);
+      // Multi-select with Ctrl/Cmd + Click
+      if (e.ctrlKey || e.metaKey) {
+        setSelectedElementIds((prev) =>
+          prev.includes(clicked.id) ? prev.filter((id) => id !== clicked.id) : [...prev, clicked.id]
+        );
+      } else {
+        setSelectedElementIds([clicked.id]);
+      }
       if (clicked.locked) return;
 
       const handles = {
@@ -962,6 +1070,10 @@ const FormEditor = ({ formId, onBack }) => {
               <span style={{ fontSize: 10, color: "#94a3b8" }}>Background</span>
               <ColorInput value={canvas.background} onChange={(v) => setCanvas((c) => ({ ...c, background: v }))} />
             </div>
+            <div style={{ marginBottom: 6 }}>
+              <span style={{ fontSize: 10, color: "#94a3b8" }}>Border Radius</span>
+              <NumInput value={canvas.borderRadius || 0} min={0} max={100} suffix="px" onChange={(v) => setCanvas((c) => ({ ...c, borderRadius: v }))} />
+            </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
               {CANVAS_PRESETS.map((p) => (
                 <button
@@ -984,18 +1096,26 @@ const FormEditor = ({ formId, onBack }) => {
               .map((el) => (
                 <div
                   key={el.id}
-                  onClick={() => setSelectedElementId(el.id)}
+                  onClick={(e) => {
+                    if (e.ctrlKey || e.metaKey) {
+                      setSelectedElementIds((prev) =>
+                        prev.includes(el.id) ? prev.filter((id) => id !== el.id) : [...prev, el.id]
+                      );
+                    } else {
+                      setSelectedElementIds([el.id]);
+                    }
+                  }}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
                     padding: "5px 12px",
                     cursor: "pointer",
-                    background: el.id === selectedElementId ? "#f5f3ff" : "transparent",
-                    borderLeft: `3px solid ${el.id === selectedElementId ? "#a855f7" : "transparent"}`,
+                    background: selectedElementIds.includes(el.id) ? "#f5f3ff" : "transparent",
+                    borderLeft: `3px solid ${selectedElementIds.includes(el.id) ? "#a855f7" : "transparent"}`,
                   }}
                 >
-                  <i className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`} style={{ fontSize: 12, color: el.id === selectedElementId ? "#7c3aed" : "#94a3b8", flexShrink: 0 }} />
+                  <i className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`} style={{ fontSize: 12, color: selectedElementIds.includes(el.id) ? "#7c3aed" : "#94a3b8", flexShrink: 0 }} />
                   <span style={{ fontSize: 11, color: "#475569", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {el.content?.replace(/\{\{[^}]+\}\}/g, "…") || el.label || el.type}
                   </span>
@@ -1019,6 +1139,7 @@ const FormEditor = ({ formId, onBack }) => {
                 width: canvas.width,
                 height: canvas.height,
                 background: canvas.background,
+                borderRadius: canvas.borderRadius || 0,
                 boxShadow: "0 4px 30px rgba(0,0,0,0.15)",
                 transform: `scale(${zoom})`,
                 transformOrigin: "top left",
@@ -1029,7 +1150,7 @@ const FormEditor = ({ formId, onBack }) => {
               }}
             >
               {elements.map((el) => (
-                <CanvasEl key={el.id} el={el} selected={selectedElementId === el.id} onMouseDown={onCanvasMouseDown} />
+                <CanvasEl key={el.id} el={el} selected={selectedElementIds.includes(el.id)} onMouseDown={onCanvasMouseDown} />
               ))}
             </div>
           </div>
@@ -1037,7 +1158,7 @@ const FormEditor = ({ formId, onBack }) => {
 
         {/* Right Panel */}
         <div style={{ width: 240, background: "#fff", borderLeft: "1px solid #e2e8f0", overflow: "hidden" }}>
-          <PropertiesPanel el={selectedElement} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} />
+          <PropertiesPanel el={selectedElement} selectedElements={selectedElements} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} alignElements={alignElements} distributeHorizontally={distributeHorizontally} distributeVertically={distributeVertically} />
         </div>
       </div>
     </div>

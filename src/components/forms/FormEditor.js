@@ -1321,7 +1321,7 @@ const FormEditor = ({ formId, onBack }) => {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", width: "100vw", marginLeft: "calc(-50vw + 50%)", background: "#f1f5f9", position: "relative", zIndex: 999 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "#f1f5f9" }}>
       {/* Header */}
       <div style={{ padding: "12px 16px", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>

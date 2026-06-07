@@ -946,8 +946,9 @@ const CanvasEl = ({ el, selected, onMouseDown }) => {
           <span style={{ fontSize: 9, color: "#94a3b8" }}>{el.content || "{{passId}}"}</span>
         </div>
       ) : el.type === "form-field" ? (
-        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", padding: `${el.paddingY}px ${el.paddingX}px`, background: el.bg, borderRadius: el.borderRadius, border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`, fontSize: el.fontSize, color: "#999" }}>
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{el.placeholder || el.content || "Form Field"}</span>
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: `${el.paddingY}px ${el.paddingX}px`, background: el.bg, borderRadius: el.borderRadius, border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`, fontSize: el.fontSize, color: el.color || "#1e293b", gap: 2 }}>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "#7c3aed" }}>{el.fieldId || "Field"}</span>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: el.fontSize - 2, color: el.color || "#1e293b" }}>{el.placeholder || el.content || "Form Field"}</span>
         </div>
       ) : el.type === "form-select" ? (
         <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", padding: `${el.paddingY}px ${el.paddingX}px`, background: el.bg, borderRadius: el.borderRadius, border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`, fontSize: el.fontSize, color: "#999" }}>
@@ -1449,35 +1450,41 @@ const FormEditor = ({ formId, onBack }) => {
             {[...elements]
               .filter(Boolean)
               .reverse()
-              .map((el) => (
-                <div
-                  key={el.id}
-                  onClick={(e) => {
-                    if (e.ctrlKey || e.metaKey) {
-                      setSelectedElementIds((prev) =>
-                        prev.includes(el.id) ? prev.filter((id) => id !== el.id) : [...prev, el.id]
-                      );
-                    } else {
-                      setSelectedElementIds([el.id]);
-                    }
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "5px 12px",
-                    cursor: "pointer",
-                    background: selectedElementIds.includes(el.id) ? "#f5f3ff" : "transparent",
-                    borderLeft: `3px solid ${selectedElementIds.includes(el.id) ? "#a855f7" : "transparent"}`,
-                  }}
-                >
-                  <i className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`} style={{ fontSize: 12, color: selectedElementIds.includes(el.id) ? "#7c3aed" : "#94a3b8", flexShrink: 0 }} />
-                  <span style={{ fontSize: 11, color: "#475569", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {el.content?.replace(/\{\{[^}]+\}\}/g, "…") || el.label || el.type}
-                  </span>
-                  {el.locked && <i className="bi bi-lock-fill" style={{ fontSize: 10, color: "#94a3b8" }} />}
-                </div>
-              ))}
+              .map((el, idx) => {
+                const formFieldIndex = elements.filter((e) => e.type === "form-field").length - idx;
+                const displayLabel = el.type === "form-field"
+                  ? `${formFieldIndex}. ${el.fieldId || "Field"}`
+                  : el.content?.replace(/\{\{[^}]+\}\}/g, "…") || el.label || el.type;
+                return (
+                  <div
+                    key={el.id}
+                    onClick={(e) => {
+                      if (e.ctrlKey || e.metaKey) {
+                        setSelectedElementIds((prev) =>
+                          prev.includes(el.id) ? prev.filter((id) => id !== el.id) : [...prev, el.id]
+                        );
+                      } else {
+                        setSelectedElementIds([el.id]);
+                      }
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "5px 12px",
+                      cursor: "pointer",
+                      background: selectedElementIds.includes(el.id) ? "#f5f3ff" : "transparent",
+                      borderLeft: `3px solid ${selectedElementIds.includes(el.id) ? "#a855f7" : "transparent"}`,
+                    }}
+                  >
+                    <i className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`} style={{ fontSize: 12, color: selectedElementIds.includes(el.id) ? "#7c3aed" : "#94a3b8", flexShrink: 0 }} />
+                    <span style={{ fontSize: 11, color: "#475569", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: el.type === "form-field" ? 600 : 400 }}>
+                      {displayLabel}
+                    </span>
+                    {el.locked && <i className="bi bi-lock-fill" style={{ fontSize: 10, color: "#94a3b8" }} />}
+                  </div>
+                );
+              })}
             {elements.length === 0 && <div style={{ padding: 16, fontSize: 11, color: "#94a3b8", textAlign: "center" }}>Add elements from toolbar</div>}
           </div>
         </div>

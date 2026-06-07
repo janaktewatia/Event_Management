@@ -216,6 +216,96 @@ const DEFAULT_ELEMENT = {
     paddingY: 0,
     opacity: 1,
   },
+  "form-field": {
+    w: 300,
+    h: 45,
+    label: "Form Field",
+    icon: "bi-input-cursor-text",
+    content: "Form Field",
+    fieldId: "name",
+    placeholder: "Enter field name",
+    fontSize: 14,
+    fontWeight: "400",
+    fontFamily: "Inter, sans-serif",
+    fontStyle: "normal",
+    textDecoration: "none",
+    color: "#1e293b",
+    textAlign: "left",
+    lineHeight: 1.4,
+    bg: "#ffffff",
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderStyle: "solid",
+    paddingX: 12,
+    paddingY: 10,
+    opacity: 1,
+  },
+  "form-select": {
+    w: 300,
+    h: 45,
+    label: "Select Field",
+    icon: "bi-list-check",
+    content: "Select an option",
+    fieldId: "category",
+    fontSize: 14,
+    fontWeight: "400",
+    fontFamily: "Inter, sans-serif",
+    fontStyle: "normal",
+    textDecoration: "none",
+    color: "#1e293b",
+    textAlign: "left",
+    lineHeight: 1.4,
+    bg: "#ffffff",
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderStyle: "solid",
+    paddingX: 12,
+    paddingY: 10,
+    opacity: 1,
+  },
+  "form-checkbox": {
+    w: 20,
+    h: 20,
+    label: "Checkbox",
+    icon: "bi-check-square",
+    content: "",
+    fieldId: "agreement",
+    checked: false,
+    fontSize: 14,
+    fontWeight: "400",
+    fontFamily: "Inter, sans-serif",
+    bg: "#ffffff",
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderStyle: "solid",
+    opacity: 1,
+  },
+  "form-submit": {
+    w: 300,
+    h: 45,
+    label: "Submit Button",
+    icon: "bi-check-circle",
+    content: "Submit",
+    fontSize: 16,
+    fontWeight: "600",
+    fontFamily: "Inter, sans-serif",
+    fontStyle: "normal",
+    textDecoration: "none",
+    color: "#ffffff",
+    textAlign: "center",
+    lineHeight: 1,
+    bg: "#7c3aed",
+    borderRadius: 6,
+    borderWidth: 0,
+    borderColor: "transparent",
+    borderStyle: "solid",
+    paddingX: 0,
+    paddingY: 0,
+    opacity: 1,
+  },
 };
 
 const ELEMENT_BTNS = Object.entries(DEFAULT_ELEMENT).map(([type, def]) => ({ type, ...def }));
@@ -666,6 +756,72 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
           </PropRow>
         </div>
       )}
+
+      {/* Form Field Properties */}
+      {el.type === "form-field" && (
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Form Field Settings</div>
+          <PropRow label="Field ID">
+            <input
+              type="text"
+              value={el.fieldId || "name"}
+              onChange={(e) => onChange({ ...el, fieldId: e.target.value })}
+              placeholder="Field ID (name, email, etc.)"
+              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+            />
+          </PropRow>
+          <PropRow label="Placeholder">
+            <input
+              type="text"
+              value={el.placeholder || ""}
+              onChange={(e) => onChange({ ...el, placeholder: e.target.value })}
+              placeholder="Placeholder text"
+              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+            />
+          </PropRow>
+        </div>
+      )}
+
+      {/* Form Select Properties */}
+      {el.type === "form-select" && (
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Select Field Settings</div>
+          <PropRow label="Field ID">
+            <input
+              type="text"
+              value={el.fieldId || "category"}
+              onChange={(e) => onChange({ ...el, fieldId: e.target.value })}
+              placeholder="Field ID"
+              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+            />
+          </PropRow>
+          <PropRow label="Label">
+            <input
+              type="text"
+              value={el.content || ""}
+              onChange={(e) => onChange({ ...el, content: e.target.value })}
+              placeholder="Dropdown label"
+              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+            />
+          </PropRow>
+        </div>
+      )}
+
+      {/* Form Submit Button Properties */}
+      {el.type === "form-submit" && (
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Button Settings</div>
+          <PropRow label="Button Text">
+            <input
+              type="text"
+              value={el.content || "Submit"}
+              onChange={(e) => onChange({ ...el, content: e.target.value })}
+              placeholder="Button text"
+              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+            />
+          </PropRow>
+        </div>
+      )}
     </div>
   );
 };
@@ -724,6 +880,22 @@ const CanvasEl = ({ el, selected, onMouseDown }) => {
         <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
           <i className="bi bi-qr-code" style={{ fontSize: Math.min(el.w, el.h) * 0.55, color: "#1e293b" }} />
           <span style={{ fontSize: 9, color: "#94a3b8" }}>{el.content || "{{passId}}"}</span>
+        </div>
+      ) : el.type === "form-field" ? (
+        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", padding: `${el.paddingY}px ${el.paddingX}px`, background: el.bg, borderRadius: el.borderRadius, border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`, fontSize: el.fontSize, color: "#999" }}>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{el.placeholder || el.content || "Form Field"}</span>
+        </div>
+      ) : el.type === "form-select" ? (
+        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", padding: `${el.paddingY}px ${el.paddingX}px`, background: el.bg, borderRadius: el.borderRadius, border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`, fontSize: el.fontSize, color: "#999" }}>
+          <span>{el.content || "Select an option"}</span>
+        </div>
+      ) : el.type === "form-checkbox" ? (
+        <div style={{ width: el.w, height: el.h, background: el.bg, borderRadius: el.borderRadius, border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <i className="bi bi-check" style={{ color: el.checked ? "#a855f7" : "transparent", fontSize: 14 }} />
+        </div>
+      ) : el.type === "form-submit" ? (
+        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: el.bg, borderRadius: el.borderRadius, border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`, fontSize: el.fontSize, fontWeight: el.fontWeight, color: el.color, cursor: "pointer" }}>
+          {el.content}
         </div>
       ) : isMedia && el.imageUrl ? (
         <img src={el.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: el.objectFit || "cover", display: "block" }} />
@@ -788,6 +960,7 @@ const FormEditor = ({ formId, onBack }) => {
 
   const selectedElement = elements.find((el) => el.id === selectedElementIds[0]);
   const selectedElements = elements.filter((el) => selectedElementIds.includes(el.id));
+  const isFormElement = selectedElement && ["form-field", "form-select", "form-checkbox", "form-submit"].includes(selectedElement.type);
 
   const addElement = useCallback(
     (type) => {

@@ -349,6 +349,37 @@ const PropertiesPanel = ({ el, onChange, onDelete, onDuplicate, onBring, onSend,
         </label>
       </PropRow>
 
+      {/* Text Content - Show at top for text elements */}
+      {isText && (
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Content</div>
+          <PropRow label="">
+            <textarea
+              value={el.content}
+              onChange={(e) => onChange({ ...el, content: e.target.value })}
+              rows={3}
+              style={{ width: "100%", borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "6px 8px", resize: "vertical" }}
+            />
+          </PropRow>
+          <PropRow label="Insert Dynamic Field">
+            <select
+              onChange={(e) => {
+                if (e.target.value) onChange({ ...el, content: (el.content || "") + e.target.value });
+                e.target.value = "";
+              }}
+              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
+            >
+              <option value="">— Insert field —</option>
+              {DYNAMIC_FIELDS.map((f) => (
+                <option key={f.key} value={f.key}>
+                  {f.label} ({f.key})
+                </option>
+              ))}
+            </select>
+          </PropRow>
+        </div>
+      )}
+
       {/* Position & Size */}
       <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Position & Size</div>
@@ -456,34 +487,10 @@ const PropertiesPanel = ({ el, onChange, onDelete, onDuplicate, onBring, onSend,
         </PropRow>
       </div>
 
-      {/* Text */}
+      {/* Text - Typography Section */}
       {isText && (
         <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Text</div>
-          <PropRow label="Content">
-            <textarea
-              value={el.content}
-              onChange={(e) => onChange({ ...el, content: e.target.value })}
-              rows={3}
-              style={{ width: "100%", borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "6px 8px", resize: "vertical" }}
-            />
-          </PropRow>
-          <PropRow label="Insert Dynamic Field">
-            <select
-              onChange={(e) => {
-                if (e.target.value) onChange({ ...el, content: (el.content || "") + e.target.value });
-                e.target.value = "";
-              }}
-              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
-            >
-              <option value="">— Insert field —</option>
-              {DYNAMIC_FIELDS.map((f) => (
-                <option key={f.key} value={f.key}>
-                  {f.label} ({f.key})
-                </option>
-              ))}
-            </select>
-          </PropRow>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Typography</div>
           <PropRow label="Font Family">
             <SelectInput value={el.fontFamily} onChange={p("fontFamily")} options={FONTS} />
           </PropRow>

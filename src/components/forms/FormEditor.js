@@ -437,6 +437,20 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
           <div style={{ fontSize: 11, fontWeight: 700, color: "#22c55e", marginBottom: 8 }}>
             {selectedElements.length} Elements Selected
           </div>
+
+          {/* Group Controls */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 6 }}>
+            <button onClick={groupElements} style={{ ...smallBtn, fontSize: 9, background: "#dcfce7", color: "#16a34a" }} title="Group Elements">
+              <i className="bi bi-diagram-3" /> Group
+            </button>
+            {selectedElements.length > 0 && selectedElements[0].groupId && (
+              <button onClick={ungroupElements} style={{ ...smallBtn, fontSize: 9, background: "#dcfce7", color: "#16a34a" }} title="Ungroup Elements">
+                <i className="bi bi-diagram-2" /> Ungroup
+              </button>
+            )}
+          </div>
+
+          {/* Alignment Controls */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 6 }}>
             <button onClick={() => alignElements("left")} style={{ ...smallBtn, fontSize: 9 }} title="Align Left">
               <i className="bi bi-align-start" /> Left
@@ -451,6 +465,8 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
               <i className="bi bi-distribute-vertical" /> Middle
             </button>
           </div>
+
+          {/* Distribution Controls */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
             <button onClick={() => distributeHorizontally()} style={{ ...smallBtn, fontSize: 9 }} title="Distribute Horizontally">
               <i className="bi bi-columns-gap" /> Dist H
@@ -761,14 +777,27 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
       {el.type === "form-field" && (
         <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Form Field Settings</div>
-          <PropRow label="Field ID">
-            <input
-              type="text"
-              value={el.fieldId || "name"}
-              onChange={(e) => onChange({ ...el, fieldId: e.target.value })}
-              placeholder="Field ID (name, email, etc.)"
-              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
-            />
+          <PropRow label="Map Field">
+            <select
+              value={el.fieldId || ""}
+              onChange={(e) => {
+                const field = form?.fields?.find(f => f.fieldId === e.target.value);
+                onChange({
+                  ...el,
+                  fieldId: e.target.value,
+                  placeholder: field?.label || "",
+                  content: field?.label || "Form Field"
+                });
+              }}
+              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
+            >
+              <option value="">— Select a field —</option>
+              {form?.fields?.filter(f => f.enabled !== false).map(field => (
+                <option key={field.fieldId} value={field.fieldId}>
+                  {field.label} ({field.fieldName || field.fieldId})
+                </option>
+              ))}
+            </select>
           </PropRow>
           <PropRow label="Placeholder">
             <input
@@ -954,6 +983,7 @@ const FormEditor = ({ formId, onBack }) => {
   const [zoom, setZoom] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [fullscreen, setFullscreen] = useState(true);
   const canvasRef = useRef(null);
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
@@ -961,6 +991,32 @@ const FormEditor = ({ formId, onBack }) => {
   const selectedElement = elements.find((el) => el.id === selectedElementIds[0]);
   const selectedElements = elements.filter((el) => selectedElementIds.includes(el.id));
   const isFormElement = selectedElement && ["form-field", "form-select", "form-checkbox", "form-submit"].includes(selectedElement.type);
+
+  // Group management
+  const groupElements = useCallback(() => {
+    if (selectedElements.length < 2) return;
+    const groupId = uid();
+    const updated = selectedElements.map(el => ({ ...el, groupId }));
+    updated.forEach(el => updateElement(el));
+  }, [selectedElements, updateElement]);
+
+  const ungroupElements = useCallback(() => {
+    if (selectedElements.length === 0) return;
+    const updated = selectedElements.map(el => ({ ...el, groupId: null }));
+    updated.forEach(el => updateElement(el));
+  }, [selectedElements, updateElement]);
+
+  // When moving a grouped element, move all in the group
+  const moveGroup = useCallback((elementId, dx, dy) => {
+    const element = elements.find(e => e.id === elementId);
+    if (!element || !element.groupId) return false;
+
+    const groupMembers = elements.filter(e => e.groupId === element.groupId);
+    groupMembers.forEach(el => {
+      updateElement({ ...el, x: el.x + dx, y: el.y + dy });
+    });
+    return true;
+  }, [elements, updateElement]);
 
   const addElement = useCallback(
     (type) => {
@@ -1217,6 +1273,10 @@ const FormEditor = ({ formId, onBack }) => {
           <button onClick={() => setZoom((z) => Math.min(2, z + 0.1))} style={{ width: 32, height: 32, borderRadius: 6, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
             +
           </button>
+          <div style={{ width: 1, height: 24, background: "#e2e8f0", margin: "0 4px" }} />
+          <button onClick={() => setFullscreen(!fullscreen)} style={{ width: 32, height: 32, borderRadius: 6, border: "1px solid #e2e8f0", background: fullscreen ? "#e0e7ff" : "#f8fafc", color: fullscreen ? "#4f46e5" : "#475569", cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }} title={fullscreen ? "Exit Fullscreen" : "Fullscreen"}>
+            <i className={`bi ${fullscreen ? "bi-fullscreen-exit" : "bi-fullscreen"}`} />
+          </button>
         </div>
       </div>
 
@@ -1225,6 +1285,7 @@ const FormEditor = ({ formId, onBack }) => {
       {/* Editor */}
       <div style={{ display: "flex", flex: 1, gap: 0, minHeight: 0, overflow: "hidden" }}>
         {/* Left Panel */}
+        {!fullscreen && (
         <div style={{ width: 200, background: "#fff", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           {/* Canvas settings */}
           <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9" }}>
@@ -1298,6 +1359,7 @@ const FormEditor = ({ formId, onBack }) => {
             {elements.length === 0 && <div style={{ padding: 16, fontSize: 11, color: "#94a3b8", textAlign: "center" }}>Add elements from toolbar</div>}
           </div>
         </div>
+        )}
 
         {/* Center Canvas */}
         <div style={{ flex: 1, background: "#e2e8f0", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", overflow: "auto", padding: "24px" }}>
@@ -1330,9 +1392,11 @@ const FormEditor = ({ formId, onBack }) => {
         </div>
 
         {/* Right Panel */}
+        {!fullscreen && (
         <div style={{ width: 240, background: "#fff", borderLeft: "1px solid #e2e8f0", overflow: "hidden" }}>
           <PropertiesPanel el={selectedElement} selectedElements={selectedElements} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} alignElements={alignElements} distributeHorizontally={distributeHorizontally} distributeVertically={distributeVertically} />
         </div>
+        )}
       </div>
     </div>
   );

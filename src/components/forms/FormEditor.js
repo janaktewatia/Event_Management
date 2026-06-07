@@ -422,9 +422,9 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
   ) || [];
 
   return (
-    <div style={{ padding: 12, overflowY: "auto", height: "100%" }}>
+    <div style={{ padding: "8px 10px", overflowY: "auto", height: "100%" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f1f5f9" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, paddingBottom: 8, borderBottom: "1px solid #f1f5f9" }}>
         <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b", display: "flex", alignItems: "center", gap: 6 }}>
           <i className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`} style={{ color: "#a855f7" }} />
           {el.label || el.type}
@@ -441,7 +441,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Multi-Select Controls */}
       {selectedElements && selectedElements.length > 1 && (
-        <div style={{ background: "#f0fdf4", borderRadius: 8, padding: 10, marginBottom: 10, border: "1px solid #bbf7d0" }}>
+        <div style={{ background: "#f0fdf4", borderRadius: 8, padding: 8, marginBottom: 6, border: "1px solid #bbf7d0" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#22c55e", marginBottom: 8 }}>
             {selectedElements.length} Elements Selected
           </div>
@@ -509,7 +509,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Text Content - Show at top for text elements */}
       {isText && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Content</div>
           <PropRow label="">
             <textarea
@@ -539,7 +539,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
       )}
 
       {/* Position & Size */}
-      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Position & Size</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           <div>
@@ -562,7 +562,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
       </div>
 
       {/* Alignment */}
-      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Alignment</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4, marginBottom: 8 }}>
           <button onClick={() => onChange({ ...el, x: 0 })} style={{ ...smallBtn, fontSize: 10 }} title="Align Left">
@@ -595,7 +595,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
       </div>
 
       {/* Layer */}
-      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Layer</div>
         <div style={{ display: "flex", gap: 6 }}>
           <button onClick={onBring} style={{ flex: 1, ...smallBtn }}>
@@ -613,7 +613,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
       </div>
 
       {/* Appearance */}
-      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Appearance</div>
         <PropRow label="Background">
           <ColorInput value={el.bg || "transparent"} onChange={p("bg")} />
@@ -647,7 +647,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Text - Typography Section */}
       {isText && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Typography</div>
           <PropRow label="Font Family">
             <SelectInput value={el.fontFamily} onChange={p("fontFamily")} options={FONTS} />
@@ -777,7 +777,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Image/Logo */}
       {isMedia && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Image</div>
           <PropRow label="Image URL">
             <input
@@ -796,7 +796,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Form Field Properties */}
       {el.type === "form-field" && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Form Field Settings</div>
           <PropRow label="Map Field">
             <select
@@ -873,7 +873,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Form Select Properties */}
       {el.type === "form-select" && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Select Field Settings</div>
           <PropRow label="Field ID">
             <input
@@ -898,7 +898,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Form Submit Button Properties */}
       {el.type === "form-submit" && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Button Settings</div>
           <PropRow label="Button Text">
             <input

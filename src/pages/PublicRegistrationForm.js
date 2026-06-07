@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchPublicEvent, publicRegister } from "../services/api";
+import { fetchForm, fetchPublicEvent, publicRegister } from "../services/api";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const SYSTEM_FIELD_IDS = ["name", "email", "mobile"];
 
 const PublicRegistrationForm = () => {
-  const { eventId } = useParams();
+  const { eventId, formId } = useParams();
 
   const [event, setEvent] = useState(null);
+  const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({});
@@ -18,34 +19,77 @@ const PublicRegistrationForm = () => {
   const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
-    fetchPublicEvent(eventId)
-      .then((data) => {
-        setEvent(data);
-        const init = {};
-        (data.attendeeFields || [])
-          .filter((f) => f.enabled)
-          .forEach((f) => {
-            init[f.fieldId] = f.type === "multiple-choice" ? [] : "";
-          });
-        const enabledCategories = (data.categories || []).filter((c) => c.enabled);
-        if (enabledCategories.length > 0) {
-          init.category = "";
+    const loadPublicForm = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        if (formId) {
+          const fetchedForm = await fetchForm(formId);
+          setForm(fetchedForm);
+          const data = await fetchPublicEvent(fetchedForm.eventId);
+          setEvent(data);
+          const init = {};
+          (fetchedForm.fields || [])
+            .filter((f) => f.enabled !== false)
+            .forEach((f) => {
+              init[f.fieldId] = f.type === "multiple-choice" ? [] : "";
+            });
+          const enabledCategories = (data.categories || []).filter(
+            (c) =>
+              c.enabled &&
+              (fetchedForm.selectedCategories || []).includes(
+                c.categoryId || c.id || c._id,
+              ),
+          );
+          if (enabledCategories.length > 0) {
+            init.category = "";
+          }
+          setFormData(init);
+        } else {
+          const data = await fetchPublicEvent(eventId);
+          setEvent(data);
+          const init = {};
+          (data.attendeeFields || [])
+            .filter((f) => f.enabled)
+            .forEach((f) => {
+              init[f.fieldId] = f.type === "multiple-choice" ? [] : "";
+            });
+          const enabledCategories = (data.categories || []).filter(
+            (c) => c.enabled,
+          );
+          if (enabledCategories.length > 0) {
+            init.category = "";
+          }
+          setFormData(init);
         }
-        setFormData(init);
+      } catch (err) {
+        setError(
+          "This registration form is unavailable or the event does not exist.",
+        );
+      } finally {
         setLoading(false);
-      })
-      .catch(() => {
-        setError("This registration form is unavailable or the event does not exist.");
-        setLoading(false);
-      });
-  }, [eventId]);
+      }
+    };
+
+    loadPublicForm();
+  }, [eventId, formId]);
 
   const enabledFields = event
-    ? (event.attendeeFields || []).filter((f) => f.enabled)
+    ? formId
+      ? (form?.fields || []).filter((f) => f.enabled !== false)
+      : (event.attendeeFields || []).filter((f) => f.enabled)
     : [];
 
   const enabledCategories = event
-    ? (event.categories || []).filter((c) => c.enabled)
+    ? (event.categories || [])
+        .filter((c) => c.enabled)
+        .filter((category) =>
+          formId
+            ? (form?.selectedCategories || []).includes(
+                category.categoryId || category.id || category._id,
+              )
+            : true,
+        )
     : [];
 
   const handleChange = (fieldId, value) => {
@@ -129,7 +173,9 @@ const PublicRegistrationForm = () => {
         >
           <option value="">— Select an option —</option>
           {(field.options || []).map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
           ))}
         </select>
       );
@@ -190,7 +236,15 @@ const PublicRegistrationForm = () => {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#f8fafc",
+        }}
+      >
         <div className="text-center">
           <div className="spinner-border text-primary mb-3" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -203,11 +257,28 @@ const PublicRegistrationForm = () => {
 
   if (error) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#f8fafc",
+        }}
+      >
         <div className="container" style={{ maxWidth: 560 }}>
-          <div className="card border-0" style={{ borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.12)" }}>
+          <div
+            className="card border-0"
+            style={{
+              borderRadius: 16,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
+            }}
+          >
             <div className="card-body p-5 text-center">
-              <i className="bi bi-exclamation-circle text-danger mb-3" style={{ fontSize: 48, display: "block" }} />
+              <i
+                className="bi bi-exclamation-circle text-danger mb-3"
+                style={{ fontSize: 48, display: "block" }}
+              />
               <h4 className="fw-bold mb-2">Registration Unavailable</h4>
               <p className="text-muted mb-0">{error}</p>
             </div>
@@ -219,21 +290,41 @@ const PublicRegistrationForm = () => {
 
   if (submitted) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#f8fafc",
+        }}
+      >
         <div className="container" style={{ maxWidth: 560 }}>
-          <div className="card border-0" style={{ borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.12)" }}>
+          <div
+            className="card border-0"
+            style={{
+              borderRadius: 16,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
+            }}
+          >
             <div className="card-body p-5 text-center">
               <div className="mb-4">
-                <i className="bi bi-check-circle text-success" style={{ fontSize: 64, display: "block" }} />
+                <i
+                  className="bi bi-check-circle text-success"
+                  style={{ fontSize: 64, display: "block" }}
+                />
               </div>
               <h4 className="fw-bold mb-2">Registration Successful!</h4>
               <p className="text-muted mb-4">
-                Thank you for registering for <strong>{event?.eventName}</strong>. We look forward to seeing you!
+                Thank you for registering for{" "}
+                <strong>{event?.eventName}</strong>. We look forward to seeing
+                you!
               </p>
               <button
                 className="btn btn-lg"
                 style={{
-                  background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+                  background:
+                    "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
                   color: "white",
                   border: "none",
                   borderRadius: 10,
@@ -277,14 +368,28 @@ const PublicRegistrationForm = () => {
           <div style={{ fontSize: 12, opacity: 0.9, marginBottom: "0.5rem" }}>
             Event Management · Registration
           </div>
-          <h1 style={{ fontSize: 32, fontWeight: "bold", marginBottom: "0.5rem" }}>
+          <h1
+            style={{ fontSize: 32, fontWeight: "bold", marginBottom: "0.5rem" }}
+          >
             {event?.eventName}
           </h1>
-          <div style={{ display: "flex", justifyContent: "center", gap: "2rem", fontSize: 14, opacity: 0.95 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "2rem",
+              fontSize: 14,
+              opacity: 0.95,
+            }}
+          >
             {event?.startDate && (
               <div>
                 <i className="bi bi-calendar-event me-2" />
-                {new Date(event.startDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
+                {new Date(event.startDate).toLocaleDateString("en-IN", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
               </div>
             )}
             {event?.venue && (
@@ -320,7 +425,10 @@ const PublicRegistrationForm = () => {
               {/* Category Field */}
               {enabledCategories.length > 0 && (
                 <div className="mb-4">
-                  <label className="form-label fw-semibold mb-2" style={{ fontSize: 14 }}>
+                  <label
+                    className="form-label fw-semibold mb-2"
+                    style={{ fontSize: 14 }}
+                  >
                     Category <span className="text-danger">*</span>
                   </label>
                   <select
@@ -356,11 +464,19 @@ const PublicRegistrationForm = () => {
               )}
 
               {/* Dynamic Fields */}
-              {enabledFields.map((field) => (
+              {enabledFields.map((field, idx) => (
                 <div className="mb-4" key={field.fieldId}>
-                  <label className="form-label fw-semibold mb-2" style={{ fontSize: 14 }}>
+                  <label
+                    className="form-label fw-semibold mb-2"
+                    style={{ fontSize: 14 }}
+                  >
+                    <span style={{ color: "#7c3aed", fontWeight: 700, marginRight: "6px" }}>
+                      {idx + 1}.
+                    </span>
                     {field.label}
-                    {field.required && <span className="text-danger ms-1">*</span>}
+                    {field.required && (
+                      <span className="text-danger ms-1">*</span>
+                    )}
                   </label>
                   {renderField(field)}
                 </div>
@@ -368,7 +484,10 @@ const PublicRegistrationForm = () => {
 
               {/* Error Message */}
               {submitError && (
-                <div className="alert alert-danger py-3 mb-4" style={{ borderRadius: 10 }}>
+                <div
+                  className="alert alert-danger py-3 mb-4"
+                  style={{ borderRadius: 10 }}
+                >
                   <i className="bi bi-exclamation-circle me-2" />
                   {submitError}
                 </div>
@@ -379,7 +498,8 @@ const PublicRegistrationForm = () => {
                 type="submit"
                 className="btn btn-lg w-100"
                 style={{
-                  background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+                  background:
+                    "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
                   color: "white",
                   border: "none",
                   borderRadius: 10,
@@ -392,7 +512,9 @@ const PublicRegistrationForm = () => {
                 }}
                 disabled={submitting}
                 onMouseEnter={(e) => {
-                  if (!submitting) e.target.style.boxShadow = "0 10px 30px rgba(124, 58, 237, 0.3)";
+                  if (!submitting)
+                    e.target.style.boxShadow =
+                      "0 10px 30px rgba(124, 58, 237, 0.3)";
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.boxShadow = "none";
@@ -415,7 +537,10 @@ const PublicRegistrationForm = () => {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-4" style={{ fontSize: 12, color: "#94a3b8" }}>
+        <div
+          className="text-center mt-4"
+          style={{ fontSize: 12, color: "#94a3b8" }}
+        >
           <i className="bi bi-shield-check me-1" style={{ color: "#a855f7" }} />
           Powered by Event Management
         </div>

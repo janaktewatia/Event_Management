@@ -398,7 +398,7 @@ const SelectInput = ({ value, onChange, options }) => (
   </select>
 );
 
-const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate, onBring, onSend, canvasState, alignElements, distributeHorizontally, distributeVertically }) => {
+const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate, onBring, onSend, canvasState, alignElements, distributeHorizontally, distributeVertically, groupElements, ungroupElements }) => {
   if (!el)
     return (
       <div style={{ padding: 16 }}>
@@ -1394,7 +1394,7 @@ const FormEditor = ({ formId, onBack }) => {
         {/* Right Panel */}
         {!fullscreen && (
         <div style={{ width: 240, background: "#fff", borderLeft: "1px solid #e2e8f0", overflow: "hidden" }}>
-          <PropertiesPanel el={selectedElement} selectedElements={selectedElements} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} alignElements={alignElements} distributeHorizontally={distributeHorizontally} distributeVertically={distributeVertically} />
+          <PropertiesPanel el={selectedElement} selectedElements={selectedElements} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} alignElements={alignElements} distributeHorizontally={distributeHorizontally} distributeVertically={distributeVertically} groupElements={groupElements} ungroupElements={ungroupElements} />
         </div>
         )}
       </div>

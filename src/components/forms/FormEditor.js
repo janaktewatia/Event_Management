@@ -398,7 +398,34 @@ const SelectInput = ({ value, onChange, options }) => (
   </select>
 );
 
-const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate, onBring, onSend, canvasState, alignElements, distributeHorizontally, distributeVertically, groupElements, ungroupElements, form, gap, setGap }) => {
+const AccordionButton = ({ title, section, isOpen, onClick }) => (
+  <button
+    onClick={onClick}
+    style={{
+      width: "100%",
+      padding: "8px 10px",
+      background: isOpen ? "#f5f3ff" : "#f8fafc",
+      border: "1px solid #e2e8f0",
+      borderLeft: `3px solid ${isOpen ? "#a855f7" : "#e2e8f0"}`,
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      fontSize: 11,
+      fontWeight: 600,
+      color: isOpen ? "#7c3aed" : "#64748b",
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      marginTop: 6,
+      marginBottom: 0,
+    }}
+  >
+    {title}
+    <i className={`bi ${isOpen ? "bi-chevron-down" : "bi-chevron-right"}`} style={{ fontSize: 10 }} />
+  </button>
+);
+
+const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate, onBring, onSend, canvasState, alignElements, distributeHorizontally, distributeVertically, groupElements, ungroupElements, form, gap, setGap, openAccordion, setOpenAccordion }) => {
   const { events } = useEventData();
 
   if (!el)
@@ -539,8 +566,9 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
       )}
 
       {/* Position & Size */}
-      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Position & Size</div>
+      <AccordionButton title="Position & Size" section="position" isOpen={openAccordion === "position"} onClick={() => setOpenAccordion(openAccordion === "position" ? null : "position")} />
+      {openAccordion === "position" && (
+      <div style={{ background: "#f8fafc", borderRadius: 0, padding: 8, marginBottom: 6 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           <div>
             <span style={{ fontSize: 10, color: "#94a3b8" }}>X</span>
@@ -560,10 +588,12 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
           </div>
         </div>
       </div>
+      )}
 
       {/* Alignment */}
-      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Alignment</div>
+      <AccordionButton title="Alignment" section="alignment" isOpen={openAccordion === "alignment"} onClick={() => setOpenAccordion(openAccordion === "alignment" ? null : "alignment")} />
+      {openAccordion === "alignment" && (
+      <div style={{ background: "#f8fafc", borderRadius: 0, padding: 8, marginBottom: 6 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4, marginBottom: 8 }}>
           <button onClick={() => onChange({ ...el, x: 0 })} style={{ ...smallBtn, fontSize: 10 }} title="Align Left">
             <i className="bi bi-align-start" />
@@ -593,6 +623,7 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
           </button>
         </div>
       </div>
+      )}
 
       {/* Layer */}
       <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
@@ -1046,6 +1077,7 @@ const FormEditor = ({ formId, onBack }) => {
   const [error, setError] = useState("");
   const [fullscreen, setFullscreen] = useState(false);
   const [gap, setGap] = useState(10);
+  const [openAccordion, setOpenAccordion] = useState("position");
   const canvasRef = useRef(null);
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
@@ -1289,7 +1321,7 @@ const FormEditor = ({ formId, onBack }) => {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "#f1f5f9" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", width: "100vw", marginLeft: "calc(-50vw + 50%)", background: "#f1f5f9", position: "relative", zIndex: 999 }}>
       {/* Header */}
       <div style={{ padding: "12px 16px", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1462,7 +1494,7 @@ const FormEditor = ({ formId, onBack }) => {
         {/* Right Panel */}
         {!fullscreen && (
         <div style={{ width: 240, background: "#fff", borderLeft: "1px solid #e2e8f0", overflow: "hidden" }}>
-          <PropertiesPanel el={selectedElement} selectedElements={selectedElements} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} alignElements={alignElements} distributeHorizontally={distributeHorizontally} distributeVertically={distributeVertically} groupElements={groupElements} ungroupElements={ungroupElements} form={form} gap={gap} setGap={setGap} />
+          <PropertiesPanel el={selectedElement} selectedElements={selectedElements} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} alignElements={alignElements} distributeHorizontally={distributeHorizontally} distributeVertically={distributeVertically} groupElements={groupElements} ungroupElements={ungroupElements} form={form} gap={gap} setGap={setGap} openAccordion={openAccordion} setOpenAccordion={setOpenAccordion} />
         </div>
         )}
       </div>

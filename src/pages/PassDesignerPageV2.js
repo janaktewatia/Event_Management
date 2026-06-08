@@ -194,9 +194,7 @@ const CanvasEl = ({ el, selected }) => {
             overflow: "hidden", boxSizing: "border-box",
             whiteSpace: "pre-wrap", wordBreak: "break-word",
           }}>
-            {el.content && el.content.trim()
-              ? el.content
-              : <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>Empty…</span>}
+            {el.content && el.content.trim() ? el.content : ""}
           </div>
         )}
       </div>

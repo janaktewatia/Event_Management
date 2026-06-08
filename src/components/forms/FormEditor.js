@@ -1429,14 +1429,41 @@ const PropertiesPanel = ({
               }}
             >
               <option value="">— Select a field —</option>
-              {/* Fields */}
-              {(form?.fields || [])
-                .filter((f) => f.enabled === true)
-                .map((field) => (
-                  <option key={field.fieldId} value={field.fieldId}>
-                    {field.label} ({field.fieldName || field.fieldId})
-                  </option>
-                ))}
+              {(() => {
+                // Get unique field IDs that are currently used in elements
+                const usedFieldIds = new Set(
+                  elements
+                    ?.filter((e) => e.fieldId)
+                    .map((e) => e.fieldId) || []
+                );
+
+                // First group: Already selected fields
+                const selectedFields = (form?.fields || [])
+                  .filter((f) => f.enabled === true && (el.fieldId === f.fieldId || usedFieldIds.has(f.fieldId)));
+
+                return (
+                  <>
+                    {selectedFields.length > 0 && (
+                      <>
+                        {selectedFields.map((field) => (
+                          <option key={field.fieldId} value={field.fieldId}>
+                            {field.label} ({field.fieldName || field.fieldId})
+                          </option>
+                        ))}
+                        <option disabled>─────────────────</option>
+                      </>
+                    )}
+                    {/* Show all available fields */}
+                    {(form?.fields || [])
+                      .filter((f) => f.enabled === true && !usedFieldIds.has(f.fieldId) && el.fieldId !== f.fieldId)
+                      .map((field) => (
+                        <option key={field.fieldId} value={field.fieldId}>
+                          {field.label} ({field.fieldName || field.fieldId})
+                        </option>
+                      ))}
+                  </>
+                );
+              })()}
               {/* Categories */}
               {selectedCategories.length > 0 && (
                 <>

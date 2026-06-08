@@ -1905,106 +1905,208 @@ const CanvasEl = ({ el, selected, onMouseDown }) => {
   );
 };
 
-// Generate default design elements for new forms
+// Generate professional industry-level design elements for new forms
 const generateDefaultElements = (form) => {
   if (!form) return [];
 
   const enabledFields = (form.fields || []).filter((f) => f.enabled !== false);
   const defaultElements = [];
-  let yPosition = 20;
 
-  // Header
+  // Background Image
   defaultElements.push({
     id: Math.random().toString(36).slice(2, 9),
-    type: "header",
-    x: 50,
-    y: yPosition,
-    w: 500,
-    h: 60,
-    label: "Header",
-    content: form.formName || "Registration Form",
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#ffffff",
-    bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    textAlign: "center",
-    zIndex: 1,
+    type: "image",
+    x: 0,
+    y: 0,
+    w: 600,
+    h: 900,
+    label: "Background",
+    imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=900&fit=crop",
+    objectFit: "cover",
+    opacity: 0.3,
+    zIndex: 0,
   });
 
-  yPosition += 90;
-
-  // Description
+  // Left side content area (overlay)
   defaultElements.push({
     id: Math.random().toString(36).slice(2, 9),
     type: "text",
-    x: 50,
-    y: yPosition,
-    w: 500,
-    h: 40,
-    label: "Description",
-    content: "Please fill out the form below",
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
+    x: 30,
+    y: 40,
+    w: 250,
+    h: 150,
+    label: "Brand Heading",
+    content: "Let's Connect",
+    fontSize: 32,
+    fontWeight: "700",
+    color: "#ffffff",
+    textAlign: "left",
+    zIndex: 2,
+  });
+
+  defaultElements.push({
+    id: Math.random().toString(36).slice(2, 9),
+    type: "text",
+    x: 30,
+    y: 190,
+    w: 250,
+    h: 100,
+    label: "Brand Description",
+    content: `${form.formName || 'Registration Form'}\n\nJoin us today and be part of something amazing. Fill out the form and we'll be in touch.`,
+    fontSize: 13,
+    color: "#e0e0e0",
+    textAlign: "left",
+    lineHeight: 1.6,
+    zIndex: 2,
+  });
+
+  // Right side - Form container (white background)
+  let formStartY = 50;
+
+  // Form background box
+  defaultElements.push({
+    id: Math.random().toString(36).slice(2, 9),
+    type: "divider",
+    x: 320,
+    y: formStartY,
+    w: 260,
+    h: 30 + (enabledFields.length * 70) + 60,
+    label: "Form Container",
+    bg: "#ffffff",
+    borderRadius: 12,
+    borderWidth: 0,
     zIndex: 1,
   });
 
-  yPosition += 60;
+  // Logo/Icon
+  defaultElements.push({
+    id: Math.random().toString(36).slice(2, 9),
+    type: "image",
+    x: 380,
+    y: formStartY + 20,
+    w: 60,
+    h: 60,
+    label: "Logo",
+    imageUrl: "https://via.placeholder.com/60x60/667eea/ffffff?text=Logo",
+    objectFit: "contain",
+    zIndex: 2,
+  });
 
-  // Form fields
+  // Form title
+  defaultElements.push({
+    id: Math.random().toString(36).slice(2, 9),
+    type: "header",
+    x: 330,
+    y: formStartY + 90,
+    w: 240,
+    h: 35,
+    label: "Form Title",
+    content: form.formName || "Registration",
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#333333",
+    textAlign: "center",
+    bg: "transparent",
+    zIndex: 2,
+  });
+
+  // Form subtitle
+  defaultElements.push({
+    id: Math.random().toString(36).slice(2, 9),
+    type: "text",
+    x: 330,
+    y: formStartY + 125,
+    w: 240,
+    h: 20,
+    label: "Form Subtitle",
+    content: "Fill in your details below",
+    fontSize: 12,
+    color: "#888888",
+    textAlign: "center",
+    zIndex: 2,
+  });
+
+  let fieldY = formStartY + 160;
+
+  // Render ALL enabled fields
   enabledFields.forEach((field, idx) => {
+    // Field label
+    defaultElements.push({
+      id: Math.random().toString(36).slice(2, 9),
+      type: "text",
+      x: 340,
+      y: fieldY,
+      w: 220,
+      h: 16,
+      label: `Field Label: ${field.label}`,
+      content: `${field.label}${field.required ? ' *' : ''}`,
+      fontSize: 12,
+      fontWeight: "600",
+      color: "#333333",
+      zIndex: 2,
+    });
+
+    // Field input
     defaultElements.push({
       id: Math.random().toString(36).slice(2, 9),
       type: "form-field",
-      x: 50,
-      y: yPosition,
-      w: 500,
-      h: 45,
-      label: `${idx + 1}. ${field.label}`,
+      x: 340,
+      y: fieldY + 20,
+      w: 220,
+      h: 42,
+      label: field.label,
       fieldId: field.fieldId,
-      placeholder: field.label,
+      placeholder: `Enter ${field.label.toLowerCase()}`,
       content: field.label,
       fontSize: 13,
       required: field.required,
-      zIndex: 1,
+      bg: "#f5f5f5",
+      borderWidth: 1,
+      borderColor: "#e0e0e0",
+      borderRadius: 6,
+      paddingX: 12,
+      paddingY: 10,
+      zIndex: 2,
     });
-    yPosition += 55;
+
+    fieldY += 70;
   });
 
   // Submit Button
   defaultElements.push({
     id: Math.random().toString(36).slice(2, 9),
     type: "submit-button",
-    x: 50,
-    y: yPosition,
-    w: 500,
+    x: 340,
+    y: fieldY,
+    w: 220,
     h: 45,
     label: "Submit Button",
-    content: "Submit",
+    content: "Send Message",
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#ffffff",
     bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     textAlign: "center",
-    zIndex: 1,
+    borderRadius: 6,
+    zIndex: 2,
   });
 
-  yPosition += 65;
+  fieldY += 60;
 
   // Footer
   defaultElements.push({
     id: Math.random().toString(36).slice(2, 9),
     type: "text",
-    x: 50,
-    y: yPosition,
-    w: 500,
+    x: 30,
+    y: fieldY + 50,
+    w: 540,
     h: 30,
     label: "Footer",
-    content: "© 2026 Event Management. All rights reserved.",
+    content: "© 2026 Event Management. All rights reserved. | Privacy Policy",
     fontSize: 11,
-    color: "#999",
+    color: "#cccccc",
     textAlign: "center",
-    zIndex: 1,
+    zIndex: 2,
   });
 
   return defaultElements;
@@ -2023,14 +2125,14 @@ const FormEditor = ({ formId, onBack }) => {
 
   // Calculate default canvas height based on number of fields
   const enabledFieldsCount = (form?.fields || []).filter(f => f.enabled !== false).length;
-  const defaultCanvasHeight = 200 + (enabledFieldsCount * 55) + 100;
+  const defaultCanvasHeight = 300 + (enabledFieldsCount * 70) + 150;
 
   const [elements, setElements] = useState(initialElements);
   const [selectedElementIds, setSelectedElementIds] = useState([]);
   const [canvas, setCanvas] = useState({
     width: 600,
-    height: Math.max(400, defaultCanvasHeight),
-    background: "#ffffff",
+    height: Math.max(600, defaultCanvasHeight),
+    background: "#f5f5f5",
     borderRadius: 0,
   });
   const [zoom, setZoom] = useState(1);

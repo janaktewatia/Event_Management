@@ -8,6 +8,7 @@ import {
 } from "react-icons/fi";
 import { useForm } from "../../context/FormContext";
 import { useEventData } from "../../context/EventDataContext";
+import { generateProfessionalFormDesign, generateModernFormDesign, generateMinimalFormDesign } from "../../utils/generateFormDesigns";
 
 const DYNAMIC_FIELDS = [
   { key: "{{name}}", label: "Attendee Name" },
@@ -2630,6 +2631,92 @@ const FormEditor = ({ formId, onBack }) => {
           overflowX: "auto",
         }}
       >
+        {/* Load Default Designs */}
+        <div style={{ display: "flex", gap: 6, flexShrink: 0, alignItems: "center" }}>
+          <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>Design:</span>
+          <button
+            onClick={() => {
+              const designs = generateProfessionalFormDesign(form);
+              setElements(designs);
+              alert("Professional design loaded!");
+            }}
+            title="Load Professional Design"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "4px 8px",
+              height: 32,
+              borderRadius: 6,
+              border: "1px solid #e2e8f0",
+              background: "#f8fafc",
+              color: "#475569",
+              cursor: "pointer",
+              fontSize: 11,
+              fontWeight: 500,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            Professional
+          </button>
+          <button
+            onClick={() => {
+              const designs = generateModernFormDesign(form);
+              setElements(designs);
+              alert("Modern design loaded!");
+            }}
+            title="Load Modern Design"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "4px 8px",
+              height: 32,
+              borderRadius: 6,
+              border: "1px solid #e2e8f0",
+              background: "#f8fafc",
+              color: "#475569",
+              cursor: "pointer",
+              fontSize: 11,
+              fontWeight: 500,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            Modern
+          </button>
+          <button
+            onClick={() => {
+              const designs = generateMinimalFormDesign(form);
+              setElements(designs);
+              alert("Minimal design loaded!");
+            }}
+            title="Load Minimal Design"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "4px 8px",
+              height: 32,
+              borderRadius: 6,
+              border: "1px solid #e2e8f0",
+              background: "#f8fafc",
+              color: "#475569",
+              cursor: "pointer",
+              fontSize: 11,
+              fontWeight: 500,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            Minimal
+          </button>
+        </div>
+
+        {/* Separator */}
+        <div style={{ width: "1px", height: 20, background: "#e2e8f0", flexShrink: 0 }} />
+
         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
           {ELEMENT_BTNS.map(({ type, icon, label }) => (
             <button

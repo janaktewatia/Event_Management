@@ -1090,7 +1090,6 @@ const PassDesignerPageV2 = () => {
                 const designs = generateProfessionalPassDesign(selectedEvent);
                 setElements(designs);
                 setSelectedIds([]);
-                toast.success("Professional design loaded!");
                 setTimeout(captureHistory, 0);
               }}
                 style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>
@@ -1100,7 +1099,6 @@ const PassDesignerPageV2 = () => {
                 const designs = generateModernPassDesign(selectedEvent);
                 setElements(designs);
                 setSelectedIds([]);
-                toast.success("Modern design loaded!");
                 setTimeout(captureHistory, 0);
               }}
                 style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>
@@ -1110,7 +1108,6 @@ const PassDesignerPageV2 = () => {
                 const designs = generateMinimalPassDesign(selectedEvent);
                 setElements(designs);
                 setSelectedIds([]);
-                toast.success("Minimal design loaded!");
                 setTimeout(captureHistory, 0);
               }}
                 style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>

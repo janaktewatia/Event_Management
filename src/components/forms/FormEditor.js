@@ -2638,7 +2638,6 @@ const FormEditor = ({ formId, onBack }) => {
             onClick={() => {
               const designs = generateProfessionalFormDesign(form);
               setElements(designs);
-              alert("Professional design loaded!");
             }}
             title="Load Professional Design"
             style={{
@@ -2664,7 +2663,6 @@ const FormEditor = ({ formId, onBack }) => {
             onClick={() => {
               const designs = generateModernFormDesign(form);
               setElements(designs);
-              alert("Modern design loaded!");
             }}
             title="Load Modern Design"
             style={{
@@ -2690,7 +2688,6 @@ const FormEditor = ({ formId, onBack }) => {
             onClick={() => {
               const designs = generateMinimalFormDesign(form);
               setElements(designs);
-              alert("Minimal design loaded!");
             }}
             title="Load Minimal Design"
             style={{

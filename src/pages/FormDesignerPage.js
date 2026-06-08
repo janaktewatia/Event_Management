@@ -44,8 +44,18 @@ const FormDesignerPage = () => {
     }
   };
 
+  const generateFormSlug = (name) => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_-]/g, "");
+  };
+
   const copyLink = (formId) => {
-    const link = `${window.location.origin}/form/${formId}`;
+    const form = forms.find(f => f.id === formId || f._id === formId);
+    const slug = generateFormSlug(form?.formName || "form");
+    const link = `${window.location.origin}/form/${slug}`;
     navigator.clipboard.writeText(link);
     alert("Form link copied!");
   };

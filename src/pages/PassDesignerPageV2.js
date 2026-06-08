@@ -1082,6 +1082,43 @@ const PassDesignerPageV2 = () => {
       <div style={{ display: "flex", flex: 1, gap: 0, minHeight: 0, overflow: "hidden" }}>
         {/* Left Panel (EXACT COPY from PassTemplateEditor) */}
         <div style={{ width: 200, background: "#fff", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          {/* Pass Designs - At Top */}
+          <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Pass Designs</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <button onClick={() => {
+                const designs = generateProfessionalPassDesign(selectedEvent);
+                setElements(designs);
+                setSelectedIds([]);
+                toast.success("Professional design loaded!");
+                setTimeout(captureHistory, 0);
+              }}
+                style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>
+                Professional
+              </button>
+              <button onClick={() => {
+                const designs = generateModernPassDesign(selectedEvent);
+                setElements(designs);
+                setSelectedIds([]);
+                toast.success("Modern design loaded!");
+                setTimeout(captureHistory, 0);
+              }}
+                style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>
+                Modern
+              </button>
+              <button onClick={() => {
+                const designs = generateMinimalPassDesign(selectedEvent);
+                setElements(designs);
+                setSelectedIds([]);
+                toast.success("Minimal design loaded!");
+                setTimeout(captureHistory, 0);
+              }}
+                style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>
+                Minimal
+              </button>
+            </div>
+          </div>
+
           {/* Canvas settings */}
           <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9" }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Canvas</div>
@@ -1111,43 +1148,6 @@ const PassDesignerPageV2 = () => {
                 </button>
               ))}
             </div>
-            {/* Load Default Designs */}
-            <div style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 4, fontWeight: 600, textTransform: "uppercase" }}>Default Designs</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                <button onClick={() => {
-                  const designs = generateProfessionalPassDesign(selectedEvent);
-                  setElements(designs);
-                  setSelectedIds([]);
-                  toast.success("Professional design loaded!");
-                  setTimeout(captureHistory, 0);
-                }}
-                  style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>
-                  Professional
-                </button>
-                <button onClick={() => {
-                  const designs = generateModernPassDesign(selectedEvent);
-                  setElements(designs);
-                  setSelectedIds([]);
-                  toast.success("Modern design loaded!");
-                  setTimeout(captureHistory, 0);
-                }}
-                  style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>
-                  Modern
-                </button>
-                <button onClick={() => {
-                  const designs = generateMinimalPassDesign(selectedEvent);
-                  setElements(designs);
-                  setSelectedIds([]);
-                  toast.success("Minimal design loaded!");
-                  setTimeout(captureHistory, 0);
-                }}
-                  style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>
-                  Minimal
-                </button>
-              </div>
-            </div>
-
             {/* Use Template */}
             {templates.length > 0 && (
               <div style={{ marginBottom: 10 }}>

@@ -10,10 +10,11 @@ router.get("/", async (_req, res) => {
     const forms = await Form.find().sort({ createdAt: -1 });
     // Generate default elements for forms that don't have them
     const formsWithElements = forms.map((form) => {
-      if (!form.elements || form.elements.length === 0) {
-        form.elements = generateDefaultFormElements(form);
+      const formData = form.toObject ? form.toObject() : form;
+      if (!formData.elements || formData.elements.length === 0) {
+        formData.elements = generateDefaultFormElements(formData);
       }
-      return form;
+      return formData;
     });
     res.json(formsWithElements);
   } catch (err) {
@@ -37,12 +38,15 @@ router.get("/slug/:slug", async (req, res) => {
       return res.status(404).json({ error: "Form not found" });
     }
 
+    // Convert to plain object to allow modifications
+    let formData = form.toObject ? form.toObject() : form;
+
     // Generate default elements if missing
-    if (!form.elements || form.elements.length === 0) {
-      form.elements = generateDefaultFormElements(form);
+    if (!formData.elements || formData.elements.length === 0) {
+      formData.elements = generateDefaultFormElements(formData);
     }
 
-    res.json(form);
+    res.json(formData);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -54,12 +58,15 @@ router.get("/:id", async (req, res) => {
     let form = await Form.findById(req.params.id);
     if (!form) return res.status(404).json({ error: "Form not found" });
 
+    // Convert to plain object
+    let formData = form.toObject ? form.toObject() : form;
+
     // Generate default elements if missing
-    if (!form.elements || form.elements.length === 0) {
-      form.elements = generateDefaultFormElements(form);
+    if (!formData.elements || formData.elements.length === 0) {
+      formData.elements = generateDefaultFormElements(formData);
     }
 
-    res.json(form);
+    res.json(formData);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

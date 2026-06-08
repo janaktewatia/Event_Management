@@ -477,12 +477,35 @@ const PublicRegistrationForm = () => {
 
   // Render custom form design if available
   if (form?.elements && form.elements.length > 0) {
+    // Find background and form container elements
+    const bgElement = form.elements.find((e) => e.type === "image" && e.label === "Background Image");
+    const brandBgElement = form.elements.find((e) => e.label === "Brand Background");
+
     return (
-      <div style={{ minHeight: "100vh", background: "#f8fafc", overflow: "hidden" }}>
+      <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
+        {/* Background */}
+        {bgElement && bgElement.imageUrl && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              backgroundImage: `url(${bgElement.imageUrl})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              opacity: bgElement.opacity || 0.25,
+              zIndex: 0,
+            }}
+          />
+        )}
+
+        {/* Content Container */}
         <div
           style={{
             position: "relative",
-            width: "100%",
+            zIndex: 1,
             minHeight: "100vh",
             display: "flex",
             alignItems: "center",
@@ -490,175 +513,193 @@ const PublicRegistrationForm = () => {
             padding: "2rem 1rem",
           }}
         >
-          {/* Render background images and design elements */}
-          <div style={{ position: "relative", width: "100%", maxWidth: 600 }}>
-            {form.elements.map((elem) => {
-              if (elem.type === "image") {
-                return (
-                  <div
-                    key={elem.id}
-                    style={{
-                      position: "absolute",
-                      left: `${elem.x}px`,
-                      top: `${elem.y}px`,
-                      width: `${elem.w}px`,
-                      height: `${elem.h}px`,
-                      zIndex: elem.zIndex || 0,
-                      opacity: elem.opacity || 1,
-                    }}
-                  >
-                    <img
-                      src={elem.imageUrl}
-                      alt={elem.label}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: elem.objectFit || "cover",
-                        display: "block",
-                      }}
-                    />
-                  </div>
-                );
-              }
+          <div style={{ width: "100%", maxWidth: 600 }}>
+            {/* Left side branding (if exists) */}
+            {brandBgElement && (
+              <div
+                style={{
+                  display: "none",
+                  "@media (min-width: 768px)": {
+                    display: "block",
+                  },
+                }}
+              >
+                {form.elements
+                  .filter((e) => e.x < 300)
+                  .map((elem) => {
+                    if (elem.type === "header") {
+                      return (
+                        <div key={elem.id} style={{ marginBottom: "1rem", color: "white" }}>
+                          <h2 style={{ fontSize: "36px", fontWeight: "700", marginBottom: "1rem" }}>
+                            {elem.content}
+                          </h2>
+                        </div>
+                      );
+                    }
+                    if (elem.type === "text" && elem.label === "Brand Description") {
+                      return (
+                        <div key={elem.id} style={{ color: "#e0e0e0", marginBottom: "2rem" }}>
+                          <p style={{ whiteSpace: "pre-wrap" }}>{elem.content}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+              </div>
+            )}
 
-              if (elem.type === "text" || elem.type === "header") {
-                return (
-                  <div
-                    key={elem.id}
-                    style={{
-                      position: "absolute",
-                      left: `${elem.x}px`,
-                      top: `${elem.y}px`,
-                      width: `${elem.w}px`,
-                      height: `${elem.h}px`,
-                      background: elem.bg || "transparent",
-                      borderRadius: `${elem.borderRadius || 0}px`,
-                      zIndex: elem.zIndex || 1,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: `${elem.paddingY || 0}px ${elem.paddingX || 0}px`,
-                      whiteSpace: "pre-wrap",
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: `${elem.fontSize || 14}px`,
-                        fontWeight: elem.fontWeight || "400",
-                        color: elem.color || "#1e293b",
-                        textAlign: elem.textAlign || "left",
-                        lineHeight: elem.lineHeight || 1.4,
-                        fontFamily: elem.fontFamily || "Inter, sans-serif",
-                      }}
-                    >
-                      {elem.content}
-                    </div>
-                  </div>
-                );
-              }
-
-              return null;
-            })}
-
-            {/* Form Fields Container */}
-            <form
-              onSubmit={handleSubmit}
-              noValidate
+            {/* Form Container */}
+            <div
               style={{
-                position: "relative",
-                zIndex: 100,
                 background: "white",
-                borderRadius: 12,
+                borderRadius: 16,
+                boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
                 padding: "2rem",
-                boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
               }}
             >
-              {/* Category Field */}
-              {enabledCategories.length > 0 && (
-                <div className="mb-4">
-                  <label
-                    className="form-label fw-semibold mb-2"
-                    style={{ fontSize: 14 }}
-                  >
-                    Category <span className="text-danger">*</span>
-                  </label>
-                  <select
-                    className="form-select"
-                    style={{
-                      borderRadius: 10,
-                      borderColor: "#e2e8f0",
-                      padding: "12px 16px",
-                    }}
-                    value={formData.category || ""}
-                    onChange={(e) => handleChange("category", e.target.value)}
-                    required
-                  >
-                    <option value="">— Select a category —</option>
-                    {enabledCategories.map((cat) => (
-                      <option key={cat.categoryId} value={cat.label}>
-                        {cat.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Dynamic Fields */}
-              {enabledFields.map((field) => (
-                <div className="mb-4" key={field.fieldId}>
-                  <label
-                    className="form-label fw-semibold mb-2"
-                    style={{ fontSize: 14 }}
-                  >
-                    {field.label}
-                    {field.required && (
-                      <span className="text-danger ms-1">*</span>
+              {/* Logo and Form Header */}
+              {form.elements
+                .filter((e) => (e.label === "Logo" || e.label === "Form Title") && e.imageUrl)
+                .map((elem) => (
+                  <div key={elem.id} style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+                    {elem.label === "Logo" && (
+                      <img
+                        src={elem.imageUrl}
+                        alt="Logo"
+                        style={{
+                          maxWidth: "90px",
+                          maxHeight: "50px",
+                          marginBottom: "1rem",
+                        }}
+                      />
                     )}
-                  </label>
-                  {renderField(field)}
-                </div>
-              ))}
+                  </div>
+                ))}
 
-              {/* Error Message */}
-              {submitError && (
-                <div
-                  className="alert alert-danger py-3 mb-4"
-                  style={{ borderRadius: 10 }}
-                >
-                  <i className="bi bi-exclamation-circle me-2" />
-                  {submitError}
-                </div>
-              )}
+              {/* Form Title */}
+              {form.elements
+                .filter((e) => e.label === "Form Title" && e.type === "header")
+                .map((elem) => (
+                  <h3
+                    key={elem.id}
+                    style={{
+                      textAlign: "center",
+                      marginBottom: "2rem",
+                      fontSize: "24px",
+                      fontWeight: "700",
+                      color: elem.color || "#1e293b",
+                    }}
+                  >
+                    {elem.content}
+                  </h3>
+                ))}
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="btn btn-lg w-100"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 10,
-                  fontWeight: 600,
-                  padding: "14px 24px",
-                  transition: "all 0.3s ease",
-                  cursor: submitting ? "not-allowed" : "pointer",
-                  opacity: submitting ? 0.8 : 1,
-                }}
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Register Now"
+              <form onSubmit={handleSubmit} noValidate>
+                {/* Category Field */}
+                {enabledCategories.length > 0 && (
+                  <div className="mb-4">
+                    <label
+                      className="form-label fw-semibold mb-2"
+                      style={{ fontSize: 14 }}
+                    >
+                      Category <span className="text-danger">*</span>
+                    </label>
+                    <select
+                      className="form-select"
+                      style={{
+                        borderRadius: 10,
+                        borderColor: "#e2e8f0",
+                        padding: "12px 16px",
+                      }}
+                      value={formData.category || ""}
+                      onChange={(e) => handleChange("category", e.target.value)}
+                      required
+                    >
+                      <option value="">— Select a category —</option>
+                      {enabledCategories.map((cat) => (
+                        <option key={cat.categoryId} value={cat.label}>
+                          {cat.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 )}
-              </button>
-            </form>
+
+                {/* Dynamic Fields */}
+                {enabledFields.map((field) => (
+                  <div className="mb-4" key={field.fieldId}>
+                    <label
+                      className="form-label fw-semibold mb-2"
+                      style={{ fontSize: 14 }}
+                    >
+                      {field.label}
+                      {field.required && (
+                        <span className="text-danger ms-1">*</span>
+                      )}
+                    </label>
+                    {renderField(field)}
+                  </div>
+                ))}
+
+                {/* Error Message */}
+                {submitError && (
+                  <div
+                    className="alert alert-danger py-3 mb-4"
+                    style={{ borderRadius: 10 }}
+                  >
+                    <i className="bi bi-exclamation-circle me-2" />
+                    {submitError}
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className="btn btn-lg w-100"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 10,
+                    fontWeight: 600,
+                    padding: "14px 24px",
+                    transition: "all 0.3s ease",
+                    cursor: submitting ? "not-allowed" : "pointer",
+                    opacity: submitting ? 0.8 : 1,
+                  }}
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Register Now"
+                  )}
+                </button>
+              </form>
+
+              {/* Footer */}
+              {form.elements
+                .filter((e) => e.label === "Footer" || e.type === "footer")
+                .map((elem) => (
+                  <div
+                    key={elem.id}
+                    style={{
+                      textAlign: "center",
+                      marginTop: "1.5rem",
+                      paddingTop: "1.5rem",
+                      borderTop: "1px solid #e2e8f0",
+                      fontSize: "12px",
+                      color: "#94a3b8",
+                    }}
+                  >
+                    {elem.content}
+                  </div>
+                ))}
+            </div>
           </div>
         </div>
       </div>

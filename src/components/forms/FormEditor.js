@@ -1911,202 +1911,250 @@ const generateDefaultElements = (form) => {
 
   const enabledFields = (form.fields || []).filter((f) => f.enabled !== false);
   const defaultElements = [];
+  let zIndex = 1;
 
-  // Background Image
+  // ========== BACKGROUND SECTION ==========
+  // Background Image (Editable)
   defaultElements.push({
     id: Math.random().toString(36).slice(2, 9),
     type: "image",
     x: 0,
     y: 0,
     w: 600,
-    h: 900,
-    label: "Background",
-    imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=900&fit=crop",
+    h: 1000,
+    label: "Background Image",
+    imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=1000&fit=crop",
     objectFit: "cover",
-    opacity: 0.3,
-    zIndex: 0,
+    opacity: 0.25,
+    zIndex: zIndex++,
   });
 
-  // Left side content area (overlay)
+  // ========== LEFT SIDE BRANDING ==========
+  // Brand Background (editable rectangle)
   defaultElements.push({
     id: Math.random().toString(36).slice(2, 9),
     type: "text",
-    x: 30,
-    y: 40,
-    w: 250,
-    h: 150,
-    label: "Brand Heading",
-    content: "Let's Connect",
-    fontSize: 32,
-    fontWeight: "700",
-    color: "#ffffff",
-    textAlign: "left",
-    zIndex: 2,
-  });
-
-  defaultElements.push({
-    id: Math.random().toString(36).slice(2, 9),
-    type: "text",
-    x: 30,
-    y: 190,
-    w: 250,
-    h: 100,
-    label: "Brand Description",
-    content: `${form.formName || 'Registration Form'}\n\nJoin us today and be part of something amazing. Fill out the form and we'll be in touch.`,
-    fontSize: 13,
-    color: "#e0e0e0",
-    textAlign: "left",
-    lineHeight: 1.6,
-    zIndex: 2,
-  });
-
-  // Right side - Form container (white background)
-  let formStartY = 50;
-
-  // Form background box
-  defaultElements.push({
-    id: Math.random().toString(36).slice(2, 9),
-    type: "divider",
-    x: 320,
-    y: formStartY,
-    w: 260,
-    h: 30 + (enabledFields.length * 70) + 60,
-    label: "Form Container",
-    bg: "#ffffff",
+    x: 20,
+    y: 30,
+    w: 280,
+    h: 200,
+    label: "Brand Background",
+    content: "",
+    bg: "rgba(51, 51, 51, 0.7)",
     borderRadius: 12,
-    borderWidth: 0,
-    zIndex: 1,
+    zIndex: zIndex++,
   });
 
-  // Logo/Icon
-  defaultElements.push({
-    id: Math.random().toString(36).slice(2, 9),
-    type: "image",
-    x: 380,
-    y: formStartY + 20,
-    w: 60,
-    h: 60,
-    label: "Logo",
-    imageUrl: "https://via.placeholder.com/60x60/667eea/ffffff?text=Logo",
-    objectFit: "contain",
-    zIndex: 2,
-  });
-
-  // Form title
+  // Brand Main Heading (Fully Editable)
   defaultElements.push({
     id: Math.random().toString(36).slice(2, 9),
     type: "header",
-    x: 330,
-    y: formStartY + 90,
+    x: 40,
+    y: 50,
     w: 240,
-    h: 35,
+    h: 60,
+    label: "Main Heading",
+    content: "Welcome!",
+    fontSize: 36,
+    fontWeight: "700",
+    color: "#ffffff",
+    textAlign: "left",
+    bg: "transparent",
+    zIndex: zIndex++,
+  });
+
+  // Brand Subtitle (Fully Editable)
+  defaultElements.push({
+    id: Math.random().toString(36).slice(2, 9),
+    type: "text",
+    x: 40,
+    y: 120,
+    w: 240,
+    h: 60,
+    label: "Brand Description",
+    content: form.formName + "\n\nFill out the form and get started today!",
+    fontSize: 14,
+    color: "#e0e0e0",
+    textAlign: "left",
+    lineHeight: 1.5,
+    zIndex: zIndex++,
+  });
+
+  // ========== RIGHT SIDE FORM ==========
+  const formX = 320;
+  const formW = 260;
+  let currentY = 40;
+
+  // Logo Section (Editable Image)
+  defaultElements.push({
+    id: Math.random().toString(36).slice(2, 9),
+    type: "image",
+    x: formX + 85,
+    y: currentY,
+    w: 90,
+    h: 50,
+    label: "Logo",
+    imageUrl: "https://via.placeholder.com/90x50/667eea/ffffff?text=Logo",
+    objectFit: "contain",
+    zIndex: zIndex++,
+  });
+
+  currentY += 70;
+
+  // Form Title (Editable Header)
+  defaultElements.push({
+    id: Math.random().toString(36).slice(2, 9),
+    type: "header",
+    x: formX + 10,
+    y: currentY,
+    w: 240,
+    h: 40,
     label: "Form Title",
     content: form.formName || "Registration",
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "700",
     color: "#333333",
     textAlign: "center",
     bg: "transparent",
-    zIndex: 2,
+    zIndex: zIndex++,
   });
 
-  // Form subtitle
+  currentY += 50;
+
+  // Form Subtitle (Editable Text)
   defaultElements.push({
     id: Math.random().toString(36).slice(2, 9),
     type: "text",
-    x: 330,
-    y: formStartY + 125,
+    x: formX + 10,
+    y: currentY,
     w: 240,
-    h: 20,
+    h: 25,
     label: "Form Subtitle",
-    content: "Fill in your details below",
-    fontSize: 12,
+    content: "Please fill in your information",
+    fontSize: 13,
     color: "#888888",
     textAlign: "center",
-    zIndex: 2,
+    zIndex: zIndex++,
   });
 
-  let fieldY = formStartY + 160;
+  currentY += 35;
 
-  // Render ALL enabled fields
+  // Divider (Editable Line)
+  defaultElements.push({
+    id: Math.random().toString(36).slice(2, 9),
+    type: "divider",
+    x: formX + 20,
+    y: currentY,
+    w: 220,
+    h: 1,
+    label: "Divider",
+    bg: "#eeeeee",
+    borderWidth: 0,
+    zIndex: zIndex++,
+  });
+
+  currentY += 20;
+
+  // ========== FORM FIELDS (ALL OF THEM) ==========
   enabledFields.forEach((field, idx) => {
-    // Field label
+    // Field Label (Editable Text)
     defaultElements.push({
       id: Math.random().toString(36).slice(2, 9),
       type: "text",
-      x: 340,
-      y: fieldY,
-      w: 220,
-      h: 16,
-      label: `Field Label: ${field.label}`,
-      content: `${field.label}${field.required ? ' *' : ''}`,
-      fontSize: 12,
+      x: formX + 15,
+      y: currentY,
+      w: 230,
+      h: 18,
+      label: `Label: ${field.label}`,
+      content: `${idx + 1}. ${field.label}${field.required ? ' *' : ''}`,
+      fontSize: 13,
       fontWeight: "600",
       color: "#333333",
-      zIndex: 2,
+      zIndex: zIndex++,
     });
 
-    // Field input
+    currentY += 22;
+
+    // Field Input (Editable Form Field)
     defaultElements.push({
       id: Math.random().toString(36).slice(2, 9),
       type: "form-field",
-      x: 340,
-      y: fieldY + 20,
-      w: 220,
-      h: 42,
+      x: formX + 15,
+      y: currentY,
+      w: 230,
+      h: 40,
       label: field.label,
       fieldId: field.fieldId,
       placeholder: `Enter ${field.label.toLowerCase()}`,
       content: field.label,
       fontSize: 13,
       required: field.required,
-      bg: "#f5f5f5",
+      bg: "#f9f9f9",
+      color: "#333333",
       borderWidth: 1,
-      borderColor: "#e0e0e0",
+      borderColor: "#d0d0d0",
       borderRadius: 6,
       paddingX: 12,
       paddingY: 10,
-      zIndex: 2,
+      zIndex: zIndex++,
     });
 
-    fieldY += 70;
+    currentY += 50;
   });
 
-  // Submit Button
+  // Spacer before button
+  currentY += 10;
+
+  // Submit Button (Fully Editable)
   defaultElements.push({
     id: Math.random().toString(36).slice(2, 9),
     type: "submit-button",
-    x: 340,
-    y: fieldY,
-    w: 220,
-    h: 45,
+    x: formX + 15,
+    y: currentY,
+    w: 230,
+    h: 48,
     label: "Submit Button",
-    content: "Send Message",
-    fontSize: 14,
+    content: "Submit",
+    fontSize: 15,
     fontWeight: "700",
     color: "#ffffff",
     bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     textAlign: "center",
     borderRadius: 6,
-    zIndex: 2,
+    zIndex: zIndex++,
   });
 
-  fieldY += 60;
+  currentY += 70;
 
-  // Footer
+  // ========== FOOTER ==========
+  // Footer Background (Editable)
   defaultElements.push({
     id: Math.random().toString(36).slice(2, 9),
     type: "text",
-    x: 30,
-    y: fieldY + 50,
-    w: 540,
-    h: 30,
-    label: "Footer",
-    content: "© 2026 Event Management. All rights reserved. | Privacy Policy",
-    fontSize: 11,
-    color: "#cccccc",
+    x: 0,
+    y: currentY,
+    w: 600,
+    h: 50,
+    label: "Footer Background",
+    content: "",
+    bg: "#333333",
+    zIndex: zIndex++,
+  });
+
+  // Footer Text (Editable)
+  defaultElements.push({
+    id: Math.random().toString(36).slice(2, 9),
+    type: "text",
+    x: 20,
+    y: currentY + 12,
+    w: 560,
+    h: 26,
+    label: "Footer Text",
+    content: "© 2026 Your Company. All rights reserved.",
+    fontSize: 12,
+    color: "#aaaaaa",
     textAlign: "center",
-    zIndex: 2,
+    zIndex: zIndex++,
   });
 
   return defaultElements;

@@ -5,6 +5,7 @@ import { useEventData } from "../context/EventDataContext";
 import { fetchPassTemplates, createPassTemplate } from "../services/api";
 import JSZip from "jszip";
 import QRCodeStyling from "qr-code-styling";
+import { generateProfessionalPassDesign, generateModernPassDesign, generateMinimalPassDesign } from "../utils/generatePassDesigns";
 
 // ── Constants (copied from PassTemplateEditor) ────────────────────────────────────
 
@@ -1098,6 +1099,43 @@ const PassDesignerPageV2 = () => {
                 </button>
               ))}
             </div>
+            {/* Load Default Designs */}
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 4, fontWeight: 600, textTransform: "uppercase" }}>Default Designs</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <button onClick={() => {
+                  const designs = generateProfessionalPassDesign(selectedEvent);
+                  setElements(designs);
+                  setSelectedIds([]);
+                  toast.success("Professional design loaded!");
+                  setTimeout(captureHistory, 0);
+                }}
+                  style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>
+                  Professional
+                </button>
+                <button onClick={() => {
+                  const designs = generateModernPassDesign(selectedEvent);
+                  setElements(designs);
+                  setSelectedIds([]);
+                  toast.success("Modern design loaded!");
+                  setTimeout(captureHistory, 0);
+                }}
+                  style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>
+                  Modern
+                </button>
+                <button onClick={() => {
+                  const designs = generateMinimalPassDesign(selectedEvent);
+                  setElements(designs);
+                  setSelectedIds([]);
+                  toast.success("Minimal design loaded!");
+                  setTimeout(captureHistory, 0);
+                }}
+                  style={{ fontSize: 10, padding: "6px 8px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b", fontWeight: 500 }}>
+                  Minimal
+                </button>
+              </div>
+            </div>
+
             {/* Use Template */}
             {templates.length > 0 && (
               <div style={{ marginBottom: 10 }}>

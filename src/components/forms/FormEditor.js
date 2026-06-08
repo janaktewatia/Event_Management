@@ -2090,7 +2090,7 @@ const generateDefaultElements = (form) => {
       w: 230,
       h: 18,
       label: `Label: ${field.label}`,
-      content: `${idx + 1}. ${field.label}${field.required ? ' *' : ''}`,
+      content: `${field.label}${field.required ? ' *' : ''}`,
       fontSize: 13,
       fontWeight: "600",
       color: "#333333",

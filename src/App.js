@@ -262,7 +262,7 @@ function App() {
                     element={<PublicRegistrationForm />}
                   />
                   <Route
-                    path="/form/:formId"
+                    path="/form/:formSlug"
                     element={<PublicRegistrationForm />}
                   />
                   <Route path="/*" element={<AuthGate />} />

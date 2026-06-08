@@ -7,7 +7,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 const SYSTEM_FIELD_IDS = ["name", "email", "mobile"];
 
 const PublicRegistrationForm = () => {
-  const { eventId, formId, eventSlug } = useParams();
+  const { eventId, formId, eventSlug, formSlug } = useParams();
 
   const [event, setEvent] = useState(null);
   const [form, setForm] = useState(null);

@@ -135,7 +135,7 @@ const PublicRegistrationForm = () => {
     };
 
     loadPublicForm();
-  }, [eventId, formId, eventSlug, formSlug]);
+  }, [eventId, formId, eventSlug], formSlug, formSlug]);
 
   const enabledFields = event
     ? formId

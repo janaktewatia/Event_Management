@@ -1357,11 +1357,35 @@ const PropertiesPanel = ({
           >
             Image
           </div>
+          <PropRow label="Image Upload">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    onChange({ ...el, imageUrl: event.target?.result });
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+              style={{
+                width: "100%",
+                height: 28,
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+                fontSize: 11,
+                padding: "0 4px",
+              }}
+            />
+          </PropRow>
           <PropRow label="Image URL">
             <input
               type="text"
               value={el.imageUrl || ""}
-              placeholder="https://... or upload"
+              placeholder="https://... or paste image"
               onChange={(e) => onChange({ ...el, imageUrl: e.target.value })}
               style={{
                 width: "100%",
@@ -2108,7 +2132,7 @@ const generateDefaultElements = (form) => {
   // Submit Button (Fully Editable)
   defaultElements.push({
     id: Math.random().toString(36).slice(2, 9),
-    type: "submit-button",
+    type: "form-submit",
     x: formX + 15,
     y: currentY,
     w: 230,

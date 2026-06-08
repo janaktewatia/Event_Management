@@ -185,6 +185,33 @@ const PublicRegistrationForm = () => {
       }
     }
 
+    // Email validation
+    const emailField = enabledFields.find((f) => f.fieldId === "email");
+    if (emailField) {
+      const email = formData.email;
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setSubmitError("Please enter a valid email address.");
+        return;
+      }
+    }
+
+    // Mobile number validation
+    const mobileField = enabledFields.find((f) => f.fieldId === "mobile");
+    if (mobileField) {
+      const mobile = formData.mobile;
+      if (mobile) {
+        const cleanMobile = mobile.replace(/\D/g, "");
+        if (cleanMobile.length < 10 || cleanMobile.length > 15) {
+          setSubmitError("Please enter a valid mobile number (10-15 digits).");
+          return;
+        }
+        if (!/^\d+$/.test(cleanMobile)) {
+          setSubmitError("Mobile number should contain only digits.");
+          return;
+        }
+      }
+    }
+
     // Validate category if required
     if (enabledCategories.length > 0 && !formData.category) {
       setSubmitError("Please select a category.");
@@ -343,9 +370,18 @@ const PublicRegistrationForm = () => {
     }
 
     const inputType = field.inputType || "text";
-    const finalType = inputType === "email" || field.fieldId === "email" ? "email"
-                    : inputType === "number" || field.fieldId === "mobile" ? "number"
-                    : "text";
+    let finalType = "text";
+    let pattern = null;
+    let title = null;
+
+    if (inputType === "email" || field.fieldId === "email") {
+      finalType = "email";
+      title = "Please enter a valid email address";
+    } else if (inputType === "number" || field.fieldId === "mobile") {
+      finalType = "tel";
+      pattern = "[0-9]{10,15}";
+      title = "Mobile number should be 10-15 digits";
+    }
 
     return (
       <input
@@ -360,6 +396,9 @@ const PublicRegistrationForm = () => {
         onChange={(e) => handleChange(field.fieldId, e.target.value)}
         required={field.required}
         placeholder={field.placeholder || field.label}
+        pattern={pattern}
+        title={title}
+        inputMode={field.fieldId === "mobile" ? "numeric" : "text"}
       />
     );
   };

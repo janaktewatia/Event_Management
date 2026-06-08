@@ -1430,37 +1430,43 @@ const PropertiesPanel = ({
             >
               <option value="">— Select a field —</option>
               {(() => {
-                // Get unique field IDs that are currently used in elements
+                // Get all enabled fields
+                const allFields = (form?.fields || []).filter((f) => f.enabled === true);
+
+                // Current selected field
+                const currentField = allFields.find((f) => f.fieldId === el.fieldId);
+
+                // Fields used by selected elements
                 const usedFieldIds = new Set(
-                  elements
+                  selectedElements
                     ?.filter((e) => e.fieldId)
                     .map((e) => e.fieldId) || []
                 );
 
-                // First group: Already selected fields
-                const selectedFields = (form?.fields || [])
-                  .filter((f) => f.enabled === true && (el.fieldId === f.fieldId || usedFieldIds.has(f.fieldId)));
+                // Group: Currently selected fields (for this element + others)
+                const selectedFieldsList = allFields.filter((f) => usedFieldIds.has(f.fieldId) || f.fieldId === el.fieldId);
+
+                // Other fields
+                const otherFields = allFields.filter((f) => !usedFieldIds.has(f.fieldId) && f.fieldId !== el.fieldId);
 
                 return (
                   <>
-                    {selectedFields.length > 0 && (
-                      <>
-                        {selectedFields.map((field) => (
-                          <option key={field.fieldId} value={field.fieldId}>
-                            {field.label} ({field.fieldName || field.fieldId})
-                          </option>
-                        ))}
-                        <option disabled>─────────────────</option>
-                      </>
+                    {/* Show selected fields first */}
+                    {selectedFieldsList.map((field) => (
+                      <option key={field.fieldId} value={field.fieldId}>
+                        {field.label} ({field.fieldName || field.fieldId})
+                      </option>
+                    ))}
+                    {/* Separator */}
+                    {selectedFieldsList.length > 0 && otherFields.length > 0 && (
+                      <option disabled>─────────────────</option>
                     )}
-                    {/* Show all available fields */}
-                    {(form?.fields || [])
-                      .filter((f) => f.enabled === true && !usedFieldIds.has(f.fieldId) && el.fieldId !== f.fieldId)
-                      .map((field) => (
-                        <option key={field.fieldId} value={field.fieldId}>
-                          {field.label} ({field.fieldName || field.fieldId})
-                        </option>
-                      ))}
+                    {/* Show other available fields */}
+                    {otherFields.map((field) => (
+                      <option key={field.fieldId} value={field.fieldId}>
+                        {field.label} ({field.fieldName || field.fieldId})
+                      </option>
+                    ))}
                   </>
                 );
               })()}

@@ -209,7 +209,13 @@ const PublicRegistrationForm = () => {
 
     setSubmitting(true);
     try {
-      await publicRegister(eventId, payload);
+      // Use eventId from params or from form (if using formSlug)
+      const targetEventId = eventId || form?.eventId;
+      if (!targetEventId) {
+        setSubmitError("Event ID is missing. Please try accessing the form again.");
+        return;
+      }
+      await publicRegister(targetEventId, payload);
       setSubmitted(true);
     } catch (err) {
       setSubmitError(err.message || "Registration failed. Please try again.");
@@ -476,15 +482,15 @@ const PublicRegistrationForm = () => {
   }
 
   // Render custom form design if available
-  if (form?.elements && form.elements.length > 0) {
-    // Find background and form container elements
-    const bgElement = form.elements.find((e) => e.type === "image" && e.label === "Background Image");
-    const brandBgElement = form.elements.find((e) => e.label === "Brand Background");
+  if (form?.elements && Array.isArray(form.elements) && form.elements.length > 0) {
+    const bgElement = form.elements.find((e) => e.label === "Background Image");
+    const logoElement = form.elements.find((e) => e.label === "Logo");
+    const titleElement = form.elements.find((e) => e.label === "Form Title");
 
     return (
       <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
         {/* Background */}
-        {bgElement && bgElement.imageUrl && (
+        {bgElement?.imageUrl && (
           <div
             style={{
               position: "fixed",
@@ -497,6 +503,7 @@ const PublicRegistrationForm = () => {
               backgroundPosition: "center",
               opacity: bgElement.opacity || 0.25,
               zIndex: 0,
+              pointerEvents: "none",
             }}
           />
         )}
@@ -513,192 +520,150 @@ const PublicRegistrationForm = () => {
             padding: "2rem 1rem",
           }}
         >
-          <div style={{ width: "100%", maxWidth: 600 }}>
-            {/* Left side branding (if exists) */}
-            {brandBgElement && (
-              <div
-                style={{
-                  display: "none",
-                  "@media (min-width: 768px)": {
-                    display: "block",
-                  },
-                }}
-              >
-                {form.elements
-                  .filter((e) => e.x < 300)
-                  .map((elem) => {
-                    if (elem.type === "header") {
-                      return (
-                        <div key={elem.id} style={{ marginBottom: "1rem", color: "white" }}>
-                          <h2 style={{ fontSize: "36px", fontWeight: "700", marginBottom: "1rem" }}>
-                            {elem.content}
-                          </h2>
-                        </div>
-                      );
-                    }
-                    if (elem.type === "text" && elem.label === "Brand Description") {
-                      return (
-                        <div key={elem.id} style={{ color: "#e0e0e0", marginBottom: "2rem" }}>
-                          <p style={{ whiteSpace: "pre-wrap" }}>{elem.content}</p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
+          {/* Form Card */}
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 520,
+              background: "white",
+              borderRadius: 16,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
+              padding: "2.5rem 2rem",
+            }}
+          >
+            {/* Logo */}
+            {logoElement?.imageUrl && (
+              <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+                <img
+                  src={logoElement.imageUrl}
+                  alt="Logo"
+                  style={{
+                    maxWidth: "100px",
+                    maxHeight: "60px",
+                    height: "auto",
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
+                />
               </div>
             )}
 
-            {/* Form Container */}
+            {/* Title */}
+            {titleElement?.content && (
+              <h2
+                style={{
+                  textAlign: "center",
+                  marginBottom: "1.5rem",
+                  fontSize: "24px",
+                  fontWeight: "700",
+                  color: titleElement.color || "#1e293b",
+                }}
+              >
+                {titleElement.content}
+              </h2>
+            )}
+
+            <form onSubmit={handleSubmit} noValidate>
+              {/* Category Field */}
+              {enabledCategories.length > 0 && (
+                <div className="mb-4">
+                  <label
+                    className="form-label fw-semibold mb-2"
+                    style={{ fontSize: 14 }}
+                  >
+                    Category <span className="text-danger">*</span>
+                  </label>
+                  <select
+                    className="form-select"
+                    style={{
+                      borderRadius: 10,
+                      borderColor: "#e2e8f0",
+                      padding: "12px 16px",
+                    }}
+                    value={formData.category || ""}
+                    onChange={(e) => handleChange("category", e.target.value)}
+                    required
+                  >
+                    <option value="">— Select a category —</option>
+                    {enabledCategories.map((cat) => (
+                      <option key={cat.categoryId} value={cat.label}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Dynamic Fields */}
+              {enabledFields.map((field) => (
+                <div className="mb-4" key={field.fieldId}>
+                  <label
+                    className="form-label fw-semibold mb-2"
+                    style={{ fontSize: 14 }}
+                  >
+                    {field.label}
+                    {field.required && (
+                      <span className="text-danger ms-1">*</span>
+                    )}
+                  </label>
+                  {renderField(field)}
+                </div>
+              ))}
+
+              {/* Error Message */}
+              {submitError && (
+                <div
+                  className="alert alert-danger py-3 mb-4"
+                  style={{ borderRadius: 10 }}
+                >
+                  <i className="bi bi-exclamation-circle me-2" />
+                  {submitError}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="btn btn-lg w-100"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 10,
+                  fontWeight: 600,
+                  padding: "14px 24px",
+                  transition: "all 0.3s ease",
+                  cursor: submitting ? "not-allowed" : "pointer",
+                  opacity: submitting ? 0.8 : 1,
+                }}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Register Now"
+                )}
+              </button>
+            </form>
+
+            {/* Footer */}
             <div
               style={{
-                background: "white",
-                borderRadius: 16,
-                boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
-                padding: "2rem",
+                textAlign: "center",
+                marginTop: "2rem",
+                paddingTop: "1.5rem",
+                borderTop: "1px solid #e2e8f0",
+                fontSize: "12px",
+                color: "#94a3b8",
               }}
             >
-              {/* Logo and Form Header */}
-              {form.elements
-                .filter((e) => (e.label === "Logo" || e.label === "Form Title") && e.imageUrl)
-                .map((elem) => (
-                  <div key={elem.id} style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-                    {elem.label === "Logo" && (
-                      <img
-                        src={elem.imageUrl}
-                        alt="Logo"
-                        style={{
-                          maxWidth: "90px",
-                          maxHeight: "50px",
-                          marginBottom: "1rem",
-                        }}
-                      />
-                    )}
-                  </div>
-                ))}
-
-              {/* Form Title */}
-              {form.elements
-                .filter((e) => e.label === "Form Title" && e.type === "header")
-                .map((elem) => (
-                  <h3
-                    key={elem.id}
-                    style={{
-                      textAlign: "center",
-                      marginBottom: "2rem",
-                      fontSize: "24px",
-                      fontWeight: "700",
-                      color: elem.color || "#1e293b",
-                    }}
-                  >
-                    {elem.content}
-                  </h3>
-                ))}
-
-              <form onSubmit={handleSubmit} noValidate>
-                {/* Category Field */}
-                {enabledCategories.length > 0 && (
-                  <div className="mb-4">
-                    <label
-                      className="form-label fw-semibold mb-2"
-                      style={{ fontSize: 14 }}
-                    >
-                      Category <span className="text-danger">*</span>
-                    </label>
-                    <select
-                      className="form-select"
-                      style={{
-                        borderRadius: 10,
-                        borderColor: "#e2e8f0",
-                        padding: "12px 16px",
-                      }}
-                      value={formData.category || ""}
-                      onChange={(e) => handleChange("category", e.target.value)}
-                      required
-                    >
-                      <option value="">— Select a category —</option>
-                      {enabledCategories.map((cat) => (
-                        <option key={cat.categoryId} value={cat.label}>
-                          {cat.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {/* Dynamic Fields */}
-                {enabledFields.map((field) => (
-                  <div className="mb-4" key={field.fieldId}>
-                    <label
-                      className="form-label fw-semibold mb-2"
-                      style={{ fontSize: 14 }}
-                    >
-                      {field.label}
-                      {field.required && (
-                        <span className="text-danger ms-1">*</span>
-                      )}
-                    </label>
-                    {renderField(field)}
-                  </div>
-                ))}
-
-                {/* Error Message */}
-                {submitError && (
-                  <div
-                    className="alert alert-danger py-3 mb-4"
-                    style={{ borderRadius: 10 }}
-                  >
-                    <i className="bi bi-exclamation-circle me-2" />
-                    {submitError}
-                  </div>
-                )}
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  className="btn btn-lg w-100"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 10,
-                    fontWeight: 600,
-                    padding: "14px 24px",
-                    transition: "all 0.3s ease",
-                    cursor: submitting ? "not-allowed" : "pointer",
-                    opacity: submitting ? 0.8 : 1,
-                  }}
-                  disabled={submitting}
-                >
-                  {submitting ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" />
-                      Submitting...
-                    </>
-                  ) : (
-                    "Register Now"
-                  )}
-                </button>
-              </form>
-
-              {/* Footer */}
-              {form.elements
-                .filter((e) => e.label === "Footer" || e.type === "footer")
-                .map((elem) => (
-                  <div
-                    key={elem.id}
-                    style={{
-                      textAlign: "center",
-                      marginTop: "1.5rem",
-                      paddingTop: "1.5rem",
-                      borderTop: "1px solid #e2e8f0",
-                      fontSize: "12px",
-                      color: "#94a3b8",
-                    }}
-                  >
-                    {elem.content}
-                  </div>
-                ))}
+              <i className="bi bi-shield-check me-1" style={{ color: "#7c3aed" }} />
+              Powered by Event Management
             </div>
           </div>
         </div>

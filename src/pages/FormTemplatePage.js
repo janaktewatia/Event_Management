@@ -33,7 +33,7 @@ const FormTemplatePage = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
 
-  const categories = ["All", ...new Set(formTemplates.map((t) => t.category))];
+  const categories = ["All", ...new Set(formTemplates.map((t) => t.category || t.category))];
 
   const filteredTemplates = formTemplates.filter((template) => {
     const matchesSearch = template.templateName
@@ -75,7 +75,7 @@ const FormTemplatePage = () => {
             <div className="mb-4">
               <h4 className="fw-bold mb-1">Form Templates</h4>
               <p className="text-muted small mb-0">
-                Choose from industry-standard templates to save time creating forms
+                Create and save form templates for reuse
               </p>
             </div>
 

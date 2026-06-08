@@ -20,8 +20,21 @@ const EventFormDesignerTab = () => {
     (e) => e.id === selectedEventId || e._id === selectedEventId,
   );
 
+  // Generate slug from event name
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_-]/g, "");
+  };
+
   const shareLink = selectedEventId
     ? `${window.location.origin}/register/${selectedEventId}`
+    : "";
+
+  const slugLink = selectedEvent
+    ? `${window.location.origin}/event/${generateSlug(selectedEvent.eventName)}`
     : "";
 
   const handleCopy = () => {
@@ -130,37 +143,83 @@ const EventFormDesignerTab = () => {
                 className="small fw-semibold mb-2"
                 style={{ color: "#166534" }}
               >
-                Public Registration Link
+                Public Registration Links
               </div>
-              <div className="d-flex align-items-center gap-2">
-                <input
-                  readOnly
-                  value={shareLink}
-                  className="form-control form-control-sm font-monospace"
-                  style={{ background: "#fff", fontSize: 12 }}
-                  onFocus={(e) => e.target.select()}
-                />
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-success flex-shrink-0"
-                  onClick={handleCopy}
-                  title="Copy link"
-                >
-                  <FiCopy size={14} className="me-1" />
-                  {copied ? "Copied!" : "Copy"}
-                </button>
-                <a
-                  href={shareLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-sm btn-outline-secondary flex-shrink-0"
-                  title="Open in new tab"
-                >
-                  <FiExternalLink size={14} />
-                </a>
+
+              {/* Event ID Link */}
+              <div className="mb-3">
+                <label className="form-label small mb-1" style={{ color: "#166534" }}>
+                  By Event ID
+                </label>
+                <div className="d-flex align-items-center gap-2">
+                  <input
+                    readOnly
+                    value={shareLink}
+                    className="form-control form-control-sm font-monospace"
+                    style={{ background: "#fff", fontSize: 11 }}
+                    onFocus={(e) => e.target.select()}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-success flex-shrink-0"
+                    onClick={handleCopy}
+                    title="Copy link"
+                  >
+                    <FiCopy size={14} className="me-1" />
+                    {copied ? "✓" : ""}
+                  </button>
+                  <a
+                    href={shareLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-sm btn-outline-secondary flex-shrink-0"
+                    title="Open in new tab"
+                  >
+                    <FiExternalLink size={14} />
+                  </a>
+                </div>
               </div>
+
+              {/* Slug Link */}
+              <div>
+                <label className="form-label small mb-1" style={{ color: "#166534" }}>
+                  By Event Name (Slug) ✨
+                </label>
+                <div className="d-flex align-items-center gap-2">
+                  <input
+                    readOnly
+                    value={slugLink}
+                    className="form-control form-control-sm font-monospace"
+                    style={{ background: "#fff", fontSize: 11 }}
+                    onFocus={(e) => e.target.select()}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-success flex-shrink-0"
+                    onClick={() => {
+                      navigator.clipboard.writeText(slugLink);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    title="Copy link"
+                  >
+                    <FiCopy size={14} className="me-1" />
+                    {copied ? "✓" : ""}
+                  </button>
+                  <a
+                    href={slugLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-sm btn-outline-secondary flex-shrink-0"
+                    title="Open in new tab"
+                  >
+                    <FiExternalLink size={14} />
+                  </a>
+                </div>
+              </div>
+
               <div className="text-muted mt-2" style={{ fontSize: 11 }}>
-                Share this link with attendees. No login required.
+                Share either link with attendees. No login required. Slug-based URL is cleaner and easier to remember!
               </div>
             </div>
 

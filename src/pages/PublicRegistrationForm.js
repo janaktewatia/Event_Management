@@ -7,7 +7,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 const SYSTEM_FIELD_IDS = ["name", "email", "mobile"];
 
 const PublicRegistrationForm = () => {
-  const { eventId, formId } = useParams();
+  const { eventId, formId, eventSlug } = useParams();
 
   const [event, setEvent] = useState(null);
   const [form, setForm] = useState(null);
@@ -17,6 +17,15 @@ const PublicRegistrationForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  // Helper function to convert event name to slug
+  const generateSlugFromName = (name) => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_-]/g, "");
+  };
 
   useEffect(() => {
     const loadPublicForm = async () => {
@@ -45,7 +54,30 @@ const PublicRegistrationForm = () => {
             init.category = "";
           }
           setFormData(init);
-        } else {
+        } else if (eventSlug) {
+          // Handle slug-based URL like /event/annual_day_june
+          try {
+            const data = await fetchPublicEvent(eventSlug);
+            setEvent(data);
+            const init = {};
+            (data.attendeeFields || [])
+              .filter((f) => f.enabled)
+              .forEach((f) => {
+                init[f.fieldId] = f.type === "multiple-choice" ? [] : "";
+              });
+            const enabledCategories = (data.categories || []).filter(
+              (c) => c.enabled,
+            );
+            if (enabledCategories.length > 0) {
+              init.category = "";
+            }
+            setFormData(init);
+          } catch (slugErr) {
+            setError(
+              "This registration form is unavailable or the event does not exist.",
+            );
+          }
+        } else if (eventId) {
           const data = await fetchPublicEvent(eventId);
           setEvent(data);
           const init = {};
@@ -61,6 +93,8 @@ const PublicRegistrationForm = () => {
             init.category = "";
           }
           setFormData(init);
+        } else {
+          setError("Event ID or slug is required.");
         }
       } catch (err) {
         setError(
@@ -72,7 +106,7 @@ const PublicRegistrationForm = () => {
     };
 
     loadPublicForm();
-  }, [eventId, formId]);
+  }, [eventId, formId, eventSlug]);
 
   const enabledFields = event
     ? formId

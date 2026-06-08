@@ -254,6 +254,10 @@ function App() {
               <BrowserRouter>
                 <Routes>
                   <Route
+                    path="/event/:eventSlug"
+                    element={<PublicRegistrationForm />}
+                  />
+                  <Route
                     path="/register/:eventId"
                     element={<PublicRegistrationForm />}
                   />

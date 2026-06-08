@@ -550,7 +550,7 @@ const PassDesignerPageV2 = () => {
     const catDesign = updated[catName] || { canvas: { width: 400, height: 600, background: "#ffffff" }, elements: [] };
     setCanvas(catDesign.canvas);
     setElements(catDesign.elements);
-    setSelectedId(null);
+    setSelectedIds([]);
     setActiveCatName(catName);
     historyRef.current = [];
     historyIndexRef.current = 0;
@@ -597,7 +597,7 @@ const PassDesignerPageV2 = () => {
   const addElement = useCallback((type) => {
     const el = makeElement(type);
     setElements([...elements, el]);
-    setSelectedId(el.id);
+    setSelectedIds([el.id]);
     setTimeout(captureHistory, 0);
   }, [elements, captureHistory]);
 
@@ -810,7 +810,7 @@ const PassDesignerPageV2 = () => {
     if (!template) return;
     setCanvas(template.canvas || { width: 400, height: 600, background: "#ffffff" });
     setElements(template.elements || []);
-    setSelectedId(null);
+    setSelectedIds([]);
     setSelectedTemplateId(templateId);
     setTimeout(captureHistory, 0);
     toast.success(`Template "${template.name}" loaded!`);

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import Form from "../models/Form.js";
+import { generateDefaultFormElements } from "../utils/generateFormElements.js";
 
 const router = Router();
 
@@ -7,7 +8,14 @@ const router = Router();
 router.get("/", async (_req, res) => {
   try {
     const forms = await Form.find().sort({ createdAt: -1 });
-    res.json(forms);
+    // Generate default elements for forms that don't have them
+    const formsWithElements = forms.map((form) => {
+      if (!form.elements || form.elements.length === 0) {
+        form.elements = generateDefaultFormElements(form);
+      }
+      return form;
+    });
+    res.json(formsWithElements);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -19,15 +27,21 @@ router.get("/slug/:slug", async (req, res) => {
     const slug = req.params.slug;
     // Convert slug back to search pattern (replace _ with spaces)
     const searchName = slug.replace(/_/g, " ");
-    
+
     // Find form by name (case-insensitive)
-    const form = await Form.findOne({ 
+    let form = await Form.findOne({
       formName: { $regex: new RegExp("^" + searchName + "$", "i") }
     });
-    
+
     if (!form) {
       return res.status(404).json({ error: "Form not found" });
     }
+
+    // Generate default elements if missing
+    if (!form.elements || form.elements.length === 0) {
+      form.elements = generateDefaultFormElements(form);
+    }
+
     res.json(form);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -37,8 +51,14 @@ router.get("/slug/:slug", async (req, res) => {
 // GET single form by ID
 router.get("/:id", async (req, res) => {
   try {
-    const form = await Form.findById(req.params.id);
+    let form = await Form.findById(req.params.id);
     if (!form) return res.status(404).json({ error: "Form not found" });
+
+    // Generate default elements if missing
+    if (!form.elements || form.elements.length === 0) {
+      form.elements = generateDefaultFormElements(form);
+    }
+
     res.json(form);
   } catch (err) {
     res.status(500).json({ error: err.message });

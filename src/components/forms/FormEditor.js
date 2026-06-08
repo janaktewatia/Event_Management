@@ -1887,11 +1887,7 @@ const CanvasEl = ({ el, selected, onMouseDown }) => {
             wordBreak: "break-word",
           }}
         >
-          {el.content || (
-            <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>
-              Empty…
-            </span>
-          )}
+          {el.content || ""}
         </div>
       ) : isMedia ? (
         <div

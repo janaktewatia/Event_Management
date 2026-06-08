@@ -194,7 +194,9 @@ const CanvasEl = ({ el, selected }) => {
             overflow: "hidden", boxSizing: "border-box",
             whiteSpace: "pre-wrap", wordBreak: "break-word",
           }}>
-            {el.content || <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>Empty…</span>}
+            {el.content && el.content.trim()
+              ? el.content
+              : <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>Empty…</span>}
           </div>
         )}
       </div>
@@ -891,22 +893,34 @@ const PassDesignerPageV2 = () => {
       ctx.globalAlpha = el.opacity ?? 1;
 
       if (["text","header","footer","card"].includes(el.type)) {
+        // Substitute content and check if empty
+        const substitutedContent = substitute(el.content).trim();
+
+        // Skip rendering if content is empty or only contains whitespace
+        if (!substitutedContent && el.type !== "card") {
+          ctx.globalAlpha = 1;
+          continue;
+        }
+
         ctx.fillStyle = el.bg || "transparent";
         ctx.fillRect(el.x, el.y, el.w, el.h);
 
-        ctx.fillStyle = el.color;
-        ctx.font = `${el.fontStyle === "italic" ? "italic " : ""}${el.fontWeight} ${el.fontSize}px ${el.fontFamily}`;
-        ctx.textAlign = el.textAlign || "left";
-        const lines = substitute(el.content).split("\n");
-        const lh = el.lineHeight || 1.4;
-        const lineHeightPx = el.fontSize * lh;
-        const totalHeight = lineHeightPx * lines.length;
-        let startY = el.y + (el.h - totalHeight) / 2 + el.fontSize;
+        // Only draw text if it has content
+        if (substitutedContent) {
+          ctx.fillStyle = el.color;
+          ctx.font = `${el.fontStyle === "italic" ? "italic " : ""}${el.fontWeight} ${el.fontSize}px ${el.fontFamily}`;
+          ctx.textAlign = el.textAlign || "left";
+          const lines = substitutedContent.split("\n");
+          const lh = el.lineHeight || 1.4;
+          const lineHeightPx = el.fontSize * lh;
+          const totalHeight = lineHeightPx * lines.length;
+          let startY = el.y + (el.h - totalHeight) / 2 + el.fontSize;
 
-        for (const line of lines) {
-          const x = el.textAlign === "center" ? el.x + el.w / 2 : el.textAlign === "right" ? el.x + el.w - 4 : el.x + 4;
-          ctx.fillText(line, x, startY);
-          startY += lineHeightPx;
+          for (const line of lines) {
+            const x = el.textAlign === "center" ? el.x + el.w / 2 : el.textAlign === "right" ? el.x + el.w - 4 : el.x + 4;
+            ctx.fillText(line, x, startY);
+            startY += lineHeightPx;
+          }
         }
       } else if (el.type === "qr") {
         const qrBlob = await genQRBlob(substitute(el.content), "#000000");

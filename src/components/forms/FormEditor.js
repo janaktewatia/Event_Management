@@ -1,5 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { FiArrowLeft, FiSave, FiDownload, FiTrash2, FiCopy } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiSave,
+  FiDownload,
+  FiTrash2,
+  FiCopy,
+} from "react-icons/fi";
 import { useForm } from "../../context/FormContext";
 import { useEventData } from "../../context/EventDataContext";
 
@@ -308,7 +314,10 @@ const DEFAULT_ELEMENT = {
   },
 };
 
-const ELEMENT_BTNS = Object.entries(DEFAULT_ELEMENT).map(([type, def]) => ({ type, ...def }));
+const ELEMENT_BTNS = Object.entries(DEFAULT_ELEMENT).map(([type, def]) => ({
+  type,
+  ...def,
+}));
 
 const makeElement = (type, x = 40, y = 40) => ({
   id: uid(),
@@ -337,14 +346,31 @@ const smallBtn = {
 
 const PropRow = ({ label, children }) => (
   <div className="mb-2">
-    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: 0.5 }}>
+    <label
+      style={{
+        fontSize: 11,
+        fontWeight: 600,
+        color: "#64748b",
+        display: "block",
+        marginBottom: 3,
+        textTransform: "uppercase",
+        letterSpacing: 0.5,
+      }}
+    >
       {label}
     </label>
     {children}
   </div>
 );
 
-const NumInput = ({ value, onChange, min = 0, max = 9999, step = 1, suffix }) => (
+const NumInput = ({
+  value,
+  onChange,
+  min = 0,
+  max = 9999,
+  step = 1,
+  suffix,
+}) => (
   <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
     <input
       type="number"
@@ -353,7 +379,15 @@ const NumInput = ({ value, onChange, min = 0, max = 9999, step = 1, suffix }) =>
       max={max}
       step={step}
       onChange={(e) => onChange(Number(e.target.value))}
-      style={{ width: suffix ? 56 : 72, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px", outline: "none" }}
+      style={{
+        width: suffix ? 56 : 72,
+        height: 28,
+        borderRadius: 6,
+        border: "1px solid #e2e8f0",
+        fontSize: 12,
+        padding: "0 6px",
+        outline: "none",
+      }}
     />
     {suffix && <span style={{ fontSize: 10, color: "#94a3b8" }}>{suffix}</span>}
   </div>
@@ -365,19 +399,42 @@ const ColorInput = ({ value, onChange }) => (
       type="color"
       value={value === "transparent" ? "#ffffff" : value}
       onChange={(e) => onChange(e.target.value)}
-      style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", cursor: "pointer", padding: 2 }}
+      style={{
+        width: 28,
+        height: 28,
+        borderRadius: 6,
+        border: "1px solid #e2e8f0",
+        cursor: "pointer",
+        padding: 2,
+      }}
     />
     <input
       type="text"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      style={{ width: 80, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 6px", fontFamily: "monospace" }}
+      style={{
+        width: 80,
+        height: 28,
+        borderRadius: 6,
+        border: "1px solid #e2e8f0",
+        fontSize: 11,
+        padding: "0 6px",
+        fontFamily: "monospace",
+      }}
     />
     <button
       type="button"
       title="Transparent"
       onClick={() => onChange("transparent")}
-      style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11 }}
+      style={{
+        width: 28,
+        height: 28,
+        borderRadius: 6,
+        border: "1px solid #e2e8f0",
+        background: "#fff",
+        cursor: "pointer",
+        fontSize: 11,
+      }}
     >
       ✕
     </button>
@@ -388,7 +445,14 @@ const SelectInput = ({ value, onChange, options }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
+    style={{
+      width: "100%",
+      height: 28,
+      borderRadius: 6,
+      border: "1px solid #e2e8f0",
+      fontSize: 12,
+      padding: "0 6px",
+    }}
   >
     {options.map((o) => (
       <option key={o.value ?? o} value={o.value ?? o}>
@@ -421,18 +485,50 @@ const AccordionButton = ({ title, section, isOpen, onClick }) => (
     }}
   >
     {title}
-    <i className={`bi ${isOpen ? "bi-chevron-down" : "bi-chevron-right"}`} style={{ fontSize: 10 }} />
+    <i
+      className={`bi ${isOpen ? "bi-chevron-down" : "bi-chevron-right"}`}
+      style={{ fontSize: 10 }}
+    />
   </button>
 );
 
-const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate, onBring, onSend, canvasState, alignElements, distributeHorizontally, distributeVertically, groupElements, ungroupElements, form, gap, setGap, openAccordion, setOpenAccordion }) => {
+const PropertiesPanel = ({
+  el,
+  selectedElements,
+  onChange,
+  onDelete,
+  onDuplicate,
+  onBring,
+  onSend,
+  canvasState,
+  alignElements,
+  distributeHorizontally,
+  distributeVertically,
+  groupElements,
+  ungroupElements,
+  form,
+  gap,
+  setGap,
+  openAccordion,
+  setOpenAccordion,
+}) => {
   const { events } = useEventData();
 
   if (!el)
     return (
       <div style={{ padding: 16 }}>
-        <div style={{ fontSize: 12, color: "#94a3b8", textAlign: "center", marginTop: 40 }}>
-          <i className="bi bi-cursor" style={{ fontSize: 28, display: "block", marginBottom: 8 }} />
+        <div
+          style={{
+            fontSize: 12,
+            color: "#94a3b8",
+            textAlign: "center",
+            marginTop: 40,
+          }}
+        >
+          <i
+            className="bi bi-cursor"
+            style={{ fontSize: 28, display: "block", marginBottom: 8 }}
+          />
           Click an element to edit its properties
         </div>
       </div>
@@ -443,24 +539,84 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
   const isMedia = ["image", "logo"].includes(el.type);
 
   // Get event data to access category labels
-  const event = events.find(e => e.id === form?.eventId || e._id === form?.eventId);
-  const selectedCategories = event?.categories?.filter(
-    c => c.enabled !== false && (form?.selectedCategories || []).includes(c.categoryId || c.id || c._id)
-  ) || [];
+  const event = events.find(
+    (e) => e.id === form?.eventId || e._id === form?.eventId,
+  );
+  const selectedCategories =
+    event?.categories?.filter(
+      (c) =>
+        c.enabled !== false &&
+        (form?.selectedCategories || []).includes(
+          c.categoryId || c.id || c._id,
+        ),
+    ) || [];
 
   return (
     <div style={{ padding: "8px 10px", overflowY: "auto", height: "100%" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, paddingBottom: 8, borderBottom: "1px solid #f1f5f9" }}>
-        <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b", display: "flex", alignItems: "center", gap: 6 }}>
-          <i className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`} style={{ color: "#a855f7" }} />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 8,
+          paddingBottom: 8,
+          borderBottom: "1px solid #f1f5f9",
+        }}
+      >
+        <span
+          style={{
+            fontWeight: 700,
+            fontSize: 13,
+            color: "#1e293b",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <i
+            className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`}
+            style={{ color: "#a855f7" }}
+          />
           {el.label || el.type}
         </span>
         <div style={{ display: "flex", gap: 4 }}>
-          <button onClick={onDuplicate} title="Duplicate" style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #f1f5f9", background: "#f1f5f9", color: "#475569", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button
+            onClick={onDuplicate}
+            title="Duplicate"
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              border: "1px solid #f1f5f9",
+              background: "#f1f5f9",
+              color: "#475569",
+              cursor: "pointer",
+              fontSize: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <FiCopy size={12} />
           </button>
-          <button onClick={onDelete} title="Delete" style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #fef2f2", background: "#fef2f2", color: "#dc2626", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button
+            onClick={onDelete}
+            title="Delete"
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              border: "1px solid #fef2f2",
+              background: "#fef2f2",
+              color: "#dc2626",
+              cursor: "pointer",
+              fontSize: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <FiTrash2 size={12} />
           </button>
         </div>
@@ -468,59 +624,163 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Multi-Select Controls */}
       {selectedElements && selectedElements.length > 1 && (
-        <div style={{ background: "#f0fdf4", borderRadius: 8, padding: 8, marginBottom: 6, border: "1px solid #bbf7d0" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#22c55e", marginBottom: 8 }}>
+        <div
+          style={{
+            background: "#f0fdf4",
+            borderRadius: 8,
+            padding: 8,
+            marginBottom: 6,
+            border: "1px solid #bbf7d0",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#22c55e",
+              marginBottom: 8,
+            }}
+          >
             {selectedElements.length} Elements Selected
           </div>
 
           {/* Group Controls */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 6 }}>
-            <button onClick={groupElements} style={{ ...smallBtn, fontSize: 9, background: "#dcfce7", color: "#16a34a" }} title="Group Elements">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 4,
+              marginBottom: 6,
+            }}
+          >
+            <button
+              onClick={groupElements}
+              style={{
+                ...smallBtn,
+                fontSize: 9,
+                background: "#dcfce7",
+                color: "#16a34a",
+              }}
+              title="Group Elements"
+            >
               <i className="bi bi-diagram-3" /> Group
             </button>
             {selectedElements.length > 0 && selectedElements[0].groupId && (
-              <button onClick={ungroupElements} style={{ ...smallBtn, fontSize: 9, background: "#dcfce7", color: "#16a34a" }} title="Ungroup Elements">
+              <button
+                onClick={ungroupElements}
+                style={{
+                  ...smallBtn,
+                  fontSize: 9,
+                  background: "#dcfce7",
+                  color: "#16a34a",
+                }}
+                title="Ungroup Elements"
+              >
                 <i className="bi bi-diagram-2" /> Ungroup
               </button>
             )}
           </div>
 
           {/* Alignment Controls */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 6 }}>
-            <button onClick={() => alignElements("left")} style={{ ...smallBtn, fontSize: 9 }} title="Align Left">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 4,
+              marginBottom: 6,
+            }}
+          >
+            <button
+              onClick={() => alignElements("left")}
+              style={{ ...smallBtn, fontSize: 9 }}
+              title="Align Left"
+            >
               <i className="bi bi-align-start" /> Left
             </button>
-            <button onClick={() => alignElements("centerX")} style={{ ...smallBtn, fontSize: 9 }} title="Align Center">
+            <button
+              onClick={() => alignElements("centerX")}
+              style={{ ...smallBtn, fontSize: 9 }}
+              title="Align Center"
+            >
               <i className="bi bi-distribute-horizontal" /> Center
             </button>
-            <button onClick={() => alignElements("top")} style={{ ...smallBtn, fontSize: 9 }} title="Align Top">
+            <button
+              onClick={() => alignElements("top")}
+              style={{ ...smallBtn, fontSize: 9 }}
+              title="Align Top"
+            >
               <i className="bi bi-align-top" /> Top
             </button>
-            <button onClick={() => alignElements("centerY")} style={{ ...smallBtn, fontSize: 9 }} title="Align Middle">
+            <button
+              onClick={() => alignElements("centerY")}
+              style={{ ...smallBtn, fontSize: 9 }}
+              title="Align Middle"
+            >
               <i className="bi bi-distribute-vertical" /> Middle
             </button>
           </div>
 
           {/* Distribution Controls */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 6 }}>
-            <button onClick={() => distributeHorizontally()} style={{ ...smallBtn, fontSize: 9 }} title="Distribute Horizontally">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 4,
+              marginBottom: 6,
+            }}
+          >
+            <button
+              onClick={() => distributeHorizontally()}
+              style={{ ...smallBtn, fontSize: 9 }}
+              title="Distribute Horizontally"
+            >
               <i className="bi bi-columns-gap" /> Dist H
             </button>
-            <button onClick={() => distributeVertically()} style={{ ...smallBtn, fontSize: 9 }} title="Distribute Vertically">
+            <button
+              onClick={() => distributeVertically()}
+              style={{ ...smallBtn, fontSize: 9 }}
+              title="Distribute Vertically"
+            >
               <i className="bi bi-rows-gap" /> Dist V
             </button>
           </div>
 
           {/* Gap Control */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 8px", background: "#dcfce7", borderRadius: 6 }}>
-            <label style={{ fontSize: 10, color: "#16a34a", fontWeight: 600, flex: 1 }}>Gap (px):</label>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 8px",
+              background: "#dcfce7",
+              borderRadius: 6,
+            }}
+          >
+            <label
+              style={{
+                fontSize: 10,
+                color: "#16a34a",
+                fontWeight: 600,
+                flex: 1,
+              }}
+            >
+              Gap (px):
+            </label>
             <input
               type="number"
               value={gap}
               onChange={(e) => setGap(Math.max(0, Number(e.target.value)))}
               min={0}
               max={100}
-              style={{ width: 40, height: 24, borderRadius: 4, border: "1px solid #86efac", padding: "0 4px", fontSize: 12, textAlign: "center" }}
+              style={{
+                width: 40,
+                height: 24,
+                borderRadius: 4,
+                border: "1px solid #86efac",
+                padding: "0 4px",
+                fontSize: 12,
+                textAlign: "center",
+              }}
             />
           </div>
         </div>
@@ -528,31 +788,79 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Lock */}
       <PropRow label="State">
-        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer" }}>
-          <input type="checkbox" checked={el?.locked} onChange={(e) => onChange({ ...el, locked: e.target.checked })} />
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 12,
+            cursor: "pointer",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={el?.locked}
+            onChange={(e) => onChange({ ...el, locked: e.target.checked })}
+          />
           Lock element
         </label>
       </PropRow>
 
       {/* Text Content - Show at top for text elements */}
       {isText && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Content</div>
+        <div
+          style={{
+            background: "#f8fafc",
+            borderRadius: 8,
+            padding: 8,
+            marginBottom: 6,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#64748b",
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}
+          >
+            Content
+          </div>
           <PropRow label="">
             <textarea
               value={el.content}
               onChange={(e) => onChange({ ...el, content: e.target.value })}
               rows={3}
-              style={{ width: "100%", borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "6px 8px", resize: "vertical" }}
+              style={{
+                width: "100%",
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+                fontSize: 12,
+                padding: "6px 8px",
+                resize: "vertical",
+              }}
             />
           </PropRow>
           <PropRow label="Insert Dynamic Field">
             <select
               onChange={(e) => {
-                if (e.target.value) onChange({ ...el, content: (el.content || "") + e.target.value });
+                if (e.target.value)
+                  onChange({
+                    ...el,
+                    content: (el.content || "") + e.target.value,
+                  });
                 e.target.value = "";
               }}
-              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
+              style={{
+                width: "100%",
+                height: 28,
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+                fontSize: 12,
+                padding: "0 6px",
+              }}
             >
               <option value="">— Insert field —</option>
               {DYNAMIC_FIELDS.map((f) => (
@@ -566,68 +874,175 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
       )}
 
       {/* Position & Size */}
-      <AccordionButton title="Position & Size" section="position" isOpen={openAccordion === "position"} onClick={() => setOpenAccordion(openAccordion === "position" ? null : "position")} />
+      <AccordionButton
+        title="Position & Size"
+        section="position"
+        isOpen={openAccordion === "position"}
+        onClick={() =>
+          setOpenAccordion(openAccordion === "position" ? null : "position")
+        }
+      />
       {openAccordion === "position" && (
-      <div style={{ background: "#f8fafc", borderRadius: 0, padding: 8, marginBottom: 6 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          <div>
-            <span style={{ fontSize: 10, color: "#94a3b8" }}>X</span>
-            <NumInput value={Math.round(el.x)} onChange={p("x")} />
-          </div>
-          <div>
-            <span style={{ fontSize: 10, color: "#94a3b8" }}>Y</span>
-            <NumInput value={Math.round(el.y)} onChange={p("y")} />
-          </div>
-          <div>
-            <span style={{ fontSize: 10, color: "#94a3b8" }}>W</span>
-            <NumInput value={Math.round(el.w)} min={10} onChange={p("w")} />
-          </div>
-          <div>
-            <span style={{ fontSize: 10, color: "#94a3b8" }}>H</span>
-            <NumInput value={Math.round(el.h)} min={4} onChange={p("h")} />
+        <div
+          style={{
+            background: "#f8fafc",
+            borderRadius: 0,
+            padding: 8,
+            marginBottom: 6,
+          }}
+        >
+          <div
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
+          >
+            <div>
+              <span style={{ fontSize: 10, color: "#94a3b8" }}>X</span>
+              <NumInput value={Math.round(el.x)} onChange={p("x")} />
+            </div>
+            <div>
+              <span style={{ fontSize: 10, color: "#94a3b8" }}>Y</span>
+              <NumInput value={Math.round(el.y)} onChange={p("y")} />
+            </div>
+            <div>
+              <span style={{ fontSize: 10, color: "#94a3b8" }}>W</span>
+              <NumInput value={Math.round(el.w)} min={10} onChange={p("w")} />
+            </div>
+            <div>
+              <span style={{ fontSize: 10, color: "#94a3b8" }}>H</span>
+              <NumInput value={Math.round(el.h)} min={4} onChange={p("h")} />
+            </div>
           </div>
         </div>
-      </div>
       )}
 
       {/* Alignment */}
-      <AccordionButton title="Alignment" section="alignment" isOpen={openAccordion === "alignment"} onClick={() => setOpenAccordion(openAccordion === "alignment" ? null : "alignment")} />
+      <AccordionButton
+        title="Alignment"
+        section="alignment"
+        isOpen={openAccordion === "alignment"}
+        onClick={() =>
+          setOpenAccordion(openAccordion === "alignment" ? null : "alignment")
+        }
+      />
       {openAccordion === "alignment" && (
-      <div style={{ background: "#f8fafc", borderRadius: 0, padding: 8, marginBottom: 6 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4, marginBottom: 8 }}>
-          <button onClick={() => onChange({ ...el, x: 0 })} style={{ ...smallBtn, fontSize: 10 }} title="Align Left">
-            <i className="bi bi-align-start" />
-          </button>
-          <button onClick={() => onChange({ ...el, x: (canvasState.width - el.w) / 2 })} style={{ ...smallBtn, fontSize: 10 }} title="Center X">
-            <i className="bi bi-distribute-horizontal" />
-          </button>
-          <button onClick={() => onChange({ ...el, x: canvasState.width - el.w })} style={{ ...smallBtn, fontSize: 10 }} title="Align Right">
-            <i className="bi bi-align-end" />
-          </button>
-          <button onClick={() => onChange({ ...el, y: 0 })} style={{ ...smallBtn, fontSize: 10 }} title="Align Top">
-            <i className="bi bi-align-top" />
-          </button>
-          <button onClick={() => onChange({ ...el, x: (canvasState.width - el.w) / 2, y: (canvasState.height - el.h) / 2 })} style={{ ...smallBtn, fontSize: 10, background: "#f5f3ff", color: "#7c3aed", border: "1px solid #e9d5ff" }} title="Center">
-            <i className="bi bi-bullseye" />
-          </button>
-          <button onClick={() => onChange({ ...el, y: canvasState.height - el.h })} style={{ ...smallBtn, fontSize: 10 }} title="Align Bottom">
-            <i className="bi bi-align-bottom" />
-          </button>
+        <div
+          style={{
+            background: "#f8fafc",
+            borderRadius: 0,
+            padding: 8,
+            marginBottom: 6,
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              gap: 4,
+              marginBottom: 8,
+            }}
+          >
+            <button
+              onClick={() => onChange({ ...el, x: 0 })}
+              style={{ ...smallBtn, fontSize: 10 }}
+              title="Align Left"
+            >
+              <i className="bi bi-align-start" />
+            </button>
+            <button
+              onClick={() =>
+                onChange({ ...el, x: (canvasState.width - el.w) / 2 })
+              }
+              style={{ ...smallBtn, fontSize: 10 }}
+              title="Center X"
+            >
+              <i className="bi bi-distribute-horizontal" />
+            </button>
+            <button
+              onClick={() => onChange({ ...el, x: canvasState.width - el.w })}
+              style={{ ...smallBtn, fontSize: 10 }}
+              title="Align Right"
+            >
+              <i className="bi bi-align-end" />
+            </button>
+            <button
+              onClick={() => onChange({ ...el, y: 0 })}
+              style={{ ...smallBtn, fontSize: 10 }}
+              title="Align Top"
+            >
+              <i className="bi bi-align-top" />
+            </button>
+            <button
+              onClick={() =>
+                onChange({
+                  ...el,
+                  x: (canvasState.width - el.w) / 2,
+                  y: (canvasState.height - el.h) / 2,
+                })
+              }
+              style={{
+                ...smallBtn,
+                fontSize: 10,
+                background: "#f5f3ff",
+                color: "#7c3aed",
+                border: "1px solid #e9d5ff",
+              }}
+              title="Center"
+            >
+              <i className="bi bi-bullseye" />
+            </button>
+            <button
+              onClick={() => onChange({ ...el, y: canvasState.height - el.h })}
+              style={{ ...smallBtn, fontSize: 10 }}
+              title="Align Bottom"
+            >
+              <i className="bi bi-align-bottom" />
+            </button>
+          </div>
+          <div
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}
+          >
+            <button
+              onClick={() =>
+                onChange({ ...el, y: (canvasState.height - el.h) / 2 })
+              }
+              style={{ ...smallBtn, fontSize: 10 }}
+              title="Center Y"
+            >
+              <i className="bi bi-distribute-vertical" /> Center Y
+            </button>
+            <button
+              onClick={() =>
+                onChange({ ...el, x: (canvasState.width - el.w) / 2 })
+              }
+              style={{ ...smallBtn, fontSize: 10 }}
+              title="Center X"
+            >
+              <i className="bi bi-distribute-horizontal" /> Center X
+            </button>
+          </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
-          <button onClick={() => onChange({ ...el, y: (canvasState.height - el.h) / 2 })} style={{ ...smallBtn, fontSize: 10 }} title="Center Y">
-            <i className="bi bi-distribute-vertical" /> Center Y
-          </button>
-          <button onClick={() => onChange({ ...el, x: (canvasState.width - el.w) / 2 })} style={{ ...smallBtn, fontSize: 10 }} title="Center X">
-            <i className="bi bi-distribute-horizontal" /> Center X
-          </button>
-        </div>
-      </div>
       )}
 
       {/* Layer */}
-      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Layer</div>
+      <div
+        style={{
+          background: "#f8fafc",
+          borderRadius: 8,
+          padding: 8,
+          marginBottom: 6,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: "#64748b",
+            marginBottom: 8,
+            textTransform: "uppercase",
+            letterSpacing: 0.5,
+          }}
+        >
+          Layer
+        </div>
         <div style={{ display: "flex", gap: 6 }}>
           <button onClick={onBring} style={{ flex: 1, ...smallBtn }}>
             <i className="bi bi-layers-fill" style={{ marginRight: 4 }} />
@@ -639,24 +1054,63 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
           </button>
         </div>
         <div style={{ marginTop: 8 }}>
-          <span style={{ fontSize: 10, color: "#94a3b8" }}>Z-Index: {el.zIndex}</span>
+          <span style={{ fontSize: 10, color: "#94a3b8" }}>
+            Z-Index: {el.zIndex}
+          </span>
         </div>
       </div>
 
       {/* Appearance */}
-      <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Appearance</div>
+      <div
+        style={{
+          background: "#f8fafc",
+          borderRadius: 8,
+          padding: 8,
+          marginBottom: 6,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: "#64748b",
+            marginBottom: 8,
+            textTransform: "uppercase",
+            letterSpacing: 0.5,
+          }}
+        >
+          Appearance
+        </div>
         <PropRow label="Background">
           <ColorInput value={el.bg || "transparent"} onChange={p("bg")} />
         </PropRow>
         <PropRow label="Border Radius">
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <input type="range" min={0} max={60} value={el.borderRadius} onChange={(e) => p("borderRadius")(Number(e.target.value))} style={{ flex: 1 }} />
-            <NumInput value={el.borderRadius} min={0} max={200} suffix="px" onChange={p("borderRadius")} />
+            <input
+              type="range"
+              min={0}
+              max={60}
+              value={el.borderRadius}
+              onChange={(e) => p("borderRadius")(Number(e.target.value))}
+              style={{ flex: 1 }}
+            />
+            <NumInput
+              value={el.borderRadius}
+              min={0}
+              max={200}
+              suffix="px"
+              onChange={p("borderRadius")}
+            />
           </div>
         </PropRow>
         <PropRow label="Border Width">
-          <NumInput value={el.borderWidth} min={0} max={20} suffix="px" onChange={p("borderWidth")} />
+          <NumInput
+            value={el.borderWidth}
+            min={0}
+            max={20}
+            suffix="px"
+            onChange={p("borderWidth")}
+          />
         </PropRow>
         {el.borderWidth > 0 && (
           <>
@@ -664,34 +1118,89 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
               <ColorInput value={el.borderColor} onChange={p("borderColor")} />
             </PropRow>
             <PropRow label="Border Style">
-              <SelectInput value={el.borderStyle} onChange={p("borderStyle")} options={["solid", "dashed", "dotted", "double"]} />
+              <SelectInput
+                value={el.borderStyle}
+                onChange={p("borderStyle")}
+                options={["solid", "dashed", "dotted", "double"]}
+              />
             </PropRow>
           </>
         )}
         <PropRow label="Opacity">
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <input type="range" min={0} max={1} step={0.05} value={el.opacity} onChange={(e) => p("opacity")(Number(e.target.value))} style={{ flex: 1 }} />
-            <span style={{ fontSize: 11, color: "#64748b", width: 32 }}>{Math.round(el.opacity * 100)}%</span>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={el.opacity}
+              onChange={(e) => p("opacity")(Number(e.target.value))}
+              style={{ flex: 1 }}
+            />
+            <span style={{ fontSize: 11, color: "#64748b", width: 32 }}>
+              {Math.round(el.opacity * 100)}%
+            </span>
           </div>
         </PropRow>
       </div>
 
       {/* Text - Typography Section */}
       {isText && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Typography</div>
+        <div
+          style={{
+            background: "#f8fafc",
+            borderRadius: 8,
+            padding: 8,
+            marginBottom: 6,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#64748b",
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}
+          >
+            Typography
+          </div>
           <PropRow label="Font Family">
-            <SelectInput value={el.fontFamily} onChange={p("fontFamily")} options={FONTS} />
+            <SelectInput
+              value={el.fontFamily}
+              onChange={p("fontFamily")}
+              options={FONTS}
+            />
           </PropRow>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 8,
+              marginBottom: 8,
+            }}
+          >
             <div>
               <PropRow label="Size">
-                <NumInput value={el.fontSize} min={6} max={120} suffix="px" onChange={p("fontSize")} />
+                <NumInput
+                  value={el.fontSize}
+                  min={6}
+                  max={120}
+                  suffix="px"
+                  onChange={p("fontSize")}
+                />
               </PropRow>
             </div>
             <div>
               <PropRow label="Line Height">
-                <NumInput value={el.lineHeight} min={0.8} max={4} step={0.1} onChange={p("lineHeight")} />
+                <NumInput
+                  value={el.lineHeight}
+                  min={0.8}
+                  max={4}
+                  step={0.1}
+                  onChange={p("lineHeight")}
+                />
               </PropRow>
             </div>
           </div>
@@ -750,14 +1259,20 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
                 </button>
               ))}
               <button
-                onClick={() => p("textDecoration")(el.textDecoration === "underline" ? "none" : "underline")}
+                onClick={() =>
+                  p("textDecoration")(
+                    el.textDecoration === "underline" ? "none" : "underline",
+                  )
+                }
                 style={{
                   width: 30,
                   height: 26,
                   borderRadius: 5,
                   border: `1px solid ${el.textDecoration === "underline" ? "#a855f7" : "#e2e8f0"}`,
-                  background: el.textDecoration === "underline" ? "#f5f3ff" : "#fff",
-                  color: el.textDecoration === "underline" ? "#7c3aed" : "#475569",
+                  background:
+                    el.textDecoration === "underline" ? "#f5f3ff" : "#fff",
+                  color:
+                    el.textDecoration === "underline" ? "#7c3aed" : "#475569",
                   cursor: "pointer",
                   fontSize: 12,
                   textDecoration: "underline",
@@ -795,12 +1310,26 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
           <PropRow label="Text Color">
             <ColorInput value={el.color} onChange={p("color")} />
           </PropRow>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
+          >
             <PropRow label="Pad X">
-              <NumInput value={el.paddingX} min={0} max={60} suffix="px" onChange={p("paddingX")} />
+              <NumInput
+                value={el.paddingX}
+                min={0}
+                max={60}
+                suffix="px"
+                onChange={p("paddingX")}
+              />
             </PropRow>
             <PropRow label="Pad Y">
-              <NumInput value={el.paddingY} min={0} max={60} suffix="px" onChange={p("paddingY")} />
+              <NumInput
+                value={el.paddingY}
+                min={0}
+                max={60}
+                suffix="px"
+                onChange={p("paddingY")}
+              />
             </PropRow>
           </div>
         </div>
@@ -808,46 +1337,102 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Image/Logo */}
       {isMedia && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Image</div>
+        <div
+          style={{
+            background: "#f8fafc",
+            borderRadius: 8,
+            padding: 8,
+            marginBottom: 6,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#64748b",
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}
+          >
+            Image
+          </div>
           <PropRow label="Image URL">
             <input
               type="text"
               value={el.imageUrl || ""}
               placeholder="https://... or upload"
               onChange={(e) => onChange({ ...el, imageUrl: e.target.value })}
-              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+              style={{
+                width: "100%",
+                height: 28,
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+                fontSize: 11,
+                padding: "0 8px",
+              }}
             />
           </PropRow>
           <PropRow label="Fit">
-            <SelectInput value={el.objectFit} onChange={p("objectFit")} options={["cover", "contain", "fill", "none"]} />
+            <SelectInput
+              value={el.objectFit}
+              onChange={p("objectFit")}
+              options={["cover", "contain", "fill", "none"]}
+            />
           </PropRow>
         </div>
       )}
 
       {/* Form Field Properties */}
       {el.type === "form-field" && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Form Field Settings</div>
+        <div
+          style={{
+            background: "#f8fafc",
+            borderRadius: 8,
+            padding: 8,
+            marginBottom: 6,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#64748b",
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}
+          >
+            Form Field Settings
+          </div>
           <PropRow label="Map Field">
             <select
               value={el.fieldId || ""}
               onChange={(e) => {
-                const field = form?.fields?.find(f => f.fieldId === e.target.value);
+                const field = form?.fields?.find(
+                  (f) => f.fieldId === e.target.value,
+                );
                 onChange({
                   ...el,
                   fieldId: e.target.value,
                   placeholder: field?.label || "",
-                  content: field?.label || "Form Field"
+                  content: field?.label || "Form Field",
                 });
               }}
-              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
+              style={{
+                width: "100%",
+                height: 28,
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+                fontSize: 12,
+                padding: "0 6px",
+              }}
             >
               <option value="">— Select a field —</option>
               {/* Fields */}
               {(form?.fields || [])
-                .filter(f => f.enabled === true)
-                .map(field => (
+                .filter((f) => f.enabled === true)
+                .map((field) => (
                   <option key={field.fieldId} value={field.fieldId}>
                     {field.label} ({field.fieldName || field.fieldId})
                   </option>
@@ -856,8 +1441,11 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
               {selectedCategories.length > 0 && (
                 <>
                   <option disabled>─────────────────</option>
-                  {selectedCategories.map(cat => (
-                    <option key={cat.categoryId || cat.id} value={cat.categoryId || cat.id}>
+                  {selectedCategories.map((cat) => (
+                    <option
+                      key={cat.categoryId || cat.id}
+                      value={cat.categoryId || cat.id}
+                    >
                       {cat.label || cat.categoryName} (category)
                     </option>
                   ))}
@@ -869,7 +1457,14 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
             <select
               value={el.inputType || "text"}
               onChange={(e) => onChange({ ...el, inputType: e.target.value })}
-              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, padding: "0 6px" }}
+              style={{
+                width: "100%",
+                height: 28,
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+                fontSize: 12,
+                padding: "0 6px",
+              }}
             >
               <option value="text">Text Input</option>
               <option value="email">Email</option>
@@ -885,7 +1480,14 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
               value={el.placeholder || ""}
               onChange={(e) => onChange({ ...el, placeholder: e.target.value })}
               placeholder="Placeholder text"
-              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+              style={{
+                width: "100%",
+                height: 28,
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+                fontSize: 11,
+                padding: "0 8px",
+              }}
             />
           </PropRow>
           {el.inputType === "dropdown" && (
@@ -895,7 +1497,14 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
                 value={el.options || ""}
                 onChange={(e) => onChange({ ...el, options: e.target.value })}
                 placeholder="Option 1, Option 2, Option 3"
-                style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+                style={{
+                  width: "100%",
+                  height: 28,
+                  borderRadius: 6,
+                  border: "1px solid #e2e8f0",
+                  fontSize: 11,
+                  padding: "0 8px",
+                }}
               />
             </PropRow>
           )}
@@ -904,15 +1513,40 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Form Select Properties */}
       {el.type === "form-select" && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Select Field Settings</div>
+        <div
+          style={{
+            background: "#f8fafc",
+            borderRadius: 8,
+            padding: 8,
+            marginBottom: 6,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#64748b",
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}
+          >
+            Select Field Settings
+          </div>
           <PropRow label="Field ID">
             <input
               type="text"
               value={el.fieldId || "category"}
               onChange={(e) => onChange({ ...el, fieldId: e.target.value })}
               placeholder="Field ID"
-              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+              style={{
+                width: "100%",
+                height: 28,
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+                fontSize: 11,
+                padding: "0 8px",
+              }}
             />
           </PropRow>
           <PropRow label="Label">
@@ -921,7 +1555,14 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
               value={el.content || ""}
               onChange={(e) => onChange({ ...el, content: e.target.value })}
               placeholder="Dropdown label"
-              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+              style={{
+                width: "100%",
+                height: 28,
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+                fontSize: 11,
+                padding: "0 8px",
+              }}
             />
           </PropRow>
         </div>
@@ -929,15 +1570,40 @@ const PropertiesPanel = ({ el, selectedElements, onChange, onDelete, onDuplicate
 
       {/* Form Submit Button Properties */}
       {el.type === "form-submit" && (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 8, marginBottom: 6 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Button Settings</div>
+        <div
+          style={{
+            background: "#f8fafc",
+            borderRadius: 8,
+            padding: 8,
+            marginBottom: 6,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#64748b",
+              marginBottom: 8,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}
+          >
+            Button Settings
+          </div>
           <PropRow label="Button Text">
             <input
               type="text"
               value={el.content || "Submit"}
               onChange={(e) => onChange({ ...el, content: e.target.value })}
               placeholder="Button text"
-              style={{ width: "100%", height: 28, borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 11, padding: "0 8px" }}
+              style={{
+                width: "100%",
+                height: 28,
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+                fontSize: 11,
+                padding: "0 8px",
+              }}
             />
           </PropRow>
         </div>
@@ -963,15 +1629,29 @@ const CanvasEl = ({ el, selected, onMouseDown }) => {
   };
 
   const hPos = (h) => {
-    const s = { position: "absolute", width: 8, height: 8, borderRadius: 2, background: "#a855f7", border: "2px solid #fff", zIndex: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.2)", cursor: handleCursor[h] };
+    const s = {
+      position: "absolute",
+      width: 8,
+      height: 8,
+      borderRadius: 2,
+      background: "#a855f7",
+      border: "2px solid #fff",
+      zIndex: 10,
+      boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+      cursor: handleCursor[h],
+    };
     if (h === "nw") return { ...s, top: -4, left: -4 };
-    if (h === "n") return { ...s, top: -4, left: "50%", transform: "translateX(-50%)" };
+    if (h === "n")
+      return { ...s, top: -4, left: "50%", transform: "translateX(-50%)" };
     if (h === "ne") return { ...s, top: -4, right: -4 };
-    if (h === "e") return { ...s, top: "50%", right: -4, transform: "translateY(-50%)" };
+    if (h === "e")
+      return { ...s, top: "50%", right: -4, transform: "translateY(-50%)" };
     if (h === "se") return { ...s, bottom: -4, right: -4 };
-    if (h === "s") return { ...s, bottom: -4, left: "50%", transform: "translateX(-50%)" };
+    if (h === "s")
+      return { ...s, bottom: -4, left: "50%", transform: "translateX(-50%)" };
     if (h === "sw") return { ...s, bottom: -4, left: -4 };
-    if (h === "w") return { ...s, top: "50%", left: -4, transform: "translateY(-50%)" };
+    if (h === "w")
+      return { ...s, top: "50%", left: -4, transform: "translateY(-50%)" };
   };
 
   return (
@@ -985,41 +1665,143 @@ const CanvasEl = ({ el, selected, onMouseDown }) => {
         height: el.h,
         background: el.bg,
         borderRadius: el.borderRadius,
-        border: el.borderWidth > 0 ? `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}` : "none",
+        border:
+          el.borderWidth > 0
+            ? `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`
+            : "none",
         opacity: el.opacity ?? 1,
         zIndex: (el.zIndex || 1) + 1,
         cursor: el.locked ? "not-allowed" : "move",
         boxSizing: "border-box",
         outline: selected ? "2px solid #a855f7" : "none",
         outlineOffset: 2,
-        boxShadow: selected ? "0 0 0 1px #e9d5ff, 0 0 8px rgba(168,85,247,0.3)" : "none",
+        boxShadow: selected
+          ? "0 0 0 1px #e9d5ff, 0 0 8px rgba(168,85,247,0.3)"
+          : "none",
         overflow: "hidden",
       }}
     >
       {el.type === "qr" ? (
-        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
-          <i className="bi bi-qr-code" style={{ fontSize: Math.min(el.w, el.h) * 0.55, color: "#1e293b" }} />
-          <span style={{ fontSize: 9, color: "#94a3b8" }}>{el.content || "{{passId}}"}</span>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 4,
+          }}
+        >
+          <i
+            className="bi bi-qr-code"
+            style={{ fontSize: Math.min(el.w, el.h) * 0.55, color: "#1e293b" }}
+          />
+          <span style={{ fontSize: 9, color: "#94a3b8" }}>
+            {el.content || "{{passId}}"}
+          </span>
         </div>
       ) : el.type === "form-field" ? (
-        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: `${el.paddingY}px ${el.paddingX}px`, background: el.bg, borderRadius: el.borderRadius, border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`, fontSize: el.fontSize, color: el.color || "#1e293b", gap: 2 }}>
-          <span style={{ fontSize: 10, fontWeight: 600, color: "#7c3aed" }}>{el.fieldId || "Field"}</span>
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: el.fontSize - 2, color: el.color || "#1e293b" }}>{el.placeholder || el.content || "Form Field"}</span>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: `${el.paddingY}px ${el.paddingX}px`,
+            background: el.bg,
+            borderRadius: el.borderRadius,
+            border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`,
+            fontSize: el.fontSize,
+            color: el.color || "#1e293b",
+            gap: 2,
+          }}
+        >
+          <span style={{ fontSize: 10, fontWeight: 600, color: "#7c3aed" }}>
+            {el.fieldId || "Field"}
+          </span>
+          <span
+            style={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              fontSize: el.fontSize - 2,
+              color: el.color || "#1e293b",
+            }}
+          >
+            {el.placeholder || el.content || "Form Field"}
+          </span>
         </div>
       ) : el.type === "form-select" ? (
-        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", padding: `${el.paddingY}px ${el.paddingX}px`, background: el.bg, borderRadius: el.borderRadius, border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`, fontSize: el.fontSize, color: "#999" }}>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            padding: `${el.paddingY}px ${el.paddingX}px`,
+            background: el.bg,
+            borderRadius: el.borderRadius,
+            border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`,
+            fontSize: el.fontSize,
+            color: "#999",
+          }}
+        >
           <span>{el.content || "Select an option"}</span>
         </div>
       ) : el.type === "form-checkbox" ? (
-        <div style={{ width: el.w, height: el.h, background: el.bg, borderRadius: el.borderRadius, border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <i className="bi bi-check" style={{ color: el.checked ? "#a855f7" : "transparent", fontSize: 14 }} />
+        <div
+          style={{
+            width: el.w,
+            height: el.h,
+            background: el.bg,
+            borderRadius: el.borderRadius,
+            border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <i
+            className="bi bi-check"
+            style={{
+              color: el.checked ? "#a855f7" : "transparent",
+              fontSize: 14,
+            }}
+          />
         </div>
       ) : el.type === "form-submit" ? (
-        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: el.bg, borderRadius: el.borderRadius, border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`, fontSize: el.fontSize, fontWeight: el.fontWeight, color: el.color, cursor: "pointer" }}>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: el.bg,
+            borderRadius: el.borderRadius,
+            border: `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`,
+            fontSize: el.fontSize,
+            fontWeight: el.fontWeight,
+            color: el.color,
+            cursor: "pointer",
+          }}
+        >
           {el.content}
         </div>
       ) : isMedia && el.imageUrl ? (
-        <img src={el.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: el.objectFit || "cover", display: "block" }} />
+        <img
+          src={el.imageUrl}
+          alt=""
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: el.objectFit || "cover",
+            display: "block",
+          }}
+        />
       ) : isText ? (
         <div
           style={{
@@ -1036,42 +1818,72 @@ const CanvasEl = ({ el, selected, onMouseDown }) => {
             lineHeight: el.lineHeight,
             display: "flex",
             alignItems: "center",
-            justifyContent: el.textAlign === "center" ? "center" : el.textAlign === "right" ? "flex-end" : "flex-start",
+            justifyContent:
+              el.textAlign === "center"
+                ? "center"
+                : el.textAlign === "right"
+                  ? "flex-end"
+                  : "flex-start",
             overflow: "hidden",
             boxSizing: "border-box",
             whiteSpace: "pre-wrap",
             wordBreak: "break-word",
           }}
         >
-          {el.content || <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>Empty…</span>}
+          {el.content || (
+            <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>
+              Empty…
+            </span>
+          )}
         </div>
       ) : isMedia ? (
-        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 4 }}>
-          <i className={`bi ${el.type === "logo" ? "bi-patch-check" : "bi-image"}`} style={{ fontSize: 28, color: "#cbd5e1" }} />
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+            gap: 4,
+          }}
+        >
+          <i
+            className={`bi ${el.type === "logo" ? "bi-patch-check" : "bi-image"}`}
+            style={{ fontSize: 28, color: "#cbd5e1" }}
+          />
           <span style={{ fontSize: 10, color: "#94a3b8" }}>{el.label}</span>
         </div>
       ) : el.type === "divider" ? (
         <div style={{ width: "100%", height: "100%", background: el.bg }} />
       ) : null}
 
-      {selected && !el.locked && ["nw", "n", "ne", "e", "se", "s", "sw", "w"].map((h) => (
-        <div
-          key={h}
-          style={hPos(h)}
-          onMouseEnter={() => setHoveredHandle(h)}
-          onMouseLeave={() => setHoveredHandle(null)}
-        />
-      ))}
+      {selected &&
+        !el.locked &&
+        ["nw", "n", "ne", "e", "se", "s", "sw", "w"].map((h) => (
+          <div
+            key={h}
+            style={hPos(h)}
+            onMouseEnter={() => setHoveredHandle(h)}
+            onMouseLeave={() => setHoveredHandle(null)}
+          />
+        ))}
     </div>
   );
 };
 
 const FormEditor = ({ formId, onBack }) => {
-  const { getFormById, getFormElements, saveFormElements, updateForm } = useForm();
+  const { getFormById, getFormElements, saveFormElements, updateForm } =
+    useForm();
   const form = getFormById(formId);
   const [elements, setElements] = useState(getFormElements(formId) || []);
   const [selectedElementIds, setSelectedElementIds] = useState([]);
-  const [canvas, setCanvas] = useState({ width: 600, height: 400, background: "#ffffff", borderRadius: 0 });
+  const [canvas, setCanvas] = useState({
+    width: 600,
+    height: 400,
+    background: "#ffffff",
+    borderRadius: 0,
+  });
   const [zoom, setZoom] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -1082,51 +1894,65 @@ const FormEditor = ({ formId, onBack }) => {
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
 
-  const selectedElement = elements.find((el) => el.id === selectedElementIds[0]);
-  const selectedElements = elements.filter((el) => selectedElementIds.includes(el.id));
-  const isFormElement = selectedElement && ["form-field", "form-select", "form-checkbox", "form-submit"].includes(selectedElement.type);
-
-  const addElement = useCallback(
-    (type) => {
-      const el = makeElement(type);
-      setElements((prev) => [...prev, el]);
-      setSelectedElementIds([el.id]);
-    },
-    []
+  const selectedElement = elements.find(
+    (el) => el.id === selectedElementIds[0],
   );
+  const selectedElements = elements.filter((el) =>
+    selectedElementIds.includes(el.id),
+  );
+  const isFormElement =
+    selectedElement &&
+    ["form-field", "form-select", "form-checkbox", "form-submit"].includes(
+      selectedElement.type,
+    );
+
+  const addElement = useCallback((type) => {
+    const el = makeElement(type);
+    setElements((prev) => [...prev, el]);
+    setSelectedElementIds([el.id]);
+  }, []);
 
   const updateElement = useCallback((updated) => {
-    setElements((prev) => prev.map((el) => (el.id === updated.id ? updated : el)));
+    setElements((prev) =>
+      prev.map((el) => (el.id === updated.id ? updated : el)),
+    );
   }, []);
 
   // Group management (must be after updateElement definition)
   const groupElements = useCallback(() => {
     if (selectedElements.length < 2) return;
     const groupId = uid();
-    const updated = selectedElements.map(el => ({ ...el, groupId }));
-    updated.forEach(el => updateElement(el));
+    const updated = selectedElements.map((el) => ({ ...el, groupId }));
+    updated.forEach((el) => updateElement(el));
   }, [selectedElements, updateElement]);
 
   const ungroupElements = useCallback(() => {
     if (selectedElements.length === 0) return;
-    const updated = selectedElements.map(el => ({ ...el, groupId: null }));
-    updated.forEach(el => updateElement(el));
+    const updated = selectedElements.map((el) => ({ ...el, groupId: null }));
+    updated.forEach((el) => updateElement(el));
   }, [selectedElements, updateElement]);
 
   // When moving a grouped element, move all in the group
-  const moveGroup = useCallback((elementId, dx, dy) => {
-    const element = elements.find(e => e.id === elementId);
-    if (!element || !element.groupId) return false;
+  const moveGroup = useCallback(
+    (elementId, dx, dy) => {
+      const element = elements.find((e) => e.id === elementId);
+      if (!element || !element.groupId) return false;
 
-    const groupMembers = elements.filter(e => e.groupId === element.groupId);
-    groupMembers.forEach(el => {
-      updateElement({ ...el, x: el.x + dx, y: el.y + dy });
-    });
-    return true;
-  }, [elements, updateElement]);
+      const groupMembers = elements.filter(
+        (e) => e.groupId === element.groupId,
+      );
+      groupMembers.forEach((el) => {
+        updateElement({ ...el, x: el.x + dx, y: el.y + dy });
+      });
+      return true;
+    },
+    [elements, updateElement],
+  );
 
   const deleteSelected = useCallback(() => {
-    setElements((prev) => prev.filter((el) => !selectedElementIds.includes(el.id)));
+    setElements((prev) =>
+      prev.filter((el) => !selectedElementIds.includes(el.id)),
+    );
     setSelectedElementIds([]);
   }, [selectedElementIds]);
 
@@ -1179,38 +2005,62 @@ const FormEditor = ({ formId, onBack }) => {
   }, [selectedElements, gap, updateElement]);
 
   // Align all selected elements
-  const alignElements = useCallback((direction) => {
-    if (selectedElements.length < 2) return;
-    const updated = selectedElements.map((el) => {
-      switch (direction) {
-        case "left":
-          return { ...el, x: Math.min(...selectedElements.map((e) => e.x)) };
-        case "centerX":
-          return { ...el, x: selectedElements.reduce((sum, e) => sum + e.x + e.w / 2, 0) / selectedElements.length - el.w / 2 };
-        case "right":
-          return { ...el, x: Math.max(...selectedElements.map((e) => e.x + e.w)) - el.w };
-        case "top":
-          return { ...el, y: Math.min(...selectedElements.map((e) => e.y)) };
-        case "centerY":
-          return { ...el, y: selectedElements.reduce((sum, e) => sum + e.y + e.h / 2, 0) / selectedElements.length - el.h / 2 };
-        case "bottom":
-          return { ...el, y: Math.max(...selectedElements.map((e) => e.y + e.h)) - el.h };
-        default:
-          return el;
-      }
-    });
-    updated.forEach((el) => updateElement(el));
-  }, [selectedElements, updateElement]);
+  const alignElements = useCallback(
+    (direction) => {
+      if (selectedElements.length < 2) return;
+      const updated = selectedElements.map((el) => {
+        switch (direction) {
+          case "left":
+            return { ...el, x: Math.min(...selectedElements.map((e) => e.x)) };
+          case "centerX":
+            return {
+              ...el,
+              x:
+                selectedElements.reduce((sum, e) => sum + e.x + e.w / 2, 0) /
+                  selectedElements.length -
+                el.w / 2,
+            };
+          case "right":
+            return {
+              ...el,
+              x: Math.max(...selectedElements.map((e) => e.x + e.w)) - el.w,
+            };
+          case "top":
+            return { ...el, y: Math.min(...selectedElements.map((e) => e.y)) };
+          case "centerY":
+            return {
+              ...el,
+              y:
+                selectedElements.reduce((sum, e) => sum + e.y + e.h / 2, 0) /
+                  selectedElements.length -
+                el.h / 2,
+            };
+          case "bottom":
+            return {
+              ...el,
+              y: Math.max(...selectedElements.map((e) => e.y + e.h)) - el.h,
+            };
+          default:
+            return el;
+        }
+      });
+      updated.forEach((el) => updateElement(el));
+    },
+    [selectedElements, updateElement],
+  );
 
   const getElementAtPoint = useCallback(
     (px, py) => {
-      const sorted = [...elements].sort((a, b) => (b.zIndex || 1) - (a.zIndex || 1));
+      const sorted = [...elements].sort(
+        (a, b) => (b.zIndex || 1) - (a.zIndex || 1),
+      );
       for (const el of sorted) {
-        if (px >= el.x && px < el.x + el.w && py >= el.y && py < el.y + el.h) return el;
+        if (px >= el.x && px < el.x + el.w && py >= el.y && py < el.y + el.h)
+          return el;
       }
       return null;
     },
-    [elements]
+    [elements],
   );
 
   const onCanvasMouseDown = useCallback(
@@ -1231,7 +2081,9 @@ const FormEditor = ({ formId, onBack }) => {
       // Multi-select with Ctrl/Cmd + Click
       if (e.ctrlKey || e.metaKey) {
         setSelectedElementIds((prev) =>
-          prev.includes(clicked.id) ? prev.filter((id) => id !== clicked.id) : [...prev, clicked.id]
+          prev.includes(clicked.id)
+            ? prev.filter((id) => id !== clicked.id)
+            : [...prev, clicked.id],
         );
       } else {
         setSelectedElementIds([clicked.id]);
@@ -1239,21 +2091,68 @@ const FormEditor = ({ formId, onBack }) => {
       if (clicked.locked) return;
 
       const handles = {
-        nw: clicked.x <= px && px < clicked.x + 8 && clicked.y <= py && py < clicked.y + 8,
-        n: clicked.x + clicked.w / 2 - 4 <= px && px < clicked.x + clicked.w / 2 + 4 && clicked.y <= py && py < clicked.y + 8,
-        ne: clicked.x + clicked.w - 8 <= px && px < clicked.x + clicked.w && clicked.y <= py && py < clicked.y + 8,
-        e: clicked.x + clicked.w - 8 <= px && px < clicked.x + clicked.w && clicked.y + clicked.h / 2 - 4 <= py && py < clicked.y + clicked.h / 2 + 4,
-        se: clicked.x + clicked.w - 8 <= px && px < clicked.x + clicked.w && clicked.y + clicked.h - 8 <= py && py < clicked.y + clicked.h,
-        s: clicked.x + clicked.w / 2 - 4 <= px && px < clicked.x + clicked.w / 2 + 4 && clicked.y + clicked.h - 8 <= py && py < clicked.y + clicked.h,
-        sw: clicked.x <= px && px < clicked.x + 8 && clicked.y + clicked.h - 8 <= py && py < clicked.y + clicked.h,
-        w: clicked.x <= px && px < clicked.x + 8 && clicked.y + clicked.h / 2 - 4 <= py && py < clicked.y + clicked.h / 2 + 4,
+        nw:
+          clicked.x <= px &&
+          px < clicked.x + 8 &&
+          clicked.y <= py &&
+          py < clicked.y + 8,
+        n:
+          clicked.x + clicked.w / 2 - 4 <= px &&
+          px < clicked.x + clicked.w / 2 + 4 &&
+          clicked.y <= py &&
+          py < clicked.y + 8,
+        ne:
+          clicked.x + clicked.w - 8 <= px &&
+          px < clicked.x + clicked.w &&
+          clicked.y <= py &&
+          py < clicked.y + 8,
+        e:
+          clicked.x + clicked.w - 8 <= px &&
+          px < clicked.x + clicked.w &&
+          clicked.y + clicked.h / 2 - 4 <= py &&
+          py < clicked.y + clicked.h / 2 + 4,
+        se:
+          clicked.x + clicked.w - 8 <= px &&
+          px < clicked.x + clicked.w &&
+          clicked.y + clicked.h - 8 <= py &&
+          py < clicked.y + clicked.h,
+        s:
+          clicked.x + clicked.w / 2 - 4 <= px &&
+          px < clicked.x + clicked.w / 2 + 4 &&
+          clicked.y + clicked.h - 8 <= py &&
+          py < clicked.y + clicked.h,
+        sw:
+          clicked.x <= px &&
+          px < clicked.x + 8 &&
+          clicked.y + clicked.h - 8 <= py &&
+          py < clicked.y + clicked.h,
+        w:
+          clicked.x <= px &&
+          px < clicked.x + 8 &&
+          clicked.y + clicked.h / 2 - 4 <= py &&
+          py < clicked.y + clicked.h / 2 + 4,
       };
 
       const handle = Object.entries(handles).find(([, hit]) => hit)?.[0];
       if (handle) {
-        resizeRef.current = { id: clicked.id, handle, startX: px, startY: py, origX: clicked.x, origY: clicked.y, origW: clicked.w, origH: clicked.h };
+        resizeRef.current = {
+          id: clicked.id,
+          handle,
+          startX: px,
+          startY: py,
+          origX: clicked.x,
+          origY: clicked.y,
+          origW: clicked.w,
+          origH: clicked.h,
+        };
       } else {
-        dragRef.current = { id: clicked.id, startX: px, startY: py, origX: clicked.x, origY: clicked.y };
+        dragRef.current = {
+          id: clicked.id,
+          startX: px,
+          startY: py,
+          origX: clicked.x,
+          origY: clicked.y,
+        };
       }
 
       const onMouseMove = (me) => {
@@ -1265,7 +2164,11 @@ const FormEditor = ({ formId, onBack }) => {
           const dy = cy - dragRef.current.startY;
           const el = elements.find((e) => e.id === dragRef.current.id);
           if (el) {
-            updateElement({ ...el, x: Math.max(0, dragRef.current.origX + dx), y: Math.max(0, dragRef.current.origY + dy) });
+            updateElement({
+              ...el,
+              x: Math.max(0, dragRef.current.origX + dx),
+              y: Math.max(0, dragRef.current.origY + dy),
+            });
           }
         } else if (resizeRef.current) {
           const dx = cx - resizeRef.current.startX;
@@ -1282,12 +2185,14 @@ const FormEditor = ({ formId, onBack }) => {
             nx = resizeRef.current.origX + dx;
             nw = resizeRef.current.origW - dx;
           }
-          if (["ne", "e", "se"].includes(h)) nw = Math.max(20, resizeRef.current.origW + dx);
+          if (["ne", "e", "se"].includes(h))
+            nw = Math.max(20, resizeRef.current.origW + dx);
           if (["nw", "n", "ne"].includes(h)) {
             ny = resizeRef.current.origY + dy;
             nh = resizeRef.current.origH - dy;
           }
-          if (["sw", "s", "se"].includes(h)) nh = Math.max(4, resizeRef.current.origH + dy);
+          if (["sw", "s", "se"].includes(h))
+            nh = Math.max(4, resizeRef.current.origH + dy);
 
           updateElement({ ...el, x: nx, y: ny, w: nw, h: nh });
         }
@@ -1303,7 +2208,7 @@ const FormEditor = ({ formId, onBack }) => {
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
     },
-    [zoom, getElementAtPoint, elements, updateElement]
+    [zoom, getElementAtPoint, elements, updateElement],
   );
 
   const saveForm = async () => {
@@ -1321,34 +2226,110 @@ const FormEditor = ({ formId, onBack }) => {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "#f1f5f9" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        background: "#f1f5f9",
+      }}
+    >
       {/* Header */}
-      <div style={{ padding: "12px 16px", background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div
+        style={{
+          padding: "12px 16px",
+          background: "#fff",
+          borderBottom: "1px solid #e2e8f0",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button className="btn btn-link p-0 text-dark" onClick={onBack} style={{ border: "none", fontSize: 20 }}>
+            <button
+              className="btn btn-link p-0 text-dark"
+              onClick={onBack}
+              style={{ border: "none", fontSize: 20 }}
+            >
               <FiArrowLeft />
             </button>
             <div>
-              <h5 style={{ marginBottom: 0, fontWeight: "bold" }}>{form?.formName}</h5>
+              <h5 style={{ marginBottom: 0, fontWeight: "bold" }}>
+                {form?.formName}
+              </h5>
               <small style={{ color: "#6b7280" }}>{form?.eventName}</small>
             </div>
           </div>
-          <button onClick={saveForm} disabled={saving} style={{ height: 32, borderRadius: 6, border: "none", background: "linear-gradient(135deg,#7c3aed,#a855f7)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: "0 16px", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            {saving ? <><span className="spinner-border spinner-border-sm" /> Saving…</> : <><FiSave size={14} /> Save</>}
+          <button
+            onClick={saveForm}
+            disabled={saving}
+            style={{
+              height: 32,
+              borderRadius: 6,
+              border: "none",
+              background: "linear-gradient(135deg,#7c3aed,#a855f7)",
+              color: "#fff",
+              cursor: "pointer",
+              fontSize: 12,
+              fontWeight: 600,
+              padding: "0 16px",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              flexShrink: 0,
+            }}
+          >
+            {saving ? (
+              <>
+                <span className="spinner-border spinner-border-sm" /> Saving…
+              </>
+            ) : (
+              <>
+                <FiSave size={14} /> Save
+              </>
+            )}
           </button>
         </div>
       </div>
 
       {/* Toolbar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "#fff", borderBottom: "1px solid #e2e8f0", overflowX: "auto" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 16px",
+          background: "#fff",
+          borderBottom: "1px solid #e2e8f0",
+          overflowX: "auto",
+        }}
+      >
         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
           {ELEMENT_BTNS.map(({ type, icon, label }) => (
             <button
               key={type}
               onClick={() => addElement(type)}
               title={`Add ${label}`}
-              style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", height: 32, borderRadius: 6, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", cursor: "pointer", fontSize: 11, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "4px 8px",
+                height: 32,
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+                background: "#f8fafc",
+                color: "#475569",
+                cursor: "pointer",
+                fontSize: 11,
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
             >
               <i className={`bi ${icon}`} />
               {label}
@@ -1359,111 +2340,335 @@ const FormEditor = ({ formId, onBack }) => {
         <div style={{ flex: 1, minWidth: 0 }} />
 
         {/* Zoom Controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          <button onClick={() => setZoom((z) => Math.max(0.25, z - 0.1))} style={{ width: 32, height: 32, borderRadius: 6, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexShrink: 0,
+          }}
+        >
+          <button
+            onClick={() => setZoom((z) => Math.max(0.25, z - 0.1))}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 6,
+              border: "1px solid #e2e8f0",
+              background: "#f8fafc",
+              color: "#475569",
+              cursor: "pointer",
+              fontSize: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             −
           </button>
-          <span style={{ fontSize: 11, color: "#64748b", minWidth: 40, textAlign: "center" }}>{Math.round(zoom * 100)}%</span>
-          <button onClick={() => setZoom((z) => Math.min(2, z + 0.1))} style={{ width: 32, height: 32, borderRadius: 6, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span
+            style={{
+              fontSize: 11,
+              color: "#64748b",
+              minWidth: 40,
+              textAlign: "center",
+            }}
+          >
+            {Math.round(zoom * 100)}%
+          </span>
+          <button
+            onClick={() => setZoom((z) => Math.min(2, z + 0.1))}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 6,
+              border: "1px solid #e2e8f0",
+              background: "#f8fafc",
+              color: "#475569",
+              cursor: "pointer",
+              fontSize: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             +
           </button>
-          <div style={{ width: 1, height: 24, background: "#e2e8f0", margin: "0 4px" }} />
-          <button onClick={() => setFullscreen(!fullscreen)} style={{ width: 32, height: 32, borderRadius: 6, border: "1px solid #e2e8f0", background: fullscreen ? "#e0e7ff" : "#f8fafc", color: fullscreen ? "#4f46e5" : "#475569", cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }} title={fullscreen ? "Exit Fullscreen" : "Fullscreen"}>
-            <i className={`bi ${fullscreen ? "bi-fullscreen-exit" : "bi-fullscreen"}`} />
+          <div
+            style={{
+              width: 1,
+              height: 24,
+              background: "#e2e8f0",
+              margin: "0 4px",
+            }}
+          />
+          <button
+            onClick={() => setFullscreen(!fullscreen)}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 6,
+              border: "1px solid #e2e8f0",
+              background: fullscreen ? "#e0e7ff" : "#f8fafc",
+              color: fullscreen ? "#4f46e5" : "#475569",
+              cursor: "pointer",
+              fontSize: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            title={fullscreen ? "Exit Fullscreen" : "Fullscreen"}
+          >
+            <i
+              className={`bi ${fullscreen ? "bi-fullscreen-exit" : "bi-fullscreen"}`}
+            />
           </button>
         </div>
       </div>
 
-      {error && <div className="alert alert-danger mt-2 mb-0 py-2 px-3 small">{error}</div>}
+      {error && (
+        <div className="alert alert-danger mt-2 mb-0 py-2 px-3 small">
+          {error}
+        </div>
+      )}
 
       {/* Editor */}
-      <div style={{ display: "flex", flex: 1, gap: 0, minHeight: 0, overflow: "hidden" }}>
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          gap: 0,
+          minHeight: 0,
+          overflow: "hidden",
+        }}
+      >
         {/* Left Panel */}
         {!fullscreen && (
-        <div style={{ width: 200, background: "#fff", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          {/* Canvas settings */}
-          <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Canvas</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginBottom: 6 }}>
-              <div>
-                <span style={{ fontSize: 10, color: "#94a3b8" }}>Width</span>
-                <NumInput value={canvas.width} min={100} max={2000} onChange={(v) => setCanvas((c) => ({ ...c, width: v }))} />
+          <div
+            style={{
+              width: 200,
+              background: "#fff",
+              borderRight: "1px solid #e2e8f0",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}
+          >
+            {/* Canvas settings */}
+            <div
+              style={{
+                padding: "10px 12px",
+                borderBottom: "1px solid #f1f5f9",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#64748b",
+                  marginBottom: 8,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                }}
+              >
+                Canvas
               </div>
-              <div>
-                <span style={{ fontSize: 10, color: "#94a3b8" }}>Height</span>
-                <NumInput value={canvas.height} min={100} max={3000} onChange={(v) => setCanvas((c) => ({ ...c, height: v }))} />
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 4,
+                  marginBottom: 6,
+                }}
+              >
+                <div>
+                  <span style={{ fontSize: 10, color: "#94a3b8" }}>Width</span>
+                  <NumInput
+                    value={canvas.width}
+                    min={100}
+                    max={2000}
+                    onChange={(v) => setCanvas((c) => ({ ...c, width: v }))}
+                  />
+                </div>
+                <div>
+                  <span style={{ fontSize: 10, color: "#94a3b8" }}>Height</span>
+                  <NumInput
+                    value={canvas.height}
+                    min={100}
+                    max={3000}
+                    onChange={(v) => setCanvas((c) => ({ ...c, height: v }))}
+                  />
+                </div>
               </div>
-            </div>
-            <div style={{ marginBottom: 6 }}>
-              <span style={{ fontSize: 10, color: "#94a3b8" }}>Background</span>
-              <ColorInput value={canvas.background} onChange={(v) => setCanvas((c) => ({ ...c, background: v }))} />
-            </div>
-            <div style={{ marginBottom: 6 }}>
-              <span style={{ fontSize: 10, color: "#94a3b8" }}>Border Radius</span>
-              <NumInput value={canvas.borderRadius || 0} min={0} max={100} suffix="px" onChange={(v) => setCanvas((c) => ({ ...c, borderRadius: v }))} />
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-              {CANVAS_PRESETS.map((p) => (
-                <button
-                  key={p.label}
-                  onClick={() => setCanvas((c) => ({ ...c, width: p.w, height: p.h }))}
-                  style={{ fontSize: 9, padding: "2px 5px", borderRadius: 4, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", color: "#64748b" }}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Layers */}
-          <div style={{ padding: "8px 12px 4px", fontWeight: 700, fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 }}>Layers ({elements.length})</div>
-          <div style={{ flex: 1, overflowY: "auto" }}>
-            {[...elements]
-              .filter(Boolean)
-              .reverse()
-              .map((el, idx) => {
-                const formFieldIndex = elements.filter((e) => e.type === "form-field").length - idx;
-                const displayLabel = el.type === "form-field"
-                  ? `${formFieldIndex}. ${el.fieldId || "Field"}`
-                  : el.content?.replace(/\{\{[^}]+\}\}/g, "…") || el.label || el.type;
-                return (
-                  <div
-                    key={el.id}
-                    onClick={(e) => {
-                      if (e.ctrlKey || e.metaKey) {
-                        setSelectedElementIds((prev) =>
-                          prev.includes(el.id) ? prev.filter((id) => id !== el.id) : [...prev, el.id]
-                        );
-                      } else {
-                        setSelectedElementIds([el.id]);
-                      }
-                    }}
+              <div style={{ marginBottom: 6 }}>
+                <span style={{ fontSize: 10, color: "#94a3b8" }}>
+                  Background
+                </span>
+                <ColorInput
+                  value={canvas.background}
+                  onChange={(v) => setCanvas((c) => ({ ...c, background: v }))}
+                />
+              </div>
+              <div style={{ marginBottom: 6 }}>
+                <span style={{ fontSize: 10, color: "#94a3b8" }}>
+                  Border Radius
+                </span>
+                <NumInput
+                  value={canvas.borderRadius || 0}
+                  min={0}
+                  max={100}
+                  suffix="px"
+                  onChange={(v) =>
+                    setCanvas((c) => ({ ...c, borderRadius: v }))
+                  }
+                />
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                {CANVAS_PRESETS.map((p) => (
+                  <button
+                    key={p.label}
+                    onClick={() =>
+                      setCanvas((c) => ({ ...c, width: p.w, height: p.h }))
+                    }
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      padding: "5px 12px",
+                      fontSize: 9,
+                      padding: "2px 5px",
+                      borderRadius: 4,
+                      border: "1px solid #e2e8f0",
+                      background: "#f8fafc",
                       cursor: "pointer",
-                      background: selectedElementIds.includes(el.id) ? "#f5f3ff" : "transparent",
-                      borderLeft: `3px solid ${selectedElementIds.includes(el.id) ? "#a855f7" : "transparent"}`,
+                      color: "#64748b",
                     }}
                   >
-                    <i className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`} style={{ fontSize: 12, color: selectedElementIds.includes(el.id) ? "#7c3aed" : "#94a3b8", flexShrink: 0 }} />
-                    <span style={{ fontSize: 11, color: "#475569", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: el.type === "form-field" ? 600 : 400 }}>
-                      {displayLabel}
-                    </span>
-                    {el.locked && <i className="bi bi-lock-fill" style={{ fontSize: 10, color: "#94a3b8" }} />}
-                  </div>
-                );
-              })}
-            {elements.length === 0 && <div style={{ padding: 16, fontSize: 11, color: "#94a3b8", textAlign: "center" }}>Add elements from toolbar</div>}
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Layers */}
+            <div
+              style={{
+                padding: "8px 12px 4px",
+                fontWeight: 700,
+                fontSize: 11,
+                color: "#64748b",
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
+              Layers ({elements.length})
+            </div>
+            <div style={{ flex: 1, overflowY: "auto" }}>
+              {[...elements]
+                .filter(Boolean)
+                .reverse()
+                .map((el, idx) => {
+                  const formFieldIndex =
+                    elements.filter((e) => e.type === "form-field").length -
+                    idx;
+                  const displayLabel =
+                    el.type === "form-field"
+                      ? `${formFieldIndex}. ${el.fieldId || "Field"}`
+                      : el.content?.replace(/\{\{[^}]+\}\}/g, "…") ||
+                        el.label ||
+                        el.type;
+                  return (
+                    <div
+                      key={el.id}
+                      onClick={(e) => {
+                        if (e.ctrlKey || e.metaKey) {
+                          setSelectedElementIds((prev) =>
+                            prev.includes(el.id)
+                              ? prev.filter((id) => id !== el.id)
+                              : [...prev, el.id],
+                          );
+                        } else {
+                          setSelectedElementIds([el.id]);
+                        }
+                      }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "5px 12px",
+                        cursor: "pointer",
+                        background: selectedElementIds.includes(el.id)
+                          ? "#f5f3ff"
+                          : "transparent",
+                        borderLeft: `3px solid ${selectedElementIds.includes(el.id) ? "#a855f7" : "transparent"}`,
+                      }}
+                    >
+                      <i
+                        className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`}
+                        style={{
+                          fontSize: 12,
+                          color: selectedElementIds.includes(el.id)
+                            ? "#7c3aed"
+                            : "#94a3b8",
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color: "#475569",
+                          flex: 1,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          fontWeight: el.type === "form-field" ? 600 : 400,
+                        }}
+                      >
+                        {displayLabel}
+                      </span>
+                      {el.locked && (
+                        <i
+                          className="bi bi-lock-fill"
+                          style={{ fontSize: 10, color: "#94a3b8" }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              {elements.length === 0 && (
+                <div
+                  style={{
+                    padding: 16,
+                    fontSize: 11,
+                    color: "#94a3b8",
+                    textAlign: "center",
+                  }}
+                >
+                  Add elements from toolbar
+                </div>
+              )}
+            </div>
           </div>
-        </div>
         )}
 
         {/* Center Canvas */}
-        <div style={{ flex: 1, background: "#e2e8f0", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", overflow: "auto", padding: "24px" }}>
-          <div style={{ width: canvas.width * zoom, height: canvas.height * zoom, flexShrink: 0, position: "relative" }}>
+        <div
+          style={{
+            flex: 1,
+            background: "#e2e8f0",
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "auto",
+            padding: "24px",
+          }}
+        >
+          <div
+            style={{
+              width: canvas.width * zoom,
+              height: canvas.height * zoom,
+              flexShrink: 0,
+              position: "relative",
+            }}
+          >
             <div
               ref={canvasRef}
               onMouseDown={onCanvasMouseDown}
@@ -1478,14 +2683,20 @@ const FormEditor = ({ formId, onBack }) => {
                 boxShadow: "0 4px 30px rgba(0,0,0,0.15)",
                 transform: `scale(${zoom})`,
                 transformOrigin: "top left",
-                backgroundImage: "radial-gradient(#cbd5e1 0.5px, transparent 0.5px)",
+                backgroundImage:
+                  "radial-gradient(#cbd5e1 0.5px, transparent 0.5px)",
                 backgroundSize: "16px 16px",
                 cursor: "default",
                 userSelect: "none",
               }}
             >
               {elements.map((el) => (
-                <CanvasEl key={el.id} el={el} selected={selectedElementIds.includes(el.id)} onMouseDown={onCanvasMouseDown} />
+                <CanvasEl
+                  key={el.id}
+                  el={el}
+                  selected={selectedElementIds.includes(el.id)}
+                  onMouseDown={onCanvasMouseDown}
+                />
               ))}
             </div>
           </div>
@@ -1493,9 +2704,35 @@ const FormEditor = ({ formId, onBack }) => {
 
         {/* Right Panel */}
         {!fullscreen && (
-        <div style={{ width: 240, background: "#fff", borderLeft: "1px solid #e2e8f0", overflow: "hidden" }}>
-          <PropertiesPanel el={selectedElement} selectedElements={selectedElements} onChange={updateElement} onDelete={deleteSelected} onDuplicate={duplicateSelected} onBring={bringForward} onSend={sendBackward} canvasState={canvas} alignElements={alignElements} distributeHorizontally={distributeHorizontally} distributeVertically={distributeVertically} groupElements={groupElements} ungroupElements={ungroupElements} form={form} gap={gap} setGap={setGap} openAccordion={openAccordion} setOpenAccordion={setOpenAccordion} />
-        </div>
+          <div
+            style={{
+              width: 240,
+              background: "#fff",
+              borderLeft: "1px solid #e2e8f0",
+              overflow: "hidden",
+            }}
+          >
+            <PropertiesPanel
+              el={selectedElement}
+              selectedElements={selectedElements}
+              onChange={updateElement}
+              onDelete={deleteSelected}
+              onDuplicate={duplicateSelected}
+              onBring={bringForward}
+              onSend={sendBackward}
+              canvasState={canvas}
+              alignElements={alignElements}
+              distributeHorizontally={distributeHorizontally}
+              distributeVertically={distributeVertically}
+              groupElements={groupElements}
+              ungroupElements={ungroupElements}
+              form={form}
+              gap={gap}
+              setGap={setGap}
+              openAccordion={openAccordion}
+              setOpenAccordion={setOpenAccordion}
+            />
+          </div>
         )}
       </div>
     </div>

@@ -177,6 +177,8 @@ export const publicRegister = (eventId, data) =>
 // ── Forms ─────────────────────────────────────────────────────────────────────
 export const fetchForms = () => req("/forms").then(normAll);
 
+export const fetchForm = (id) => req(`/forms/${id}`).then(norm);
+
 export const createForm = (data) =>
   req("/forms", { method: "POST", body: JSON.stringify(data) }).then(norm);
 

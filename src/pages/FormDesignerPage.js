@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   FiPlus,
   FiTrash2,
+  FiBox,
   FiEdit2,
   FiCopy,
   FiSearch,
@@ -15,6 +16,7 @@ import FormEditor from "../components/forms/FormEditor";
 const FormDesignerPage = () => {
   const { forms, formsLoading, formsError, deleteForm } = useForm();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [formToEdit, setFormToEdit] = useState(null);
   const [editingFormId, setEditingFormId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -48,10 +50,23 @@ const FormDesignerPage = () => {
     alert("Form link copied!");
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
+  const handleEditSelection = (form) => {
+    setFormToEdit(form);
+    setShowAddModal(true);
+  };
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return { date: "N/A", time: "" };
     const date = new Date(dateString);
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    const time = date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    return { date: `${dd}-${mm}-${yyyy}`, time };
   };
 
   if (editingFormId) {
@@ -155,7 +170,7 @@ const FormDesignerPage = () => {
                   <tr>
                     <th>Form Name</th>
                     <th>Event Name</th>
-                    <th>Form Link</th>
+                    <th>Copy Link</th>
                     <th>Created By</th>
                     <th>Date & Time</th>
                     <th>Status</th>
@@ -168,24 +183,28 @@ const FormDesignerPage = () => {
                       <td className="fw-semibold">{form.formName}</td>
                       <td>{form.eventName}</td>
                       <td>
-                        <div className="d-flex align-items-center gap-2">
-                          <span
-                            className="text-truncate"
-                            style={{ maxWidth: "150px" }}
-                          >
-                            /form/{form.id}
-                          </span>
-                          <button
-                            className="btn btn-link btn-sm p-0"
-                            onClick={() => copyLink(form.id)}
-                            title="Copy link"
-                          >
-                            <FiCopy size={14} />
-                          </button>
-                        </div>
+                        <button
+                          className="btn btn-link btn-sm p-0"
+                          onClick={() => copyLink(form.id)}
+                          title="Copy form link"
+                        >
+                          <FiCopy size={18} />
+                        </button>
                       </td>
                       <td>{form.createdBy || "System"}</td>
-                      <td className="small">{formatDate(form.createdAt)}</td>
+                      <td>
+                        {(() => {
+                          const formatted = formatDateTime(form.createdAt);
+                          return (
+                            <div>
+                              <div>{formatted.date}</div>
+                              <div className="text-muted small">
+                                {formatted.time}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </td>
                       <td>
                         <span
                           className="badge"
@@ -213,10 +232,18 @@ const FormDesignerPage = () => {
                           <button
                             className="btn btn-outline-primary"
                             onClick={() => setEditingFormId(form.id)}
+                            title="Open designer"
+                            disabled={deleting === form.id}
+                          >
+                            <FiBox size={16} />
+                          </button>
+                          <button
+                            className="btn btn-outline-secondary"
+                            onClick={() => handleEditSelection(form)}
                             title="Edit form"
                             disabled={deleting === form.id}
                           >
-                            <FiEdit2 size={14} />
+                            <FiEdit2 size={16} />
                           </button>
                           <button
                             className="btn btn-outline-danger"
@@ -244,9 +271,15 @@ const FormDesignerPage = () => {
       {/* Add Form Modal */}
       {showAddModal && (
         <AddFormModal
-          onClose={() => setShowAddModal(false)}
-          onFormCreated={() => {
+          formToEdit={formToEdit}
+          onClose={() => {
             setShowAddModal(false);
+            setFormToEdit(null);
+          }}
+          onFormCreated={(form) => {
+            setShowAddModal(false);
+            setFormToEdit(null);
+            setEditingFormId(form.id);
           }}
         />
       )}

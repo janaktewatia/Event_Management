@@ -1,192 +1,222 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiTrash2,
-  FiCopy,
+  FiDownload,
   FiSearch,
-  FiInfo,
   FiAlertCircle,
   FiEdit2,
-  FiArrowLeft,
+  FiImage,
+  FiSmile,
+  FiFilter,
 } from "react-icons/fi";
 import { useForm } from "../context/FormContext";
+import { createForm } from "../services/api";
+import "../styles/FormTemplates.css";
+
+const EMOJI_ICONS = [
+  "🎫", "⭐", "🏥", "💼", "📅", "📊", "❤️", "🎖️", "🎪", "📧",
+  "📋", "🔐", "🎓", "🛍️", "🍽️", "🏨", "✈️", "🚗", "💻", "📱",
+  "👤", "👥", "🏢", "🌟", "⚙️", "🔔", "📞", "🗺️", "💳", "🎁",
+];
+
+const COLORS = [
+  "#3b82f6", "#ef4444", "#f59e0b", "#06b6d4", "#8b5cf6",
+  "#10b981", "#ec4899", "#f97316", "#6366f1", "#14b8a6",
+];
 
 const FormTemplatePage = () => {
-  const {
-    formTemplates,
-    templatesLoading,
-    templatesError,
-    deleteTemplate,
-    loadTemplate,
-    forms,
-  } = useForm();
+  const { formTemplates, templatesLoading, templatesError } = useForm();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [deleting, setDeleting] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [editingTemplate, setEditingTemplate] = useState(null);
+  const [customizeTemplate, setCustomizeTemplate] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
-  const filteredTemplates = formTemplates.filter((template) =>
-    template.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const categories = ["All", ...new Set(formTemplates.map((t) => t.category))];
 
-  const handleDeleteTemplate = async (templateId) => {
-    if (window.confirm("Are you sure you want to delete this template?")) {
-      setDeleting(templateId);
-      try {
-        await deleteTemplate(templateId);
-      } catch (error) {
-        alert("Failed to delete template: " + error.message);
-      } finally {
-        setDeleting(null);
-      }
+  const filteredTemplates = formTemplates.filter((template) => {
+    const matchesSearch = template.templateName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "All" || template.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleUseTemplate = (template) => {
+    setCustomizeTemplate({ ...template });
+  };
+
+  const handleSaveCustomization = async () => {
+    try {
+      await createForm({
+        formName: customizeTemplate.templateName,
+        description: customizeTemplate.description,
+        fields: customizeTemplate.fields,
+        status: "draft",
+      });
+
+      alert(
+        `Form created from template: "${customizeTemplate.templateName}"`
+      );
+      setCustomizeTemplate(null);
+    } catch (error) {
+      alert("Error creating form: " + error.message);
     }
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
-  };
-
   return (
-    <div className="card border-0 shadow-sm h-100">
-      <div
-        className="card-body p-0"
-        style={{ display: "flex", flexDirection: "column" }}
-      >
-        {/* Header */}
-        <div className="p-3 border-bottom bg-light">
-          <div className="mb-3">
-            <h5 className="fw-bold mb-1">Form Templates</h5>
-            <p className="text-muted small mb-0">
-              Saved form templates that can be reused for new forms.
-            </p>
-          </div>
-
-          {/* Search */}
-          <div className="input-group input-group-sm">
-            <span className="input-group-text bg-white">
-              <FiSearch />
-            </span>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search templates..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* Content */}
-        <div style={{ flex: 1, overflowY: "auto" }} className="p-3">
-          {templatesLoading && (
-            <div className="p-5 text-center">
-              <div className="spinner-border text-primary mb-3" />
-              <div className="text-muted">Loading templates...</div>
+    <div className="form-templates-container">
+      <div className="card border-0 shadow-sm h-100">
+        <div className="card-body p-0" style={{ display: "flex", flexDirection: "column" }}>
+          {/* Header */}
+          <div className="p-4 border-bottom bg-gradient">
+            <div className="mb-4">
+              <h4 className="fw-bold mb-1">Form Templates</h4>
+              <p className="text-muted small mb-0">
+                Choose from industry-standard templates to save time creating forms
+              </p>
             </div>
-          )}
 
-          {templatesError && !templatesLoading && (
-            <div className="alert alert-warning d-flex align-items-center m-3">
-              <FiAlertCircle className="me-2" />
-              <div>
-                <strong>Error loading templates:</strong> {templatesError}
+            {/* Search and Filter */}
+            <div className="row g-2 mb-3">
+              <div className="col-md-6">
+                <div className="input-group input-group-sm">
+                  <span className="input-group-text bg-white border-1">
+                    <FiSearch />
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control border-1"
+                    placeholder="Search templates..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="input-group input-group-sm">
+                  <span className="input-group-text bg-white border-1">
+                    <FiFilter />
+                  </span>
+                  <select
+                    className="form-select form-select-sm border-1"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-          )}
 
-          {!templatesLoading && filteredTemplates.length === 0 ? (
-            <div className="text-center py-5">
-              <div className="text-muted">
-                {formTemplates.length === 0
-                  ? "No templates yet. Create one by saving a form design as a template."
-                  : "No matching templates found."}
-              </div>
+            {/* Category Pills */}
+            <div className="d-flex gap-2 flex-wrap">
+              {categories.slice(0, 6).map((cat) => (
+                <button
+                  key={cat}
+                  className={`btn btn-sm rounded-pill ${
+                    selectedCategory === cat
+                      ? "btn-primary"
+                      : "btn-outline-secondary"
+                  }`}
+                  onClick={() => setSelectedCategory(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
-          ) : (
-            <div className="row g-3">
-              {filteredTemplates.map((template) => {
-                const elementCount = template.elements?.length || 0;
-                return (
-                  <div key={template.id} className="col-md-6">
-                    <div
-                      className="card border-light h-100"
-                      style={{
-                        transition: "all 0.2s",
-                        cursor: "pointer",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.boxShadow =
-                          "0 4px 12px rgba(0,0,0,0.1)";
-                        e.currentTarget.style.transform = "translateY(-2px)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.boxShadow = "none";
-                        e.currentTarget.style.transform = "translateY(0)";
-                      }}
-                    >
-                      <div className="card-body">
-                        <div className="d-flex justify-content-between align-items-start mb-2">
-                          <h6 className="card-title fw-semibold mb-0">
-                            {template.name}
-                          </h6>
-                          <div className="btn-group btn-group-sm">
-                            <button
-                              className="btn btn-outline-secondary"
-                              onClick={() => handleDeleteTemplate(template.id)}
-                              title="Delete template"
-                              disabled={deleting === template.id}
-                            >
-                              {deleting === template.id ? (
-                                <span className="spinner-border spinner-border-sm" />
-                              ) : (
-                                <FiTrash2 size={14} />
-                              )}
-                            </button>
-                          </div>
+          </div>
+
+          {/* Content */}
+          <div style={{ flex: 1, overflowY: "auto" }} className="p-4">
+            {templatesLoading && (
+              <div className="p-5 text-center">
+                <div className="spinner-border text-primary mb-3" />
+                <div className="text-muted">Loading templates...</div>
+              </div>
+            )}
+
+            {templatesError && !templatesLoading && (
+              <div className="alert alert-warning d-flex align-items-center">
+                <FiAlertCircle className="me-2" />
+                <div>
+                  <strong>Error loading templates:</strong> {templatesError}
+                </div>
+              </div>
+            )}
+
+            {!templatesLoading && filteredTemplates.length === 0 ? (
+              <div className="text-center py-5">
+                <div className="text-muted">
+                  {formTemplates.length === 0
+                    ? "No templates available yet."
+                    : "No matching templates found."}
+                </div>
+              </div>
+            ) : (
+              <div className="row g-3">
+                {filteredTemplates.map((template) => (
+                  <div key={template._id} className="col-md-6 col-lg-4">
+                    <div className="template-card">
+                      <div
+                        className="template-card-header"
+                        style={{
+                          background: `linear-gradient(135deg, ${template.color || "#6366f1"} 0%, ${adjustBrightness(template.color || "#6366f1", -20)} 100%)`,
+                        }}
+                      >
+                        <div className="template-icon">
+                          {template.icon || "📋"}
                         </div>
-
-                        {template.description && (
-                          <p className="card-text small text-muted mb-2">
-                            {template.description}
-                          </p>
+                        {template.isIndustryTemplate && (
+                          <span className="badge bg-white text-dark badge-sm">
+                            Industry
+                          </span>
                         )}
+                      </div>
 
-                        <div className="small text-muted mb-3">
-                          <div>Elements: {elementCount}</div>
-                          <div>Created: {formatDate(template.createdAt)}</div>
-                        </div>
+                      <div className="template-card-body">
+                        <h6 className="fw-bold mb-1 text-truncate">
+                          {template.templateName}
+                        </h6>
+                        <p className="text-muted small mb-2 text-truncate">
+                          {template.description}
+                        </p>
 
-                        <div className="d-flex gap-2">
-                          <button
-                            className="btn btn-sm btn-outline-primary flex-grow-1"
-                            onClick={() => setEditingTemplate(template)}
-                          >
-                            <FiEdit2 size={12} className="me-1" /> Edit
-                          </button>
-                          <button
-                            className="btn btn-sm btn-primary flex-grow-1"
-                            onClick={() => {
-                              alert(
-                                `Template "${template.name}" copied! You can now create a new form with this template.`,
-                              );
-                            }}
-                          >
-                            <FiCopy size={12} className="me-1" /> Use
-                          </button>
+                        <div className="template-meta">
+                          <span className="badge bg-light text-dark">
+                            {template.category}
+                          </span>
+                          <span className="badge bg-light text-dark">
+                            {template.fields?.length || 0} fields
+                          </span>
                         </div>
+                      </div>
+
+                      <div className="template-card-footer">
+                        <button
+                          className="btn btn-sm btn-primary w-100"
+                          onClick={() => handleUseTemplate(template)}
+                        >
+                          <FiDownload size={14} className="me-1" /> Use Template
+                        </button>
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Edit Template Modal */}
-      {editingTemplate && (
+      {/* Customize Template Modal */}
+      {customizeTemplate && (
         <div
           className="modal d-block"
           style={{ background: "rgba(0,0,0,0.5)", zIndex: 1050 }}
@@ -195,183 +225,164 @@ const FormTemplatePage = () => {
             <div className="modal-content">
               <div className="modal-header border-0 pb-0">
                 <h6 className="modal-title fw-semibold d-flex align-items-center gap-2">
-                  <FiEdit2 style={{ color: "#a855f7" }} />
-                  Edit Template: {editingTemplate.name}
+                  <span style={{ fontSize: "1.5rem" }}>
+                    {customizeTemplate.icon || "📋"}
+                  </span>
+                  Customize Template
                 </h6>
                 <button
                   type="button"
                   className="btn-close"
-                  onClick={() => setEditingTemplate(null)}
+                  onClick={() => setCustomizeTemplate(null)}
                 />
               </div>
+
               <div className="modal-body">
-                <div className="mb-3">
-                  <label className="form-label small fw-semibold mb-1">Template Name</label>
+                {/* Template Info */}
+                <div className="mb-4">
+                  <h6 className="fw-semibold mb-2">Template Name</h6>
                   <input
                     type="text"
                     className="form-control form-control-sm"
-                    defaultValue={editingTemplate.name}
-                    placeholder="Template name"
+                    value={customizeTemplate.templateName}
+                    onChange={(e) =>
+                      setCustomizeTemplate({
+                        ...customizeTemplate,
+                        templateName: e.target.value,
+                      })
+                    }
                   />
                 </div>
-                {editingTemplate.description && (
-                  <div className="mb-3">
-                    <label className="form-label small fw-semibold mb-1">Description</label>
-                    <textarea
-                      className="form-control form-control-sm"
-                      rows="2"
-                      defaultValue={editingTemplate.description}
-                      placeholder="Template description"
-                    />
+
+                <div className="mb-4">
+                  <h6 className="fw-semibold mb-2">Description</h6>
+                  <textarea
+                    className="form-control form-control-sm"
+                    rows="2"
+                    value={customizeTemplate.description || ""}
+                    onChange={(e) =>
+                      setCustomizeTemplate({
+                        ...customizeTemplate,
+                        description: e.target.value,
+                      })
+                    }
+                    placeholder="Template description"
+                  />
+                </div>
+
+                {/* Icon and Color Customization */}
+                <div className="row g-3 mb-4">
+                  <div className="col-md-6">
+                    <h6 className="fw-semibold mb-2 d-flex align-items-center gap-2">
+                      <FiSmile /> Icon
+                    </h6>
+                    <div className="position-relative">
+                      <button
+                        className="btn btn-outline-secondary w-100 text-start"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        style={{ fontSize: "1.2rem" }}
+                      >
+                        {customizeTemplate.icon || "📋"} Select Icon
+                      </button>
+                      {showEmojiPicker && (
+                        <div className="emoji-picker">
+                          {EMOJI_ICONS.map((emoji) => (
+                            <button
+                              key={emoji}
+                              className="emoji-btn"
+                              onClick={() => {
+                                setCustomizeTemplate({
+                                  ...customizeTemplate,
+                                  icon: emoji,
+                                });
+                                setShowEmojiPicker(false);
+                              }}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-                <div className="mb-3">
-                  <label className="form-label small fw-semibold mb-1">Elements ({editingTemplate.elements?.length || 0})</label>
-                  <div
-                    className="bg-light p-3 rounded"
-                    style={{ maxHeight: "300px", overflowY: "auto" }}
-                  >
-                    {editingTemplate.elements?.length === 0 ? (
-                      <div className="text-muted small">No elements</div>
-                    ) : (
-                      <div className="list-group list-group-flush">
-                        {editingTemplate.elements?.map((el, idx) => (
-                          <div key={idx} className="list-group-item d-flex justify-content-between align-items-center p-2">
-                            <div className="small">
-                              <strong style={{ color: "#a855f7" }}>{el.type || el.label}</strong>
-                              <div className="text-muted" style={{ fontSize: 11 }}>
-                                {el.content ? el.content.substring(0, 40) : "No content"}
-                              </div>
-                            </div>
-                            <small className="text-muted">
-                              {el.w || el.width}×{el.h || el.height}
-                            </small>
-                          </div>
-                        ))}
+
+                  <div className="col-md-6">
+                    <h6 className="fw-semibold mb-2">Color</h6>
+                    <div className="position-relative">
+                      <button
+                        className="btn btn-outline-secondary w-100 text-start"
+                        onClick={() => setShowColorPicker(!showColorPicker)}
+                        style={{
+                          backgroundColor: customizeTemplate.color || "#6366f1",
+                          color: "white",
+                        }}
+                      >
+                        Select Color
+                      </button>
+                      {showColorPicker && (
+                        <div className="color-picker">
+                          {COLORS.map((color) => (
+                            <button
+                              key={color}
+                              className="color-btn"
+                              style={{
+                                backgroundColor: color,
+                                border:
+                                  customizeTemplate.color === color
+                                    ? "3px solid #000"
+                                    : "none",
+                              }}
+                              onClick={() => {
+                                setCustomizeTemplate({
+                                  ...customizeTemplate,
+                                  color,
+                                });
+                                setShowColorPicker(false);
+                              }}
+                              title={color}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fields Preview */}
+                <div className="mb-4">
+                  <h6 className="fw-semibold mb-2">
+                    Fields ({customizeTemplate.fields?.length || 0})
+                  </h6>
+                  <div className="field-list-preview">
+                    {customizeTemplate.fields?.map((field, idx) => (
+                      <div key={idx} className="field-item-preview">
+                        <div className="field-label">{field.label}</div>
+                        <div className="field-type">
+                          {field.type}
+                          {field.required && (
+                            <span className="text-danger ms-1">*</span>
+                          )}
+                        </div>
                       </div>
-                    )}
+                    ))}
                   </div>
                 </div>
               </div>
+
               <div className="modal-footer border-0 pt-0">
                 <button
                   type="button"
                   className="btn btn-outline-secondary btn-sm"
-                  onClick={() => setEditingTemplate(null)}
+                  onClick={() => setCustomizeTemplate(null)}
                 >
-                  Close
+                  Cancel
                 </button>
                 <button
                   type="button"
                   className="btn btn-primary btn-sm"
-                  onClick={() => {
-                    alert("Template updated successfully!");
-                    setEditingTemplate(null);
-                  }}
+                  onClick={handleSaveCustomization}
                 >
-                  <FiCopy size={12} className="me-1" /> Save Changes
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Template Details Modal */}
-      {selectedTemplate && (
-        <div
-          className="modal d-block"
-          style={{ background: "rgba(0,0,0,0.5)", zIndex: 1050 }}
-        >
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Template Details</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setSelectedTemplate(null)}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label className="form-label fw-semibold">Name</label>
-                  <div>{selectedTemplate.name}</div>
-                </div>
-
-                {selectedTemplate.description && (
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">
-                      Description
-                    </label>
-                    <div>{selectedTemplate.description}</div>
-                  </div>
-                )}
-
-                <div className="mb-3">
-                  <label className="form-label fw-semibold">Elements</label>
-                  <div
-                    className="bg-light p-3 rounded"
-                    style={{ maxHeight: "300px", overflowY: "auto" }}
-                  >
-                    {selectedTemplate.elements?.length === 0 ? (
-                      <div className="text-muted small">No elements</div>
-                    ) : (
-                      <div className="list-group list-group-flush">
-                        {selectedTemplate.elements?.map((el, idx) => (
-                          <div key={idx} className="list-group-item p-2">
-                            <div className="small">
-                              <strong>{el.type}</strong> - {el.content}
-                            </div>
-                            <div className="text-muted small">
-                              Position: ({el.x}, {el.y}) | Size: {el.width}x
-                              {el.height}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="row g-3">
-                  <div className="col-6">
-                    <label className="form-label small fw-semibold">
-                      Created
-                    </label>
-                    <div className="small">
-                      {formatDate(selectedTemplate.createdAt)}
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <label className="form-label small fw-semibold">
-                      Elements
-                    </label>
-                    <div className="small">
-                      {selectedTemplate.elements?.length || 0} items
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setSelectedTemplate(null)}
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => {
-                    alert(
-                      `Template "${selectedTemplate.name}" is ready to use!`,
-                    );
-                    setSelectedTemplate(null);
-                  }}
-                >
-                  <FiCopy className="me-1" /> Use This Template
+                  <FiDownload size={14} className="me-1" /> Create Form from Template
                 </button>
               </div>
             </div>
@@ -381,5 +392,19 @@ const FormTemplatePage = () => {
     </div>
   );
 };
+
+function adjustBrightness(color, percent) {
+  const num = parseInt(color.replace("#", ""), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = Math.min(255, Math.max(0, (num >> 16) + amt));
+  const G = Math.min(255, Math.max(0, (num >> 8 & 0x00ff) + amt));
+  const B = Math.min(255, Math.max(0, (num & 0x0000ff) + amt));
+  return (
+    "#" +
+    (0x1000000 + (R < 16 ? 0 : 1) * R * 0x10000 + (G < 16 ? 0 : 1) * G * 0x100 + (B < 16 ? 0 : 1) * B)
+      .toString(16)
+      .slice(1)
+  );
+}
 
 export default FormTemplatePage;

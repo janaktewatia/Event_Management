@@ -257,6 +257,10 @@ function App() {
                     path="/register/:eventId"
                     element={<PublicRegistrationForm />}
                   />
+                  <Route
+                    path="/form/:formId"
+                    element={<PublicRegistrationForm />}
+                  />
                   <Route path="/*" element={<AuthGate />} />
                 </Routes>
               </BrowserRouter>

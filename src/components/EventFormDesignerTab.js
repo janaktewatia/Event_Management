@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiCopy, FiExternalLink } from "react-icons/fi";
+import { FiCopy, FiExternalLink, FiCode } from "react-icons/fi";
 import { useEventData } from "../context/EventDataContext";
 
 const FIELD_TYPE_BADGE = {
@@ -13,6 +13,7 @@ const EventFormDesignerTab = () => {
   const { events, eventsLoading, updateEvent } = useEventData();
   const [selectedEventId, setSelectedEventId] = useState("");
   const [copied, setCopied] = useState(false);
+  const [apiCopied, setApiCopied] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const selectedEvent = events.find(
@@ -28,6 +29,22 @@ const EventFormDesignerTab = () => {
     navigator.clipboard.writeText(shareLink).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const getApiEndpoint = () => {
+    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+    return `${apiUrl}/public/event/${selectedEventId}`;
+  };
+
+  const getCurlCommand = () => {
+    return `curl -X GET "${getApiEndpoint()}" -H "Content-Type: application/json"`;
+  };
+
+  const handleCopyApi = () => {
+    navigator.clipboard.writeText(getCurlCommand()).then(() => {
+      setApiCopied(true);
+      setTimeout(() => setApiCopied(false), 2000);
     });
   };
 
@@ -144,6 +161,72 @@ const EventFormDesignerTab = () => {
               </div>
               <div className="text-muted mt-2" style={{ fontSize: 11 }}>
                 Share this link with attendees. No login required.
+              </div>
+            </div>
+
+            {/* API Endpoint Section */}
+            <div
+              className="rounded-3 p-3 mb-4"
+              style={{ background: "#f3e8ff", border: "1px solid #d8b4fe" }}
+            >
+              <div
+                className="small fw-semibold mb-2"
+                style={{ color: "#6b21a8" }}
+              >
+                <FiCode size={14} className="me-1" style={{ display: "inline" }} />
+                API Endpoint (for Developers)
+              </div>
+              <div className="mb-2">
+                <label className="form-label small mb-1" style={{ color: "#6b21a8" }}>
+                  Endpoint URL
+                </label>
+                <div className="d-flex align-items-center gap-2">
+                  <input
+                    readOnly
+                    value={getApiEndpoint()}
+                    className="form-control form-control-sm font-monospace"
+                    style={{ background: "#fff", fontSize: 11 }}
+                    onFocus={(e) => e.target.select()}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary flex-shrink-0"
+                    onClick={() => {
+                      navigator.clipboard.writeText(getApiEndpoint());
+                      setApiCopied(true);
+                      setTimeout(() => setApiCopied(false), 2000);
+                    }}
+                    title="Copy endpoint"
+                  >
+                    <FiCopy size={14} />
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="form-label small mb-1" style={{ color: "#6b21a8" }}>
+                  cURL Command
+                </label>
+                <div className="d-flex align-items-center gap-2">
+                  <input
+                    readOnly
+                    value={getCurlCommand()}
+                    className="form-control form-control-sm font-monospace"
+                    style={{ background: "#fff", fontSize: 10 }}
+                    onFocus={(e) => e.target.select()}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary flex-shrink-0"
+                    onClick={handleCopyApi}
+                    title="Copy curl command"
+                  >
+                    <FiCopy size={14} className="me-1" />
+                    {apiCopied ? "✓" : ""}
+                  </button>
+                </div>
+              </div>
+              <div className="text-muted mt-2" style={{ fontSize: 11 }}>
+                Use this endpoint to programmatically access form data. Perfect for integrations!
               </div>
             </div>
 

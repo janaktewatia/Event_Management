@@ -24,6 +24,7 @@ const formSchema = new mongoose.Schema(
     fields: [formFieldSchema],
     elements: [mongoose.Schema.Types.Mixed],
     selectedCategories: [mongoose.Schema.Types.Mixed],
+    alignment: { type: String, enum: ["left", "center", "right"], default: "center" },
   },
   { timestamps: true }
 );

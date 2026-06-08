@@ -22,6 +22,7 @@ const AddFormModal = ({ onClose, onFormCreated, formToEdit = null }) => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedFields, setSelectedFields] = useState([]);
   const [initializedFromEdit, setInitializedFromEdit] = useState(false);
+  const [alignment, setAlignment] = useState("center");
 
   useEffect(() => {
     if (!formToEdit) return;
@@ -32,6 +33,7 @@ const AddFormModal = ({ onClose, onFormCreated, formToEdit = null }) => {
       selectedFields: [],
     });
     setSelectedCategories(formToEdit.selectedCategories || []);
+    setAlignment(formToEdit.alignment || "center");
     setStep(1);
     setInitializedFromEdit(false);
   }, [formToEdit]);
@@ -175,6 +177,7 @@ const AddFormModal = ({ onClose, onFormCreated, formToEdit = null }) => {
         createdBy: user?.name || "System",
         fields: formFields,
         selectedCategories: selectedCategories,
+        alignment: alignment,
       };
 
       const newForm = formToEdit
@@ -398,6 +401,34 @@ const AddFormModal = ({ onClose, onFormCreated, formToEdit = null }) => {
                         </div>
                       )
                     )}
+
+                    {/* Form Alignment */}
+                    <div className="mb-3">
+                      <label className="form-label fw-semibold">
+                        Form Alignment
+                      </label>
+                      <div className="d-flex gap-2">
+                        {["left", "center", "right"].map((align) => (
+                          <button
+                            key={align}
+                            onClick={() => setAlignment(align)}
+                            className={`btn btn-sm ${
+                              alignment === align
+                                ? "btn-primary"
+                                : "btn-outline-secondary"
+                            }`}
+                            style={{
+                              flex: 1,
+                              textTransform: "capitalize",
+                            }}
+                          >
+                            {align === "left" && "⬅ Left"}
+                            {align === "center" && "⬆ Center"}
+                            {align === "right" && "Right ➡"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

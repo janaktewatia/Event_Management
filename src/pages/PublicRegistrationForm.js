@@ -555,7 +555,7 @@ const PublicRegistrationForm = () => {
             minHeight: "100vh",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: form?.alignment === "left" ? "flex-start" : form?.alignment === "right" ? "flex-end" : "center",
             padding: "2rem 1rem",
           }}
         >
@@ -568,6 +568,8 @@ const PublicRegistrationForm = () => {
               borderRadius: 16,
               boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
               padding: "2.5rem 2rem",
+              marginLeft: form?.alignment === "left" ? "2rem" : "auto",
+              marginRight: form?.alignment === "right" ? "2rem" : "auto",
             }}
           >
             {/* Logo */}
@@ -764,13 +766,14 @@ const PublicRegistrationForm = () => {
 
       {/* Form Container */}
       <div
-        className="container"
         style={{
           maxWidth: 520,
           marginTop: "-2rem",
           marginBottom: "3rem",
           position: "relative",
           zIndex: 10,
+          marginLeft: form?.alignment === "left" ? "2rem" : form?.alignment === "right" ? "auto" : "auto",
+          marginRight: form?.alignment === "right" ? "2rem" : form?.alignment === "left" ? "auto" : "auto",
         }}
       >
         <div

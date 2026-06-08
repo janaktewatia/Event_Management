@@ -2249,7 +2249,10 @@ const FormEditor = ({ formId, onBack }) => {
     setError("");
     try {
       await saveFormElements(formId, elements);
-      alert("Form saved successfully!");
+      // Navigate back to forms table view after successful save
+      setTimeout(() => {
+        onBack();
+      }, 500);
     } catch (err) {
       setError("Failed to save form: " + err.message);
       alert("Failed to save form: " + err.message);

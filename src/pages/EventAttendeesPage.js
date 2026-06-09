@@ -4,6 +4,7 @@ import QRCodeStyling from "qr-code-styling";
 import { toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEventData } from "../context/EventDataContext";
+import SendCommunicationModal from "../components/SendCommunicationModal";
 
 // ── Country codes & phone helpers ─────────────────────────────────────────────
 
@@ -554,31 +555,67 @@ const ImportModal = ({ eventId, event, existingAttendees, onClose, onImported })
 
 // ── Communication Modal ───────────────────────────────────────────────────────
 
-const CommModal = ({ attendee, onClose }) => {
-  const targetName = attendee?.name ? ` ${attendee.name}` : " all registrants";
+const CommModal = ({ attendee, onClose, eventId, allAttendees = [] }) => {
+  const [sendModalType, setSendModalType] = useState(null);
+
   const actions = attendee
     ? [
         {
+          type: "whatsapp",
           icon: "💬",
           label: "WhatsApp",
-          desc: `Send WhatsApp message to${targetName}`,
+          desc: `Send WhatsApp message to ${attendee.name || "this attendee"}`,
         },
-        { icon: "✉️", label: "Email", desc: `Send email to${targetName}` },
-        { icon: "📱", label: "SMS", desc: `Send SMS to${targetName}` },
+        {
+          type: "email",
+          icon: "✉️",
+          label: "Email",
+          desc: `Send email to ${attendee.name || "this attendee"}`,
+        },
+        {
+          type: "sms",
+          icon: "📱",
+          label: "SMS",
+          desc: `Send SMS to ${attendee.name || "this attendee"}`,
+        },
       ]
     : [
         {
+          type: "whatsapp",
           icon: "💬",
           label: "WhatsApp Blast",
           desc: "Send WhatsApp message to all registrants",
         },
         {
+          type: "email",
           icon: "✉️",
           label: "Email Blast",
           desc: "Send email to all registrants",
         },
-        { icon: "📱", label: "SMS Blast", desc: "Send SMS to all registrants" },
+        {
+          type: "sms",
+          icon: "📱",
+          label: "SMS Blast",
+          desc: "Send SMS to all registrants",
+        },
       ];
+
+  if (sendModalType) {
+    return (
+      <SendCommunicationModal
+        show={true}
+        onHide={() => {
+          setSendModalType(null);
+        }}
+        eventId={eventId}
+        attendees={attendee ? [attendee] : allAttendees}
+        onSuccess={() => {
+          setSendModalType(null);
+          onClose();
+        }}
+      />
+    );
+  }
 
   return (
     <div
@@ -592,20 +629,25 @@ const CommModal = ({ attendee, onClose }) => {
           </h5>
           <button type="button" className="btn-close" onClick={onClose} />
         </div>
-        {actions.map(({ icon, label, desc }) => (
-          <div
-            key={label}
-            className="d-flex align-items-center gap-3 p-2 rounded mb-2 bg-light opacity-75"
+        {actions.map(({ type, icon, label, desc }) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => setSendModalType(type)}
+            className="d-flex align-items-center gap-3 p-2 rounded mb-2 bg-light w-100 border-0"
+            style={{ cursor: "pointer", transition: "all 0.2s" }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f0f0f0"}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#f8f9fa"}
           >
             <span style={{ fontSize: 24 }}>{icon}</span>
-            <div>
+            <div className="text-start flex-grow-1">
               <div className="fw-semibold small">{label}</div>
               <div className="text-muted" style={{ fontSize: 11 }}>
                 {desc}
               </div>
             </div>
-            <span className="badge bg-secondary ms-auto">Coming Soon</span>
-          </div>
+            <span className="badge bg-primary ms-auto">Ready</span>
+          </button>
         ))}
       </div>
     </div>
@@ -1823,6 +1865,8 @@ const EventAttendeesPage = () => {
       {showComm && (
         <CommModal
           attendee={commTarget}
+          eventId={eventId}
+          allAttendees={eventAttendees}
           onClose={() => {
             setCommTarget(null);
             setShowComm(false);

@@ -26,6 +26,8 @@ import PassDesignerPage from "./pages/PassDesignerPageV2";
 import RegistrantsPage from "./pages/RegistrantsPage";
 import SetupPage from "./pages/SetupPage";
 import ActivityLogPage from "./pages/ActivityLogPage";
+import CommunicationSetup from "./pages/CommunicationSetup";
+import CommunicationTemplatesPage from "./pages/CommunicationTemplatesPage";
 import PublicRegistrationForm from "./pages/PublicRegistrationForm";
 import ToastNotification from "./components/common/ToastNotification";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -41,6 +43,8 @@ const PATH_TITLES = {
   "/attendees": "Attendee Data",
   "/scan": "Scan Pass",
   "/setup": "Setup",
+  "/communication-setup": "Communication Setup",
+  "/communication-templates": "Templates",
 };
 
 const getPageTitle = (pathname) => {
@@ -210,6 +214,22 @@ const AppShell = () => {
             element={
               <Guard permission="setup.access">
                 <SetupPage />
+              </Guard>
+            }
+          />
+          <Route
+            path="/communication-setup"
+            element={
+              <Guard permission="setup.access">
+                <CommunicationSetup />
+              </Guard>
+            }
+          />
+          <Route
+            path="/communication-templates"
+            element={
+              <Guard permission="setup.access">
+                <CommunicationTemplatesPage />
               </Guard>
             }
           />

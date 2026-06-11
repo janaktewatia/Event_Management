@@ -2,7 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { BiScan, BiUpload, BiUserPlus } from "react-icons/bi";
 import { AiOutlineQrcode } from "react-icons/ai";
-import { FiX, FiGrid, FiCalendar, FiSettings } from "react-icons/fi";
+import { FiX, FiGrid, FiCalendar, FiSettings, FiMessageCircle } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({ isMobileMenuOpen, onClose }) => {
@@ -141,6 +141,27 @@ const Sidebar = ({ isMobileMenuOpen, onClose }) => {
           icon={<FiSettings />}
           label="Setup"
           to="/setup"
+          exact
+          permission="setup.access"
+        />
+        <NavItem
+          icon={<FiSettings />}
+          label="Communication Setup"
+          to="/communication-setup"
+          exact
+          permission="setup.access"
+        />
+        <NavItem
+          icon={<FiSettings />}
+          label="Templates"
+          to="/communication-templates"
+          exact
+          permission="setup.access"
+        />
+        <NavItem
+          icon={<FiMessageCircle />}
+          label="WhatsApp Integration"
+          to="/whatsapp"
           exact
           permission="setup.access"
         />

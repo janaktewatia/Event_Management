@@ -28,6 +28,7 @@ import SetupPage from "./pages/SetupPage";
 import ActivityLogPage from "./pages/ActivityLogPage";
 import CommunicationSetup from "./pages/CommunicationSetup";
 import CommunicationTemplatesPage from "./pages/CommunicationTemplatesPage";
+import WhatsAppIntegration from "./pages/WhatsAppIntegration";
 import PublicRegistrationForm from "./pages/PublicRegistrationForm";
 import ToastNotification from "./components/common/ToastNotification";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -45,6 +46,7 @@ const PATH_TITLES = {
   "/setup": "Setup",
   "/communication-setup": "Communication Setup",
   "/communication-templates": "Templates",
+  "/whatsapp": "WhatsApp Integration",
 };
 
 const getPageTitle = (pathname) => {
@@ -230,6 +232,14 @@ const AppShell = () => {
             element={
               <Guard permission="setup.access">
                 <CommunicationTemplatesPage />
+              </Guard>
+            }
+          />
+          <Route
+            path="/whatsapp"
+            element={
+              <Guard permission="setup.access">
+                <WhatsAppIntegration />
               </Guard>
             }
           />

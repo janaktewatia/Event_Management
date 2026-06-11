@@ -1,0 +1,92 @@
+.whatsapp-integration-page {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.whatsapp-integration-page h1 {
+  color: #2c3e50;
+  font-weight: 700;
+  font-size: 2.5rem;
+}
+
+.whatsapp-integration-page .text-muted {
+  color: #7f8c8d !important;
+  font-size: 1.1rem;
+}
+
+.whatsapp-integration-page .nav-pills {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.whatsapp-integration-page .nav-pills .nav-link {
+  color: #495057;
+  background-color: #e9ecef;
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin-right: 10px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.whatsapp-integration-page .nav-pills .nav-link:hover:not(.disabled) {
+  background-color: #dee2e6;
+  transform: translateY(-2px);
+}
+
+.whatsapp-integration-page .nav-pills .nav-link.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.whatsapp-integration-page .nav-pills .nav-link.disabled {
+  background-color: #f1f3f5;
+  color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.whatsapp-integration-page .tab-content {
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.whatsapp-integration-page .alert {
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.whatsapp-integration-page .alert-success {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.whatsapp-integration-page .alert-danger {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+@media (max-width: 768px) {
+  .whatsapp-integration-page {
+    padding: 20px 10px;
+  }
+
+  .whatsapp-integration-page h1 {
+    font-size: 1.8rem;
+  }
+
+  .whatsapp-integration-page .nav-pills .nav-link {
+    margin-right: 5px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .whatsapp-integration-page .tab-content {
+    padding: 20px;
+  }
+}

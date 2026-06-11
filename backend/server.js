@@ -20,6 +20,7 @@ import integrationRoutes from "./routes/integrationRoutes.js";
 import communicationRoutes from "./routes/communicationRoutes.js";
 import communicationHistoryRoutes from "./routes/communicationHistoryRoutes.js";
 import communicationTemplateRoutes from "./routes/communicationTemplateRoutes.js";
+import whatsappRoutes from "./routes/whatsappRoutes.js";
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use("/api/integrations", integrationRoutes);
 app.use("/api/communications", communicationRoutes);
 app.use("/api/communication-history", communicationHistoryRoutes);
 app.use("/api/communication-templates", communicationTemplateRoutes);
+app.use("/api/whatsapp", whatsappRoutes);
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 

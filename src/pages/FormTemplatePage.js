@@ -20,8 +20,8 @@ const EMOJI_ICONS = [
 ];
 
 const COLORS = [
-  "#3b82f6", "#ef4444", "#f59e0b", "#06b6d4", "#8b5cf6",
-  "#10b981", "#ec4899", "#f97316", "#6366f1", "#14b8a6",
+  "var(--info)", "#EF4444", "var(--warning)", "#06b6d4", "#8b5cf6",
+  "var(--success)", "#ec4899", "#f97316", "#6366f1", "#14b8a6",
 ];
 
 const FormTemplatePage = () => {

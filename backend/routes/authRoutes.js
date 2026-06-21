@@ -8,6 +8,18 @@ const router = Router();
 
 const APP_NAME = "Event Management";
 
+const ALL_PERMISSIONS = [
+  "reports.dashboard",
+  "events.view",
+  "attendees.view",
+  "pass.design",
+  "reports.attendance",
+  "pass.generate",
+  "setup.access",
+  "scan.access",
+  "reports.activity",
+];
+
 const buildUserPayload = (user, userType) => ({
   id: user._id,
   userId: user.userId,
@@ -36,7 +48,7 @@ router.post("/login", async (req, res) => {
         mobile: "",
         userTypeId: null,
         userTypeName: "Admin",
-        permissions: [],
+        permissions: ALL_PERMISSIONS,
       });
     }
 
@@ -52,13 +64,13 @@ router.post("/login", async (req, res) => {
     // Check if 2FA is required for this user type
     if (userType?.requiresTwoFactor) {
       if (!user.twoFactorEnabled) {
-        // First time — generate secret and QR code
-        const secret = generateSecret();
+        let secret = user.twoFactorSecret;
+        if (!secret) {
+          secret = generateSecret();
+          await AppUser.findByIdAndUpdate(user._id, { twoFactorSecret: secret });
+        }
         const otpauth = generateURI({ type: "totp", label: user.userId, secret, issuer: APP_NAME });
         const qrCodeUrl = await QRCode.toDataURL(otpauth);
-
-        // Save secret (not yet enabled — enabled after first verify)
-        await AppUser.findByIdAndUpdate(user._id, { twoFactorSecret: secret });
 
         return res.json({
           status: "2fa_setup",
@@ -87,6 +99,12 @@ router.post("/2fa/verify", async (req, res) => {
 
     const user = await AppUser.findOne({ userId });
     if (!user) return res.status(404).json({ error: "User not found." });
+
+    if (!user.twoFactorSecret) {
+      return res.status(400).json({
+        error: "Two-factor authentication is not configured for this account.",
+      });
+    }
 
     const result = verifySync({ token, secret: user.twoFactorSecret });
     const valid = result?.valid ?? result;

@@ -5,8 +5,21 @@ const req = async (path, options = {}) => {
     headers: { "Content-Type": "application/json" },
     ...options,
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Request failed");
+
+  let data = null;
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+  }
+
+  if (!res.ok) {
+    throw new Error(data?.error || res.statusText || "Request failed");
+  }
+
   return data;
 };
 
@@ -167,6 +180,8 @@ export const clearEventLogs = (eventId) =>
 
 // ── Public Registration (no auth) ─────────────────────────────────────────────
 export const fetchPublicEvent = (eventId) => req(`/public/event/${eventId}`);
+
+export const fetchFormBySlug = (slug) => req(`/forms/slug/${slug}`);
 
 export const publicRegister = (eventId, data) =>
   req("/public/register", {

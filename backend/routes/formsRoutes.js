@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Form from "../models/Form.js";
 import { generateDefaultFormElements } from "../utils/generateFormElements.js";
+import { escapeRegex } from "../utils/escapeRegex.js";
 
 const router = Router();
 
@@ -31,7 +32,7 @@ router.get("/slug/:slug", async (req, res) => {
 
     // Find form by name (case-insensitive)
     let form = await Form.findOne({
-      formName: { $regex: new RegExp("^" + searchName + "$", "i") }
+      formName: { $regex: new RegExp(`^${escapeRegex(searchName)}$`, "i") },
     });
 
     if (!form) {

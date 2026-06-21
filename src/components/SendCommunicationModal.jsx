@@ -1,15 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Spinner, Alert } from "react-bootstrap";
 import { apiUrl } from "../config";
 
-const SendCommunicationModal = ({ show, onHide, eventId, attendees = [], onSuccess }) => {
-  const [communicationType, setCommunicationType] = useState(null);
+const SendCommunicationModal = ({
+  show,
+  onHide,
+  eventId,
+  attendees = [],
+  onSuccess,
+  initialType = null,
+}) => {
+  const [communicationType, setCommunicationType] = useState(initialType);
   const [template, setTemplate] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
   const [selectedCount, setSelectedCount] = useState(attendees.length);
+
+  useEffect(() => {
+    if (show) {
+      setCommunicationType(initialType);
+    }
+  }, [show, initialType]);
 
   const templates = {
     email: [

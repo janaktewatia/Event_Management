@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Attendee from "../models/Attendee.js";
 import Event from "../models/Event.js";
+import { generatePassId, generatePassIds } from "../utils/generatePassId.js";
 
 const router = Router();
 
@@ -19,9 +20,7 @@ router.post("/", async (req, res) => {
   try {
     const { eventId, ...rest } = req.body;
     if (!eventId) return res.status(400).json({ error: "eventId required" });
-    const count = await Attendee.countDocuments({ eventId });
-    const eventShort = String(eventId).slice(-4);
-    const passId = `PASS-${eventShort}-${String(count + 1).padStart(4, "0")}`;
+    const passId = await generatePassId(eventId);
     const attendee = await Attendee.create({ ...rest, eventId, passId });
     await Event.findByIdAndUpdate(eventId, {
       $inc: { attendeeCount: 1 },
@@ -40,20 +39,18 @@ router.post("/bulk", async (req, res) => {
       return res.status(400).json({ error: "eventId and attendees array required" });
     }
 
-    const existingCount = await Attendee.countDocuments({ eventId });
-    const eventShort = String(eventId).slice(-4);
+    const passIds = await generatePassIds(eventId, attendees.length);
     const records = attendees.map((a, i) => ({
       ...a,
       eventId,
-      passId: `PASS-${eventShort}-${String(existingCount + i + 1).padStart(4, "0")}`,
+      passId: passIds[i],
     }));
 
     const inserted = await Attendee.insertMany(records);
-    const totalCount = existingCount + inserted.length;
 
     await Event.findByIdAndUpdate(eventId, {
-      attendeeCount: totalCount,
-      status: totalCount > 0 ? "Active" : "Draft",
+      $inc: { attendeeCount: inserted.length },
+      status: "Active",
     });
 
     res.status(201).json(inserted);

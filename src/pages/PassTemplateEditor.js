@@ -59,7 +59,7 @@ const DEFAULT_ELEMENT = {
     bg: "transparent",
     borderRadius: 0,
     borderWidth: 0,
-    borderColor: "#e2e8f0",
+    borderColor: "var(--border)",
     borderStyle: "solid",
     paddingX: 0,
     paddingY: 0,
@@ -76,10 +76,10 @@ const DEFAULT_ELEMENT = {
     fontFamily: "Inter, sans-serif",
     fontStyle: "normal",
     textDecoration: "none",
-    color: "#ffffff",
+    color: "var(--card)",
     textAlign: "center",
     lineHeight: 1.3,
-    bg: "#7c3aed",
+    bg: "var(--primary)",
     borderRadius: 0,
     borderWidth: 0,
     borderColor: "transparent",
@@ -99,10 +99,10 @@ const DEFAULT_ELEMENT = {
     fontFamily: "Inter, sans-serif",
     fontStyle: "normal",
     textDecoration: "none",
-    color: "#94a3b8",
+    color: "var(--muted-foreground)",
     textAlign: "center",
     lineHeight: 1.4,
-    bg: "#f8fafc",
+    bg: "var(--background)",
     borderRadius: 0,
     borderWidth: 0,
     borderColor: "transparent",
@@ -125,10 +125,10 @@ const DEFAULT_ELEMENT = {
     color: "#000000",
     textAlign: "center",
     lineHeight: 1,
-    bg: "#ffffff",
+    bg: "var(--card)",
     borderRadius: 4,
     borderWidth: 0,
-    borderColor: "#e2e8f0",
+    borderColor: "var(--border)",
     borderStyle: "solid",
     paddingX: 4,
     paddingY: 4,
@@ -147,13 +147,13 @@ const DEFAULT_ELEMENT = {
     fontFamily: "Inter, sans-serif",
     fontStyle: "normal",
     textDecoration: "none",
-    color: "#94a3b8",
+    color: "var(--muted-foreground)",
     textAlign: "center",
     lineHeight: 1,
-    bg: "#f1f5f9",
+    bg: "var(--border)",
     borderRadius: 8,
     borderWidth: 0,
-    borderColor: "#e2e8f0",
+    borderColor: "var(--border)",
     borderStyle: "solid",
     paddingX: 0,
     paddingY: 0,
@@ -172,7 +172,7 @@ const DEFAULT_ELEMENT = {
     fontFamily: "Inter, sans-serif",
     fontStyle: "normal",
     textDecoration: "none",
-    color: "#94a3b8",
+    color: "var(--muted-foreground)",
     textAlign: "center",
     lineHeight: 1,
     bg: "transparent",
@@ -198,10 +198,10 @@ const DEFAULT_ELEMENT = {
     color: "#1e293b",
     textAlign: "left",
     lineHeight: 1.4,
-    bg: "#f8fafc",
+    bg: "var(--background)",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "var(--border)",
     borderStyle: "solid",
     paddingX: 12,
     paddingY: 12,
@@ -221,7 +221,7 @@ const DEFAULT_ELEMENT = {
     color: "transparent",
     textAlign: "left",
     lineHeight: 1,
-    bg: "#e2e8f0",
+    bg: "var(--border)",
     borderRadius: 0,
     borderWidth: 0,
     borderColor: "transparent",
@@ -268,8 +268,8 @@ const CanvasEl = ({ el, selected }) => {
       width: 8,
       height: 8,
       borderRadius: 2,
-      background: "#A855F7",
-      border: "2px solid #fff",
+      background: "var(--primary)",
+      border: "2px solid var(--card)",
       zIndex: 10,
       boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
       pointerEvents: "none",
@@ -305,7 +305,7 @@ const CanvasEl = ({ el, selected }) => {
             ? `${el.borderWidth}px ${el.borderStyle} ${el.borderColor}`
             : "none",
         boxSizing: "border-box",
-        outline: selected ? "2px solid #A855F7" : "none",
+        outline: selected ? "2px solid var(--primary)" : "none",
         outlineOffset: 2,
         overflow: "visible",
         pointerEvents: "none",
@@ -340,7 +340,7 @@ const CanvasEl = ({ el, selected }) => {
                 color: "#1e293b",
               }}
             />
-            <span style={{ fontSize: 9, color: "#94a3b8" }}>
+            <span style={{ fontSize: 9, color: "var(--muted-foreground)" }}>
               {el.content || "{{passId}}"}
             </span>
           </div>
@@ -373,7 +373,7 @@ const CanvasEl = ({ el, selected }) => {
                 className={`bi ${el.type === "logo" ? "bi-patch-check" : "bi-image"}`}
                 style={{ fontSize: 28, color: "#cbd5e1" }}
               />
-              <span style={{ fontSize: 10, color: "#94a3b8" }}>{el.label}</span>
+              <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>{el.label}</span>
             </div>
           ))}
         {el.type === "divider" && (
@@ -430,7 +430,7 @@ const PropRow = ({ label, children }) => (
       style={{
         fontSize: 11,
         fontWeight: 600,
-        color: "#64748b",
+        color: "var(--muted-foreground)",
         display: "block",
         marginBottom: 3,
         textTransform: "uppercase",
@@ -463,13 +463,13 @@ const NumInput = ({
         width: suffix ? 56 : 72,
         height: 28,
         borderRadius: 6,
-        border: "1px solid #e2e8f0",
+        border: "1px solid var(--border)",
         fontSize: 12,
         padding: "0 6px",
         outline: "none",
       }}
     />
-    {suffix && <span style={{ fontSize: 10, color: "#94a3b8" }}>{suffix}</span>}
+    {suffix && <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>{suffix}</span>}
   </div>
 );
 
@@ -477,13 +477,13 @@ const ColorInput = ({ value, onChange }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
     <input
       type="color"
-      value={value === "transparent" ? "#ffffff" : value}
+      value={value === "transparent" ? "var(--card)" : value}
       onChange={(e) => onChange(e.target.value)}
       style={{
         width: 28,
         height: 28,
         borderRadius: 6,
-        border: "1px solid #e2e8f0",
+        border: "1px solid var(--border)",
         cursor: "pointer",
         padding: 2,
       }}
@@ -496,7 +496,7 @@ const ColorInput = ({ value, onChange }) => (
         width: 80,
         height: 28,
         borderRadius: 6,
-        border: "1px solid #e2e8f0",
+        border: "1px solid var(--border)",
         fontSize: 11,
         padding: "0 6px",
         fontFamily: "monospace",
@@ -510,8 +510,8 @@ const ColorInput = ({ value, onChange }) => (
         width: 28,
         height: 28,
         borderRadius: 6,
-        border: "1px solid #e2e8f0",
-        background: "#fff",
+        border: "1px solid var(--border)",
+        background: "var(--card)",
         cursor: "pointer",
         fontSize: 11,
       }}
@@ -529,7 +529,7 @@ const SelectInput = ({ value, onChange, options }) => (
       width: "100%",
       height: 28,
       borderRadius: 6,
-      border: "1px solid #e2e8f0",
+      border: "1px solid var(--border)",
       fontSize: 12,
       padding: "0 6px",
     }}
@@ -558,7 +558,7 @@ const PropertiesPanel = ({
         <div
           style={{
             fontSize: 12,
-            color: "#94a3b8",
+            color: "var(--muted-foreground)",
             textAlign: "center",
             marginTop: 40,
           }}
@@ -586,7 +586,7 @@ const PropertiesPanel = ({
           justifyContent: "space-between",
           marginBottom: 12,
           paddingBottom: 10,
-          borderBottom: "1px solid #f1f5f9",
+          borderBottom: "1px solid var(--border)",
         }}
       >
         <span
@@ -601,7 +601,7 @@ const PropertiesPanel = ({
         >
           <i
             className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`}
-            style={{ color: "#A855F7" }}
+            style={{ color: "var(--primary)" }}
           />
           {el.label || el.type}
         </span>
@@ -609,14 +609,14 @@ const PropertiesPanel = ({
           <button
             onClick={onDuplicate}
             title="Duplicate"
-            style={btnStyle("#f1f5f9", "#475569")}
+            style={btnStyle("var(--border)", "var(--foreground)")}
           >
             <i className="bi bi-copy" />
           </button>
           <button
             onClick={onDelete}
             title="Delete"
-            style={btnStyle("#fef2f2", "#dc2626")}
+            style={btnStyle("oklch(var(--destructive-h) var(--destructive-s) var(--destructive-l) / 10%)", "#dc2626")}
           >
             <i className="bi bi-trash" />
           </button>
@@ -646,7 +646,7 @@ const PropertiesPanel = ({
       {/* Position & Size */}
       <div
         style={{
-          background: "#f8fafc",
+          background: "var(--background)",
           borderRadius: 8,
           padding: 10,
           marginBottom: 10,
@@ -656,7 +656,7 @@ const PropertiesPanel = ({
           style={{
             fontSize: 11,
             fontWeight: 700,
-            color: "#64748b",
+            color: "var(--muted-foreground)",
             marginBottom: 8,
             textTransform: "uppercase",
             letterSpacing: 0.5,
@@ -668,19 +668,19 @@ const PropertiesPanel = ({
           style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
         >
           <div>
-            <span style={{ fontSize: 10, color: "#94a3b8" }}>X</span>
+            <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>X</span>
             <NumInput value={Math.round(el.x)} onChange={p("x")} />
           </div>
           <div>
-            <span style={{ fontSize: 10, color: "#94a3b8" }}>Y</span>
+            <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>Y</span>
             <NumInput value={Math.round(el.y)} onChange={p("y")} />
           </div>
           <div>
-            <span style={{ fontSize: 10, color: "#94a3b8" }}>W</span>
+            <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>W</span>
             <NumInput value={Math.round(el.w)} min={10} onChange={p("w")} />
           </div>
           <div>
-            <span style={{ fontSize: 10, color: "#94a3b8" }}>H</span>
+            <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>H</span>
             <NumInput value={Math.round(el.h)} min={4} onChange={p("h")} />
           </div>
         </div>
@@ -689,7 +689,7 @@ const PropertiesPanel = ({
       {/* Alignment */}
       <div
         style={{
-          background: "#f8fafc",
+          background: "var(--background)",
           borderRadius: 8,
           padding: 10,
           marginBottom: 10,
@@ -699,7 +699,7 @@ const PropertiesPanel = ({
           style={{
             fontSize: 11,
             fontWeight: 700,
-            color: "#64748b",
+            color: "var(--muted-foreground)",
             marginBottom: 8,
             textTransform: "uppercase",
             letterSpacing: 0.5,
@@ -756,8 +756,8 @@ const PropertiesPanel = ({
             style={{
               ...smallBtn,
               fontSize: 10,
-              background: "#f5f3ff",
-              color: "#7c3aed",
+              background: "var(--accent)",
+              color: "var(--primary)",
               border: "1px solid #e9d5ff",
             }}
             title="Center"
@@ -799,7 +799,7 @@ const PropertiesPanel = ({
       {/* Layer */}
       <div
         style={{
-          background: "#f8fafc",
+          background: "var(--background)",
           borderRadius: 8,
           padding: 10,
           marginBottom: 10,
@@ -809,7 +809,7 @@ const PropertiesPanel = ({
           style={{
             fontSize: 11,
             fontWeight: 700,
-            color: "#64748b",
+            color: "var(--muted-foreground)",
             marginBottom: 8,
             textTransform: "uppercase",
             letterSpacing: 0.5,
@@ -828,7 +828,7 @@ const PropertiesPanel = ({
           </button>
         </div>
         <div style={{ marginTop: 8 }}>
-          <span style={{ fontSize: 10, color: "#94a3b8" }}>
+          <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>
             Z-Index: {el.zIndex}
           </span>
         </div>
@@ -837,7 +837,7 @@ const PropertiesPanel = ({
       {/* Appearance */}
       <div
         style={{
-          background: "#f8fafc",
+          background: "var(--background)",
           borderRadius: 8,
           padding: 10,
           marginBottom: 10,
@@ -847,7 +847,7 @@ const PropertiesPanel = ({
           style={{
             fontSize: 11,
             fontWeight: 700,
-            color: "#64748b",
+            color: "var(--muted-foreground)",
             marginBottom: 8,
             textTransform: "uppercase",
             letterSpacing: 0.5,
@@ -911,7 +911,7 @@ const PropertiesPanel = ({
               onChange={(e) => p("opacity")(Number(e.target.value))}
               style={{ flex: 1 }}
             />
-            <span style={{ fontSize: 11, color: "#64748b", width: 32 }}>
+            <span style={{ fontSize: 11, color: "var(--muted-foreground)", width: 32 }}>
               {Math.round(el.opacity * 100)}%
             </span>
           </div>
@@ -922,7 +922,7 @@ const PropertiesPanel = ({
       {isText && (
         <div
           style={{
-            background: "#f8fafc",
+            background: "var(--background)",
             borderRadius: 8,
             padding: 10,
             marginBottom: 10,
@@ -932,7 +932,7 @@ const PropertiesPanel = ({
             style={{
               fontSize: 11,
               fontWeight: 700,
-              color: "#64748b",
+              color: "var(--muted-foreground)",
               marginBottom: 8,
               textTransform: "uppercase",
               letterSpacing: 0.5,
@@ -948,7 +948,7 @@ const PropertiesPanel = ({
               style={{
                 width: "100%",
                 borderRadius: 6,
-                border: "1px solid #e2e8f0",
+                border: "1px solid var(--border)",
                 fontSize: 12,
                 padding: "6px 8px",
                 resize: "vertical",
@@ -969,7 +969,7 @@ const PropertiesPanel = ({
                 width: "100%",
                 height: 28,
                 borderRadius: 6,
-                border: "1px solid #e2e8f0",
+                border: "1px solid var(--border)",
                 fontSize: 12,
                 padding: "0 6px",
               }}
@@ -1036,9 +1036,9 @@ const PropertiesPanel = ({
                     flex: 1,
                     height: 26,
                     borderRadius: 5,
-                    border: `1px solid ${el.fontWeight === v ? "#A855F7" : "#e2e8f0"}`,
-                    background: el.fontWeight === v ? "#f5f3ff" : "#fff",
-                    color: el.fontWeight === v ? "#7c3aed" : "#475569",
+                    border: `1px solid ${el.fontWeight === v ? "var(--primary)" : "var(--border)"}`,
+                    background: el.fontWeight === v ? "var(--accent)" : "var(--card)",
+                    color: el.fontWeight === v ? "var(--primary)" : "var(--foreground)",
                     cursor: "pointer",
                     fontSize: 10,
                     fontWeight: v,
@@ -1063,9 +1063,9 @@ const PropertiesPanel = ({
                     width: 30,
                     height: 26,
                     borderRadius: 5,
-                    border: `1px solid ${el.fontStyle === v ? "#A855F7" : "#e2e8f0"}`,
-                    background: el.fontStyle === v ? "#f5f3ff" : "#fff",
-                    color: el.fontStyle === v ? "#7c3aed" : "#475569",
+                    border: `1px solid ${el.fontStyle === v ? "var(--primary)" : "var(--border)"}`,
+                    background: el.fontStyle === v ? "var(--accent)" : "var(--card)",
+                    color: el.fontStyle === v ? "var(--primary)" : "var(--foreground)",
                     cursor: "pointer",
                     fontSize: 12,
                     fontStyle: v,
@@ -1084,11 +1084,11 @@ const PropertiesPanel = ({
                   width: 30,
                   height: 26,
                   borderRadius: 5,
-                  border: `1px solid ${el.textDecoration === "underline" ? "#A855F7" : "#e2e8f0"}`,
+                  border: `1px solid ${el.textDecoration === "underline" ? "var(--primary)" : "var(--border)"}`,
                   background:
-                    el.textDecoration === "underline" ? "#f5f3ff" : "#fff",
+                    el.textDecoration === "underline" ? "var(--accent)" : "var(--card)",
                   color:
-                    el.textDecoration === "underline" ? "#7c3aed" : "#475569",
+                    el.textDecoration === "underline" ? "var(--primary)" : "var(--foreground)",
                   cursor: "pointer",
                   fontSize: 12,
                   textDecoration: "underline",
@@ -1112,9 +1112,9 @@ const PropertiesPanel = ({
                     flex: 1,
                     height: 26,
                     borderRadius: 5,
-                    border: `1px solid ${el.textAlign === v ? "#A855F7" : "#e2e8f0"}`,
-                    background: el.textAlign === v ? "#f5f3ff" : "#fff",
-                    color: el.textAlign === v ? "#7c3aed" : "#475569",
+                    border: `1px solid ${el.textAlign === v ? "var(--primary)" : "var(--border)"}`,
+                    background: el.textAlign === v ? "var(--accent)" : "var(--card)",
+                    color: el.textAlign === v ? "var(--primary)" : "var(--foreground)",
                     cursor: "pointer",
                   }}
                 >
@@ -1155,7 +1155,7 @@ const PropertiesPanel = ({
       {isMedia && (
         <div
           style={{
-            background: "#f8fafc",
+            background: "var(--background)",
             borderRadius: 8,
             padding: 10,
             marginBottom: 10,
@@ -1165,7 +1165,7 @@ const PropertiesPanel = ({
             style={{
               fontSize: 11,
               fontWeight: 700,
-              color: "#64748b",
+              color: "var(--muted-foreground)",
               marginBottom: 8,
               textTransform: "uppercase",
               letterSpacing: 0.5,
@@ -1183,7 +1183,7 @@ const PropertiesPanel = ({
                 width: "100%",
                 height: 28,
                 borderRadius: 6,
-                border: "1px solid #e2e8f0",
+                border: "1px solid var(--border)",
                 fontSize: 11,
                 padding: "0 8px",
               }}
@@ -1197,7 +1197,7 @@ const PropertiesPanel = ({
                 width: "100%",
                 height: 28,
                 borderRadius: 6,
-                border: "1px solid #e2e8f0",
+                border: "1px solid var(--border)",
                 fontSize: 12,
                 padding: "0 6px",
               }}
@@ -1239,9 +1239,9 @@ const btnStyle = (bg, color) => ({
 const smallBtn = {
   height: 26,
   borderRadius: 6,
-  border: "1px solid #e2e8f0",
-  background: "#fff",
-  color: "#475569",
+  border: "1px solid var(--border)",
+  background: "var(--card)",
+  color: "var(--foreground)",
   cursor: "pointer",
   fontSize: 11,
   display: "flex",
@@ -1258,15 +1258,15 @@ const PassPreviewIcon = ({ onClick }) => (
       border: "none",
       cursor: "pointer",
       padding: 0,
-      color: "#7c3aed",
+      color: "var(--primary)",
       fontSize: 18,
       display: "flex",
       alignItems: "center",
       justify: "center",
       transition: "all 0.2s",
     }}
-    onMouseEnter={(e) => (e.currentTarget.style.color = "#a855f7")}
-    onMouseLeave={(e) => (e.currentTarget.style.color = "#7c3aed")}
+    onMouseEnter={(e) => (e.currentTarget.style.color = "var(--primary)")}
+    onMouseLeave={(e) => (e.currentTarget.style.color = "var(--primary)")}
   >
     <i className="bi bi-eye" />
   </button>
@@ -1288,7 +1288,7 @@ const PassPreviewModal = ({ template, onClose }) => {
     >
       <div
         style={{
-          background: "#fff",
+          background: "var(--card)",
           borderRadius: 12,
           boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
           maxHeight: "90vh",
@@ -1303,7 +1303,7 @@ const PassPreviewModal = ({ template, onClose }) => {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "16px 20px",
-            borderBottom: "1px solid #e2e8f0",
+            borderBottom: "1px solid var(--border)",
           }}
         >
           <h3
@@ -1311,7 +1311,7 @@ const PassPreviewModal = ({ template, onClose }) => {
               margin: 0,
               fontSize: 16,
               fontWeight: 700,
-              color: "#1e1b4b",
+              color: "var(--foreground)",
             }}
           >
             {template.name}
@@ -1323,7 +1323,7 @@ const PassPreviewModal = ({ template, onClose }) => {
               border: "none",
               cursor: "pointer",
               fontSize: 20,
-              color: "#94a3b8",
+              color: "var(--muted-foreground)",
               padding: 0,
             }}
           >
@@ -1337,7 +1337,7 @@ const PassPreviewModal = ({ template, onClose }) => {
             alignItems: "center",
             justifyContent: "center",
             padding: 40,
-            background: "#f8fafc",
+            background: "var(--background)",
           }}
         >
           <div
@@ -1345,7 +1345,7 @@ const PassPreviewModal = ({ template, onClose }) => {
               position: "relative",
               width: template.canvas?.width || 400,
               height: template.canvas?.height || 600,
-              background: template.canvas?.background || "#fff",
+              background: template.canvas?.background || "var(--card)",
               borderRadius: 4,
               boxShadow: "0 4px 30px rgba(0,0,0,0.15)",
               overflow: "hidden",
@@ -1461,7 +1461,7 @@ const PassTemplateEditor = () => {
   const [canvas, setCanvas] = useState({
     width: 400,
     height: 600,
-    background: "#ffffff",
+    background: "var(--card)",
   });
   const [templateName, setTemplateName] = useState("My Pass Template");
   const [templates, setTemplates] = useState([]);
@@ -1745,7 +1745,7 @@ const PassTemplateEditor = () => {
 
   const startDesignNew = () => {
     setElements([]);
-    setCanvas({ width: 400, height: 600, background: "#ffffff" });
+    setCanvas({ width: 400, height: 600, background: "var(--card)" });
     setTemplateName("New Template");
     setEditingId(null);
     setSelectedId(null);
@@ -1769,7 +1769,7 @@ const PassTemplateEditor = () => {
       };
     });
     setElements(safeElements);
-    setCanvas(t.canvas || { width: 400, height: 600, background: "#ffffff" });
+    setCanvas(t.canvas || { width: 400, height: 600, background: "var(--card)" });
     setTemplateName(t.name);
     setEditingId(t.id || t._id);
     setSelectedId(null);
@@ -1835,10 +1835,10 @@ const PassTemplateEditor = () => {
           display: "flex",
           flexDirection: "column",
           height: "calc(100vh - 180px)",
-          background: "#f1f5f9",
+          background: "var(--border)",
           borderRadius: 12,
           overflow: "hidden",
-          border: "1px solid #e2e8f0",
+          border: "1px solid var(--border)",
         }}
       >
         {/* Header */}
@@ -1848,8 +1848,8 @@ const PassTemplateEditor = () => {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "16px 20px",
-            background: "#fff",
-            borderBottom: "1px solid #e2e8f0",
+            background: "var(--card)",
+            borderBottom: "1px solid var(--border)",
           }}
         >
           <h2
@@ -1857,7 +1857,7 @@ const PassTemplateEditor = () => {
               margin: 0,
               fontSize: 18,
               fontWeight: 700,
-              color: "#1e1b4b",
+              color: "var(--foreground)",
             }}
           >
             Pass Templates
@@ -1868,8 +1868,8 @@ const PassTemplateEditor = () => {
               height: 36,
               borderRadius: 8,
               border: "none",
-              background: "linear-gradient(135deg,#7c3aed,#a855f7)",
-              color: "#fff",
+              background: "linear-gradient(135deg,var(--primary),var(--primary))",
+              color: "var(--card)",
               cursor: "pointer",
               fontSize: 13,
               fontWeight: 600,
@@ -1887,7 +1887,7 @@ const PassTemplateEditor = () => {
         <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
           {templates.length === 0 ? (
             <div
-              style={{ textAlign: "center", color: "#94a3b8", paddingTop: 60 }}
+              style={{ textAlign: "center", color: "var(--muted-foreground)", paddingTop: 60 }}
             >
               <i
                 className="bi bi-inbox"
@@ -1902,8 +1902,8 @@ const PassTemplateEditor = () => {
               <thead>
                 <tr
                   style={{
-                    background: "#f8fafc",
-                    borderBottom: "1px solid #e2e8f0",
+                    background: "var(--background)",
+                    borderBottom: "1px solid var(--border)",
                   }}
                 >
                   <th
@@ -1912,7 +1912,7 @@ const PassTemplateEditor = () => {
                       textAlign: "left",
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "#64748b",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.5,
                     }}
@@ -1925,7 +1925,7 @@ const PassTemplateEditor = () => {
                       textAlign: "left",
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "#64748b",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.5,
                     }}
@@ -1938,7 +1938,7 @@ const PassTemplateEditor = () => {
                       textAlign: "left",
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "#64748b",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.5,
                     }}
@@ -1951,7 +1951,7 @@ const PassTemplateEditor = () => {
                       textAlign: "left",
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "#64748b",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.5,
                     }}
@@ -1964,7 +1964,7 @@ const PassTemplateEditor = () => {
                       textAlign: "left",
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "#64748b",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.5,
                     }}
@@ -1978,9 +1978,9 @@ const PassTemplateEditor = () => {
                   <tr
                     key={t.id || t._id}
                     style={{
-                      borderBottom: "1px solid #f1f5f9",
-                      background: "#fff",
-                      hover: { background: "#f8fafc" },
+                      borderBottom: "1px solid var(--border)",
+                      background: "var(--card)",
+                      hover: { background: "var(--background)" },
                     }}
                   >
                     <td
@@ -1997,7 +1997,7 @@ const PassTemplateEditor = () => {
                       style={{
                         padding: "12px 16px",
                         fontSize: 13,
-                        color: "#64748b",
+                        color: "var(--muted-foreground)",
                         textAlign: "center",
                       }}
                     >
@@ -2007,7 +2007,7 @@ const PassTemplateEditor = () => {
                       style={{
                         padding: "12px 16px",
                         fontSize: 13,
-                        color: "#64748b",
+                        color: "var(--muted-foreground)",
                       }}
                     >
                       {t.createdBy || "Admin"}
@@ -2016,7 +2016,7 @@ const PassTemplateEditor = () => {
                       style={{
                         padding: "12px 16px",
                         fontSize: 13,
-                        color: "#64748b",
+                        color: "var(--muted-foreground)",
                       }}
                     >
                       {t.createdAt ? (
@@ -2033,7 +2033,7 @@ const PassTemplateEditor = () => {
                               return `${day}-${month}-${year}`;
                             })()}
                           </div>
-                          <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                          <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
                             {new Date(t.createdAt).toLocaleTimeString("en-GB", {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -2054,9 +2054,9 @@ const PassTemplateEditor = () => {
                             height: 28,
                             width: 28,
                             borderRadius: 6,
-                            border: "1px solid #e2e8f0",
-                            background: "#f8fafc",
-                            color: "#7c3aed",
+                            border: "1px solid var(--border)",
+                            background: "var(--background)",
+                            color: "var(--primary)",
                             cursor: "pointer",
                             display: "flex",
                             alignItems: "center",
@@ -2080,8 +2080,8 @@ const PassTemplateEditor = () => {
                             border: t.inUse
                               ? "1px solid #e5e7eb"
                               : "1px solid #fee2e2",
-                            background: t.inUse ? "#f3f4f6" : "#fef2f2",
-                            color: t.inUse ? "#9ca3af" : "#dc2626",
+                            background: t.inUse ? "var(--secondary)" : "oklch(var(--destructive-h) var(--destructive-s) var(--destructive-l) / 10%)",
+                            color: t.inUse ? "var(--muted-foreground)" : "#dc2626",
                             cursor: t.inUse ? "not-allowed" : "pointer",
                             display: "flex",
                             alignItems: "center",
@@ -2118,10 +2118,10 @@ const PassTemplateEditor = () => {
         display: "flex",
         flexDirection: "column",
         height: "calc(100vh - 180px)",
-        background: "#f1f5f9",
+        background: "var(--border)",
         borderRadius: 12,
         overflow: "hidden",
-        border: "1px solid #e2e8f0",
+        border: "1px solid var(--border)",
       }}
     >
       {/* ── Toolbar ── */}
@@ -2131,8 +2131,8 @@ const PassTemplateEditor = () => {
           alignItems: "center",
           gap: 8,
           padding: "8px 12px",
-          background: "#fff",
-          borderBottom: "1px solid #e2e8f0",
+          background: "var(--card)",
+          borderBottom: "1px solid var(--border)",
           flexWrap: "wrap",
         }}
       >
@@ -2150,9 +2150,9 @@ const PassTemplateEditor = () => {
                 padding: "4px 10px",
                 height: 30,
                 borderRadius: 8,
-                border: "1px solid #e2e8f0",
-                background: "#f8fafc",
-                color: "#475569",
+                border: "1px solid var(--border)",
+                background: "var(--background)",
+                color: "var(--foreground)",
                 cursor: "pointer",
                 fontSize: 11,
                 fontWeight: 500,
@@ -2177,7 +2177,7 @@ const PassTemplateEditor = () => {
           <span
             style={{
               fontSize: 11,
-              color: "#64748b",
+              color: "var(--muted-foreground)",
               minWidth: 36,
               textAlign: "center",
             }}
@@ -2195,7 +2195,7 @@ const PassTemplateEditor = () => {
           </button>
         </div>
 
-        <div style={{ width: 1, height: 24, background: "#e2e8f0" }} />
+        <div style={{ width: 1, height: 24, background: "var(--border)" }} />
 
         {/* Editor actions */}
         <button
@@ -2204,7 +2204,7 @@ const PassTemplateEditor = () => {
             ...toolBtn,
             padding: "0 10px",
             fontSize: 11,
-            color: "#475569",
+            color: "var(--foreground)",
             display: "flex",
             alignItems: "center",
             gap: 4,
@@ -2220,7 +2220,7 @@ const PassTemplateEditor = () => {
             style={{
               height: 30,
               borderRadius: 8,
-              border: "1px solid #e2e8f0",
+              border: "1px solid var(--border)",
               fontSize: 12,
               padding: "0 10px",
               width: 200,
@@ -2233,8 +2233,8 @@ const PassTemplateEditor = () => {
               height: 30,
               borderRadius: 8,
               border: "none",
-              background: "linear-gradient(135deg,#7c3aed,#a855f7)",
-              color: "#fff",
+              background: "linear-gradient(135deg,var(--primary),var(--primary))",
+              color: "var(--card)",
               cursor: "pointer",
               fontSize: 12,
               fontWeight: 600,
@@ -2262,8 +2262,8 @@ const PassTemplateEditor = () => {
         <div
           style={{
             width: 200,
-            background: "#fff",
-            borderRight: "1px solid #e2e8f0",
+            background: "var(--card)",
+            borderRight: "1px solid var(--border)",
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
@@ -2271,13 +2271,13 @@ const PassTemplateEditor = () => {
         >
           {/* Canvas settings */}
           <div
-            style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9" }}
+            style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}
           >
             <div
               style={{
                 fontSize: 11,
                 fontWeight: 700,
-                color: "#64748b",
+                color: "var(--muted-foreground)",
                 marginBottom: 8,
                 textTransform: "uppercase",
                 letterSpacing: 0.5,
@@ -2294,7 +2294,7 @@ const PassTemplateEditor = () => {
               }}
             >
               <div>
-                <span style={{ fontSize: 10, color: "#94a3b8" }}>Width</span>
+                <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>Width</span>
                 <NumInput
                   value={canvas.width}
                   min={100}
@@ -2303,7 +2303,7 @@ const PassTemplateEditor = () => {
                 />
               </div>
               <div>
-                <span style={{ fontSize: 10, color: "#94a3b8" }}>Height</span>
+                <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>Height</span>
                 <NumInput
                   value={canvas.height}
                   min={100}
@@ -2313,7 +2313,7 @@ const PassTemplateEditor = () => {
               </div>
             </div>
             <div style={{ marginBottom: 6 }}>
-              <span style={{ fontSize: 10, color: "#94a3b8" }}>Background</span>
+              <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>Background</span>
               <ColorInput
                 value={canvas.background}
                 onChange={(v) => setCanvas((c) => ({ ...c, background: v }))}
@@ -2330,10 +2330,10 @@ const PassTemplateEditor = () => {
                     fontSize: 9,
                     padding: "2px 5px",
                     borderRadius: 4,
-                    border: "1px solid #e2e8f0",
-                    background: "#f8fafc",
+                    border: "1px solid var(--border)",
+                    background: "var(--background)",
                     cursor: "pointer",
-                    color: "#64748b",
+                    color: "var(--muted-foreground)",
                   }}
                 >
                   {p.label}
@@ -2347,7 +2347,7 @@ const PassTemplateEditor = () => {
               padding: "8px 12px 4px",
               fontWeight: 700,
               fontSize: 11,
-              color: "#64748b",
+              color: "var(--muted-foreground)",
               textTransform: "uppercase",
               letterSpacing: 0.5,
             }}
@@ -2369,22 +2369,22 @@ const PassTemplateEditor = () => {
                     padding: "5px 12px",
                     cursor: "pointer",
                     background:
-                      el.id === selectedId ? "#f5f3ff" : "transparent",
-                    borderLeft: `3px solid ${el.id === selectedId ? "#A855F7" : "transparent"}`,
+                      el.id === selectedId ? "var(--accent)" : "transparent",
+                    borderLeft: `3px solid ${el.id === selectedId ? "var(--primary)" : "transparent"}`,
                   }}
                 >
                   <i
                     className={`bi ${DEFAULT_ELEMENT[el.type]?.icon}`}
                     style={{
                       fontSize: 12,
-                      color: el.id === selectedId ? "#7c3aed" : "#94a3b8",
+                      color: el.id === selectedId ? "var(--primary)" : "var(--muted-foreground)",
                       flexShrink: 0,
                     }}
                   />
                   <span
                     style={{
                       fontSize: 11,
-                      color: "#475569",
+                      color: "var(--foreground)",
                       flex: 1,
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -2398,7 +2398,7 @@ const PassTemplateEditor = () => {
                   {el.locked && (
                     <i
                       className="bi bi-lock-fill"
-                      style={{ fontSize: 10, color: "#94a3b8" }}
+                      style={{ fontSize: 10, color: "var(--muted-foreground)" }}
                     />
                   )}
                 </div>
@@ -2408,7 +2408,7 @@ const PassTemplateEditor = () => {
                 style={{
                   padding: 16,
                   fontSize: 11,
-                  color: "#94a3b8",
+                  color: "var(--muted-foreground)",
                   textAlign: "center",
                 }}
               >
@@ -2427,7 +2427,7 @@ const PassTemplateEditor = () => {
             alignItems: "flex-start",
             justifyContent: "center",
             padding: 24,
-            background: "#e2e8f0",
+            background: "var(--border)",
           }}
         >
           {/* Wrapper reserves layout space for the scaled canvas */}
@@ -2464,7 +2464,7 @@ const PassTemplateEditor = () => {
                   position: "absolute",
                   inset: 0,
                   backgroundImage:
-                    "radial-gradient(circle,#d1d5db 1px,transparent 1px)",
+                    "radial-gradient(circle,var(--border) 1px,transparent 1px)",
                   backgroundSize: "20px 20px",
                   opacity: 0.4,
                   pointerEvents: "none",
@@ -2499,7 +2499,7 @@ const PassTemplateEditor = () => {
                     className="bi bi-plus-circle"
                     style={{ fontSize: 36, color: "#cbd5e1" }}
                   />
-                  <span style={{ fontSize: 13, color: "#94a3b8" }}>
+                  <span style={{ fontSize: 13, color: "var(--muted-foreground)" }}>
                     Add elements from the toolbar
                   </span>
                 </div>
@@ -2513,8 +2513,8 @@ const PassTemplateEditor = () => {
         <div
           style={{
             width: 240,
-            background: "#fff",
-            borderLeft: "1px solid #e2e8f0",
+            background: "var(--card)",
+            borderLeft: "1px solid var(--border)",
             overflowY: "auto",
           }}
         >
@@ -2535,8 +2535,8 @@ const PassTemplateEditor = () => {
       <div
         style={{
           padding: "4px 12px",
-          background: "#f8fafc",
-          borderTop: "1px solid #e2e8f0",
+          background: "var(--background)",
+          borderTop: "1px solid var(--border)",
           display: "flex",
           gap: 12,
         }}
@@ -2546,10 +2546,10 @@ const PassTemplateEditor = () => {
           ["Esc", "Deselect"],
           ["Ctrl+D", "Duplicate"],
         ].map(([k, d]) => (
-          <span key={k} style={{ fontSize: 10, color: "#94a3b8" }}>
+          <span key={k} style={{ fontSize: 10, color: "var(--muted-foreground)" }}>
             <kbd
               style={{
-                background: "#e2e8f0",
+                background: "var(--border)",
                 borderRadius: 3,
                 padding: "1px 4px",
                 fontSize: 10,
@@ -2569,9 +2569,9 @@ const toolBtn = {
   height: 30,
   minWidth: 30,
   borderRadius: 8,
-  border: "1px solid #e2e8f0",
-  background: "#f8fafc",
-  color: "#475569",
+  border: "1px solid var(--border)",
+  background: "var(--background)",
+  color: "var(--foreground)",
   cursor: "pointer",
   fontSize: 13,
   display: "flex",

@@ -1,14 +1,27 @@
 import { Router } from "express";
+import mongoose from "mongoose";
 import Event from "../models/Event.js";
 import Attendee from "../models/Attendee.js";
+import { escapeRegex } from "../utils/escapeRegex.js";
+import { generatePassId } from "../utils/generatePassId.js";
 
 const router = Router();
+
+const findPublicEvent = async (eventIdOrSlug) => {
+  if (mongoose.isValidObjectId(eventIdOrSlug)) {
+    return Event.findById(eventIdOrSlug);
+  }
+  const searchName = eventIdOrSlug.replace(/_/g, " ");
+  return Event.findOne({
+    eventName: { $regex: new RegExp(`^${escapeRegex(searchName)}$`, "i") },
+  });
+};
 
 // GET /api/public/event/:eventId
 // Returns only the fields needed for the public form: eventName + enabled attendeeFields
 router.get("/event/:eventId", async (req, res) => {
   try {
-    const event = await Event.findById(req.params.eventId);
+    const event = await findPublicEvent(req.params.eventId);
     if (!event) return res.status(404).json({ error: "Event not found" });
     res.json(event);
   } catch (err) {
@@ -18,14 +31,11 @@ router.get("/event/:eventId", async (req, res) => {
 
 // POST /api/public/register
 // Accepts { eventId, name, email, phone, ...customFields }
-// Reuses the same passId generation logic as POST /api/attendees
 router.post("/register", async (req, res) => {
   try {
     const { eventId, ...rest } = req.body;
     if (!eventId) return res.status(400).json({ error: "eventId required" });
-    const count = await Attendee.countDocuments({ eventId });
-    const eventShort = String(eventId).slice(-4);
-    const passId = `PASS-${eventShort}-${String(count + 1).padStart(4, "0")}`;
+    const passId = await generatePassId(eventId);
     const attendee = await Attendee.create({
       ...rest,
       eventId,

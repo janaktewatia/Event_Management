@@ -40,7 +40,15 @@ const sendViaTwilioWhatsApp = async (whatsappConfig, phoneNumber, message) => {
 
 const sendViaMetaWhatsApp = async (whatsappConfig, phoneNumber, message) => {
   try {
-    const response = await fetch(`https://graph.instagram.com/v18.0/${whatsappConfig.metaBusinessAccountId}/messages`, {
+    const phoneId =
+      whatsappConfig.metaPhoneId || whatsappConfig.metaBusinessAccountId;
+    if (!phoneId) {
+      throw new Error("Meta Phone Number ID is not configured");
+    }
+
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${phoneId}/messages`,
+      {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${whatsappConfig.metaAccessToken}`,
@@ -52,7 +60,8 @@ const sendViaMetaWhatsApp = async (whatsappConfig, phoneNumber, message) => {
         type: "text",
         text: { body: message },
       }),
-    });
+    },
+    );
 
     const data = await response.json();
 

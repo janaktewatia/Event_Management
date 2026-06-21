@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Tabs, Tab, Table, Button, Modal, Form, Alert, Spinner } from "react-bootstrap";
 import { apiUrl } from "../config";
+import WhatsAppTemplateCreator from "../components/whatsapp/WhatsAppTemplateCreator";
 import "./CommunicationTemplatesPage.css";
 
 const CommunicationTemplatesPage = () => {
@@ -153,13 +154,15 @@ const CommunicationTemplatesPage = () => {
   }
 
   return (
-    <Container className="communication-templates-container mt-4 mb-4">
+    <Container fluid className="py-4">
       <div className="templates-header mb-4">
         <h1>Communication Templates</h1>
         <p className="text-muted">Create and manage email, SMS, and WhatsApp templates</p>
-        <Button variant="primary" onClick={() => handleOpenModal()} className="mt-2">
-          ➕ Create New Template
-        </Button>
+        {activeTab !== "whatsapp" && (
+          <Button variant="primary" onClick={() => handleOpenModal()} className="mt-2">
+            ➕ Create New Template
+          </Button>
+        )}
       </div>
 
       {message && (
@@ -190,86 +193,83 @@ const CommunicationTemplatesPage = () => {
           />
         </Tab>
         <Tab eventKey="whatsapp" title="💬 WhatsApp Templates">
-          <TemplatesTable
-            templates={templates.whatsapp}
-            type="whatsapp"
-            onEdit={handleOpenModal}
-            onDelete={handleDeleteTemplate}
-            onDuplicate={handleDuplicateTemplate}
-            onCreateNew={() => handleOpenModal()}
-          />
+          <div style={{ marginTop: "2rem" }}>
+            <WhatsAppTemplateCreator />
+          </div>
         </Tab>
       </Tabs>
 
-      {/* Create/Edit Modal */}
-      <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {editingTemplate ? "Edit Template" : "Create New Template"} - {activeTab.toUpperCase()}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Template Name *</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="e.g., Event Confirmation"
-              />
-            </Form.Group>
-
-            {activeTab === "email" && (
+      {/* Create/Edit Modal - Only for Email and SMS */}
+      {activeTab !== "whatsapp" && (
+        <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
+          <Modal.Header closeButton>
+            <Modal.Title>
+              {editingTemplate ? "Edit Template" : "Create New Template"} - {activeTab.toUpperCase()}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
               <Form.Group className="mb-3">
-                <Form.Label>Email Subject *</Form.Label>
+                <Form.Label>Template Name *</Form.Label>
                 <Form.Control
                   type="text"
-                  name="subject"
-                  value={formData.subject}
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="e.g., Welcome to our event"
+                  placeholder="e.g., Event Confirmation"
                 />
               </Form.Group>
-            )}
 
-            <Form.Group className="mb-3">
-              <Form.Label>Content *</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={6}
-                name="content"
-                value={formData.content}
-                onChange={handleInputChange}
-                placeholder="Enter your template content..."
-              />
-              {activeTab === "sms" && (
-                <small className="text-muted">Character count: {formData.content.length} (SMS limit: 160)</small>
+              {activeTab === "email" && (
+                <Form.Group className="mb-3">
+                  <Form.Label>Email Subject *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Welcome to our event"
+                  />
+                </Form.Group>
               )}
-            </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                type="text"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Add a description for this template"
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleSaveTemplate} disabled={saving}>
-            {saving ? <Spinner size="sm" className="me-2" /> : "💾"} Save Template
-          </Button>
-        </Modal.Footer>
-      </Modal>
+              <Form.Group className="mb-3">
+                <Form.Label>Content *</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={6}
+                  name="content"
+                  value={formData.content}
+                  onChange={handleInputChange}
+                  placeholder="Enter your template content..."
+                />
+                {activeTab === "sms" && (
+                  <small className="text-muted">Character count: {formData.content.length} (SMS limit: 160)</small>
+                )}
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Description</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Add a description for this template"
+                />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleSaveTemplate} disabled={saving}>
+              {saving ? <Spinner size="sm" className="me-2" /> : "💾"} Save Template
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
     </Container>
   );
 };

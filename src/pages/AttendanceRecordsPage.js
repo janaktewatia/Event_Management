@@ -4,9 +4,9 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useEventData } from "../context/EventDataContext";
 
 const DEFAULT_CATEGORIES = [
-  { name: "VIP", color: "#F59E0B" },
-  { name: "General", color: "#3B82F6" },
-  { name: "Staff", color: "#10B981" },
+  { name: "VIP", color: "var(--warning)" },
+  { name: "General", color: "var(--info)" },
+  { name: "Staff", color: "var(--success)" },
   { name: "Speaker", color: "#8B5CF6" },
   { name: "Press", color: "#EF4444" },
 ];
@@ -106,7 +106,7 @@ const AttendanceRecordsPage = () => {
     return (
       DEFAULT_CATEGORIES.find(
         (c) => c.name.toLowerCase() === name?.toLowerCase(),
-      )?.color || "#94a3b8"
+      )?.color || "var(--muted-foreground)"
     );
   };
 
@@ -302,7 +302,7 @@ const AttendanceRecordsPage = () => {
                     top: "50%",
                     transform: "translateY(-50%)",
                     pointerEvents: "none",
-                    color: "#9ca3af",
+                    color: "var(--muted-foreground)",
                   }}
                 >
                   <FiSearch size={13} />
@@ -329,8 +329,8 @@ const AttendanceRecordsPage = () => {
                 className="btn btn-sm py-2 px-3 fw-semibold border-0"
                 style={{
                   background:
-                    filterStatus === "checked-in" ? "#146c43" : "#198754",
-                  color: "#fff",
+                    filterStatus === "checked-in" ? "#146c43" : "var(--success)",
+                  color: "var(--card)",
                   outline:
                     filterStatus === "checked-in"
                       ? "2px solid #0f5132"
@@ -353,7 +353,7 @@ const AttendanceRecordsPage = () => {
                 style={{
                   background:
                     filterStatus === "checked-out" ? "#cc8a00" : "#ffc107",
-                  color: filterStatus === "checked-out" ? "#fff" : "#212529",
+                  color: filterStatus === "checked-out" ? "var(--card)" : "#212529",
                   outline:
                     filterStatus === "checked-out"
                       ? "2px solid #9a6700"
@@ -436,7 +436,7 @@ const AttendanceRecordsPage = () => {
                               className="badge"
                               style={{
                                 background: getCatColor(a.category),
-                                color: "#fff",
+                                color: "var(--card)",
                               }}
                             >
                               {a.category}
@@ -495,7 +495,7 @@ const AttendanceRecordsPage = () => {
                       className="badge"
                       style={{
                         background: getCatColor(a.category),
-                        color: "#fff",
+                        color: "var(--card)",
                         fontSize: 10,
                       }}
                     >

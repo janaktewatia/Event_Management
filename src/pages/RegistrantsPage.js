@@ -20,9 +20,9 @@ const formatDateTime = (value) => {
 
 const PASS_PREVIEW_W = 340;
 const DEFAULT_CATEGORIES = [
-  { id: 1, name: "VIP", color: "#F59E0B" },
-  { id: 2, name: "General", color: "#3B82F6" },
-  { id: 3, name: "Staff", color: "#10B981" },
+  { id: 1, name: "VIP", color: "var(--warning)" },
+  { id: 2, name: "General", color: "var(--info)" },
+  { id: 3, name: "Staff", color: "var(--success)" },
   { id: 4, name: "Speaker", color: "#8B5CF6" },
 ];
 
@@ -36,7 +36,7 @@ const DEFAULT_PASS_LAYOUT = {
     fontWeight: "700",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#ffffff",
+    color: "var(--card)",
   },
   headerSub: {
     x: 18,
@@ -82,7 +82,7 @@ const DEFAULT_PASS_LAYOUT = {
     fontWeight: "400",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#475569",
+    color: "var(--foreground)",
   },
   phone: {
     x: 18,
@@ -93,7 +93,7 @@ const DEFAULT_PASS_LAYOUT = {
     fontWeight: "400",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#475569",
+    color: "var(--foreground)",
   },
   email: {
     x: 18,
@@ -104,7 +104,7 @@ const DEFAULT_PASS_LAYOUT = {
     fontWeight: "400",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#475569",
+    color: "var(--foreground)",
   },
   qr: { x: 135, y: 460, w: 150, h: 150 },
 };
@@ -134,17 +134,17 @@ const PassViewModal = ({ attendee, event, onClose }) => {
   const catDesigns = fullDesign.categoryDesigns || {};
   const categoryDesign = catDesigns[attendee.category] || catDesigns["Default"];
   const canvas = categoryDesign?.canvas ||
-    fullDesign.canvas || { width: 420, height: 640, background: "#ffffff" };
+    fullDesign.canvas || { width: 420, height: 640, background: "var(--card)" };
   const elements = categoryDesign?.elements || fullDesign.elements || [];
   const design = categoryDesign || fullDesign;
   const passW = canvas.width;
   const passH = canvas.height;
   const S = PASS_PREVIEW_W / passW;
   const previewH = Math.round(passH * S);
-  const primaryColor = design.primaryColor || "#A855F7";
+  const primaryColor = design.primaryColor || "var(--primary)";
   const headerColor = design.headerColor || primaryColor;
   const qrColor = design.qrColor || "#000000";
-  const bgColor = design.bgColor || canvas.background || "#ffffff";
+  const bgColor = design.bgColor || canvas.background || "var(--card)";
   const bgImage = design.bgImage || null;
   const bgOpacity = design.bgOpacity ?? 60;
   const bgFit = design.bgFit || "cover";
@@ -174,7 +174,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
       type: "canvas",
       data: attendee.passId || "PASS",
       dotsOptions: { color: qrColor, type: "square" },
-      backgroundOptions: { color: "#ffffff" },
+      backgroundOptions: { color: "var(--card)" },
       qrOptions: { errorCorrectionLevel: "M" },
     });
     qr.getRawData("png")
@@ -376,7 +376,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                       left: layout.headerTitle.x * S,
                       top: layout.headerTitle.y * S,
                       zIndex: 3,
-                      ...elStyle(layout.headerTitle, 19, "700", "#ffffff"),
+                      ...elStyle(layout.headerTitle, 19, "700", "var(--card)"),
                       overflow: "hidden",
                       maxWidth: (passW - layout.headerTitle.x) * S,
                     }}
@@ -453,7 +453,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                     width: layout.categoryBadge.w * S,
                     height: layout.categoryBadge.h * S,
                     background: catColor,
-                    color: "#fff",
+                    color: "var(--card)",
                     borderRadius: (layout.categoryBadge.h / 2) * S,
                     fontSize: (layout.categoryBadge.fontSize || 11) * S,
                     fontWeight: 700,
@@ -489,7 +489,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                       zIndex: 3,
                       left: layout.organization.x * S,
                       top: layout.organization.y * S,
-                      ...elStyle(layout.organization, 13, "400", "#475569"),
+                      ...elStyle(layout.organization, 13, "400", "var(--foreground)"),
                     }}
                   >
                     ⊞ {attendee.organization}
@@ -502,7 +502,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                     zIndex: 3,
                     left: layout.phone.x * S,
                     top: layout.phone.y * S,
-                    ...elStyle(layout.phone, 13, "400", "#475569"),
+                    ...elStyle(layout.phone, 13, "400", "var(--foreground)"),
                   }}
                 >
                   ◉ {attendee.phone}
@@ -515,7 +515,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                     zIndex: 3,
                     left: layout.email.x * S,
                     top: layout.email.y * S,
-                    ...elStyle(layout.email, 13, "400", "#475569"),
+                    ...elStyle(layout.email, 13, "400", "var(--foreground)"),
                   }}
                 >
                   ✉ {attendee.email}
@@ -553,7 +553,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                         zIndex: 3,
                         left: el.x * S,
                         top: el.y * S,
-                        ...elStyle(el, 14, "400", "#374151"),
+                        ...elStyle(el, 14, "400", "var(--foreground)"),
                         opacity: el.opacity ?? 1,
                       }}
                     >
@@ -570,7 +570,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                       left: 18 * S,
                       right: 18 * S,
                       height: 1,
-                      background: "#e2e8f0",
+                      background: "var(--border)",
                       zIndex: 1,
                     }}
                   />
@@ -582,7 +582,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                       top: layout.qr.y * S,
                       width: layout.qr.w * S,
                       height: layout.qr.h * S,
-                      background: "#f1f5f9",
+                      background: "var(--border)",
                       borderRadius: 8 * S,
                       overflow: "hidden",
                       display: "flex",
@@ -601,7 +601,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                         }}
                       />
                     ) : (
-                      <span style={{ fontSize: 8 * S, color: "#94a3b8" }}>
+                      <span style={{ fontSize: 8 * S, color: "var(--muted-foreground)" }}>
                         Generating…
                       </span>
                     )}
@@ -616,7 +616,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                   right: 0,
                   textAlign: "center",
                   fontSize: 8 * S,
-                  color: "#94a3b8",
+                  color: "var(--muted-foreground)",
                   fontFamily: "monospace",
                   zIndex: 1,
                 }}
@@ -975,7 +975,7 @@ const RegistrantsPage = () => {
           ) : (
             <div className="table-responsive">
               <table className="table table-sm table-hover align-middle mb-0">
-                <thead style={{ background: "#f8fafc" }}>
+                <thead style={{ background: "var(--background)" }}>
                   <tr>
                     <th>Name</th>
                     <th>Mobile Number</th>

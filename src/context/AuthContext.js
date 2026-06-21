@@ -5,7 +5,15 @@ const AuthContext = createContext({});
 const STORAGE_KEY = "em_auth_user";
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+  });
 
   const logout = () => {
     localStorage.removeItem(STORAGE_KEY);

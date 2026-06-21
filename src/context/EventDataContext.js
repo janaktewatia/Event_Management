@@ -66,11 +66,6 @@ export const EventDataProvider = ({ children }) => {
     fetchAttendees().then(setAttendees).catch(console.error);
   }, []);
 
-  useEffect(() => {
-    if (!selectedEventId) return;
-    fetchAttendees(selectedEventId).then(setAttendees).catch(console.error);
-  }, [selectedEventId]);
-
   // ── User Fields ──────────────────────────────────────────────────────────
   const addUserField = useCallback(async ({ label, type, active, options }) => {
     const payload = {
@@ -145,6 +140,7 @@ export const EventDataProvider = ({ children }) => {
       endDate: formData.endDate,
       venue: formData.venue || "",
       organizer: formData.organizer || "",
+      eventType: formData.eventType || "",
       attendeeFields: formData.attendeeFieldSettings || [],
       categories: formData.categories || [],
     });
@@ -356,33 +352,29 @@ export const EventDataProvider = ({ children }) => {
     setAttendees((prev) => prev.map((a) => (a.id === id ? saved : a)));
   }, []);
 
-  const markPassesGenerated = useCallback(
-    async (eventId) => {
-      const updated = await Promise.all(
-        attendees
-          .filter((a) => a.eventId === eventId)
-          .map((a) => patchAttendee(a.id, { passGenerated: true })),
-      );
-      setAttendees((prev) =>
-        prev.map((a) => {
-          const u = updated.find((u) => u.id === a.id);
-          return u || a;
-        }),
-      );
-      const savedEvent = await patchEvent(eventId, { passStatus: "generated" });
-      setEvents((prev) => prev.map((e) => (e.id === eventId ? savedEvent : e)));
-      addLog({
-        eventId: String(eventId),
-        action: "Passes Downloaded",
-        entity: "pass",
-        entityId: String(eventId),
-        entityName: savedEvent.eventName,
-        oldData: null,
-        newData: { count: updated.length },
-      });
-    },
-    [attendees],
-  );
+  const markPassesGenerated = useCallback(async (eventId) => {
+    const eventAttendeeList = await fetchAttendees(eventId);
+    const updated = await Promise.all(
+      eventAttendeeList.map((a) => patchAttendee(a.id, { passGenerated: true })),
+    );
+    setAttendees((prev) =>
+      prev.map((a) => {
+        const u = updated.find((item) => item.id === a.id);
+        return u || a;
+      }),
+    );
+    const savedEvent = await patchEvent(eventId, { passStatus: "generated" });
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? savedEvent : e)));
+    addLog({
+      eventId: String(eventId),
+      action: "Passes Downloaded",
+      entity: "pass",
+      entityId: String(eventId),
+      entityName: savedEvent.eventName,
+      oldData: null,
+      newData: { count: updated.length },
+    });
+  }, []);
 
   // ── Legacy bulk-import (Bulk QR Codes page) ──────────────────────────────
   const [importedRows, setImportedRows] = useState([]);

@@ -101,6 +101,10 @@ export const setActiveConfig = async (req, res) => {
       { new: true }
     );
 
+    if (!config) {
+      return res.status(404).json({ error: "WhatsApp configuration not found for this vendor" });
+    }
+
     res.json({ success: true, config });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -118,7 +122,7 @@ export const fetchMetaTemplates = async (req, res) => {
 
     const { accessToken, wabaId } = config.meta;
 
-    const url = `https://graph.instagram.com/v18.0/${wabaId}/message_templates?access_token=${accessToken}`;
+    const url = `https://graph.facebook.com/v18.0/${wabaId}/message_templates?access_token=${accessToken}`;
 
     const response = await fetch(url);
     const text = await response.text();
@@ -166,6 +170,9 @@ export const saveWhatsAppTemplate = async (req, res) => {
       template = await WhatsAppTemplate.findByIdAndUpdate(templateId, templateData, {
         new: true,
       });
+      if (!template) {
+        return res.status(404).json({ error: "Template not found" });
+      }
     } else {
       template = new WhatsAppTemplate(templateData);
       await template.save();
@@ -235,7 +242,13 @@ export const submitTemplateToMeta = async (req, res) => {
 
     const components = [];
 
-    if (template.headerType !== "TEXT" && template.headerContent?.text) {
+    if (template.headerType === "TEXT" && template.headerContent?.text) {
+      components.push({
+        type: "HEADER",
+        format: "TEXT",
+        text: template.headerContent.text,
+      });
+    } else if (template.headerType !== "TEXT" && template.headerContent?.text) {
       components.push({
         type: "HEADER",
         format: template.headerType,
@@ -259,7 +272,14 @@ export const submitTemplateToMeta = async (req, res) => {
       components.push({
         type: "BUTTONS",
         buttons: template.buttons.map((btn) => ({
-          type: btn.actionType.toUpperCase(),
+          type:
+            btn.actionType === "CALL"
+              ? "PHONE_NUMBER"
+              : btn.actionType === "WEBSITE"
+                ? "URL"
+                : btn.actionType === "QUICK_REPLY"
+                  ? "QUICK_REPLY"
+                  : btn.actionType.toUpperCase(),
           text: btn.buttonText,
           phone_number: btn.actionType === "CALL" ? btn.actionValue : undefined,
           url: btn.actionType === "WEBSITE" ? btn.actionValue : undefined,
@@ -274,7 +294,7 @@ export const submitTemplateToMeta = async (req, res) => {
       components,
     };
 
-    const url = `https://graph.instagram.com/v18.0/${wabaId}/message_templates?access_token=${accessToken}`;
+    const url = `https://graph.facebook.com/v18.0/${wabaId}/message_templates?access_token=${accessToken}`;
 
     const response = await fetch(url, {
       method: "POST",
@@ -337,7 +357,7 @@ export const testMetaConnection = async (req, res) => {
       });
     }
 
-    const url = `https://graph.instagram.com/v18.0/${wabaId}?access_token=${accessToken}`;
+    const url = `https://graph.facebook.com/v18.0/${wabaId}?access_token=${accessToken}`;
     
     const response = await fetch(url);
     const text = await response.text();

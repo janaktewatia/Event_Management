@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchForm, fetchPublicEvent, publicRegister } from "../services/api";
+import { fetchForm, fetchFormBySlug, fetchPublicEvent, publicRegister } from "../services/api";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
@@ -56,12 +56,9 @@ const PublicRegistrationForm = () => {
           setFormData(init);
         } else if (formSlug) {
           try {
-            const formResponse = await fetch(`http://localhost:5000/api/forms/slug/${formSlug}`);
-            if (!formResponse.ok) throw new Error("Form not found");
-            const fetchedForm = await formResponse.json();
+            const fetchedForm = await fetchFormBySlug(formSlug);
             setForm(fetchedForm);
-            const eventResponse = await fetch(`http://localhost:5000/api/public/event/${fetchedForm.eventId}`);
-            const eventData = await eventResponse.json();
+            const eventData = await fetchPublicEvent(fetchedForm.eventId);
             setEvent(eventData);
             const init = {};
             (fetchedForm.fields || [])
@@ -138,8 +135,8 @@ const PublicRegistrationForm = () => {
   }, [eventId, formId, eventSlug, formSlug]);
 
   const enabledFields = event
-    ? formId
-      ? (form?.fields || []).filter((f) => f.enabled !== false)
+    ? form
+      ? (form.fields || []).filter((f) => f.enabled !== false)
       : (event.attendeeFields || []).filter((f) => f.enabled)
     : [];
 
@@ -147,8 +144,8 @@ const PublicRegistrationForm = () => {
     ? (event.categories || [])
         .filter((c) => c.enabled)
         .filter((category) =>
-          formId
-            ? (form?.selectedCategories || []).includes(
+          form
+            ? (form.selectedCategories || []).includes(
                 category.categoryId || category.id || category._id,
               )
             : true,
@@ -237,7 +234,8 @@ const PublicRegistrationForm = () => {
     setSubmitting(true);
     try {
       // Use eventId from params or from form (if using formSlug)
-      const targetEventId = eventId || form?.eventId;
+      const targetEventId =
+        eventId || form?.eventId || event?.id || event?._id;
       if (!targetEventId) {
         setSubmitError("Event ID is missing. Please try accessing the form again.");
         return;
@@ -262,7 +260,7 @@ const PublicRegistrationForm = () => {
           className="form-select"
           style={{
             borderRadius: 10,
-            borderColor: "#e2e8f0",
+            borderColor: "var(--border)",
             padding: "12px 16px",
           }}
           value={val}
@@ -285,7 +283,7 @@ const PublicRegistrationForm = () => {
           className="form-control"
           style={{
             borderRadius: 10,
-            borderColor: "#e2e8f0",
+            borderColor: "var(--border)",
             padding: "12px 16px",
           }}
           value={val}
@@ -316,7 +314,7 @@ const PublicRegistrationForm = () => {
           className="form-select"
           style={{
             borderRadius: 10,
-            borderColor: "#e2e8f0",
+            borderColor: "var(--border)",
             padding: "12px 16px",
           }}
           value={val}
@@ -359,7 +357,7 @@ const PublicRegistrationForm = () => {
           className="form-control"
           style={{
             borderRadius: 10,
-            borderColor: "#e2e8f0",
+            borderColor: "var(--border)",
             padding: "12px 16px",
           }}
           value={val}
@@ -389,7 +387,7 @@ const PublicRegistrationForm = () => {
         className="form-control"
         style={{
           borderRadius: 10,
-          borderColor: "#e2e8f0",
+          borderColor: "var(--border)",
           padding: "12px 16px",
         }}
         value={val}
@@ -411,7 +409,7 @@ const PublicRegistrationForm = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#f8fafc",
+          background: "var(--background)",
         }}
       >
         <div className="text-center">
@@ -432,7 +430,7 @@ const PublicRegistrationForm = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#f8fafc",
+          background: "var(--background)",
         }}
       >
         <div className="container" style={{ maxWidth: 560 }}>
@@ -465,7 +463,7 @@ const PublicRegistrationForm = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#f8fafc",
+          background: "var(--background)",
         }}
       >
         <div className="container" style={{ maxWidth: 560 }}>
@@ -493,7 +491,7 @@ const PublicRegistrationForm = () => {
                 className="btn btn-lg"
                 style={{
                   background:
-                    "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+                    "linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)",
                   color: "white",
                   border: "none",
                   borderRadius: 10,
@@ -527,7 +525,7 @@ const PublicRegistrationForm = () => {
     const titleElement = form.elements.find((e) => e.label === "Form Title");
 
     return (
-      <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
+      <div style={{ minHeight: "100vh", background: "var(--background)" }}>
         {/* Background */}
         {bgElement?.imageUrl && (
           <div
@@ -619,7 +617,7 @@ const PublicRegistrationForm = () => {
                     className="form-select"
                     style={{
                       borderRadius: 10,
-                      borderColor: "#e2e8f0",
+                      borderColor: "var(--border)",
                       padding: "12px 16px",
                     }}
                     value={formData.category || ""}
@@ -669,7 +667,7 @@ const PublicRegistrationForm = () => {
                 className="btn btn-lg w-100"
                 style={{
                   background:
-                    "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+                    "linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)",
                   color: "white",
                   border: "none",
                   borderRadius: 10,
@@ -698,12 +696,12 @@ const PublicRegistrationForm = () => {
                 textAlign: "center",
                 marginTop: "2rem",
                 paddingTop: "1.5rem",
-                borderTop: "1px solid #e2e8f0",
+                borderTop: "1px solid var(--border)",
                 fontSize: "12px",
-                color: "#94a3b8",
+                color: "var(--muted-foreground)",
               }}
             >
-              <i className="bi bi-shield-check me-1" style={{ color: "#7c3aed" }} />
+              <i className="bi bi-shield-check me-1" style={{ color: "var(--primary)" }} />
               Powered by Event Management
             </div>
           </div>
@@ -714,11 +712,11 @@ const PublicRegistrationForm = () => {
 
   // Fallback to default design for events without custom form
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
+    <div style={{ minHeight: "100vh", background: "var(--background)" }}>
       {/* Hero Section */}
       <div
         style={{
-          background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+          background: "linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)",
           padding: "3rem 1.5rem",
           color: "white",
           textAlign: "center",
@@ -798,7 +796,7 @@ const PublicRegistrationForm = () => {
                     className="form-select"
                     style={{
                       borderRadius: 10,
-                      borderColor: "#e2e8f0",
+                      borderColor: "var(--border)",
                       padding: "12px 16px",
                     }}
                     value={formData.category || ""}
@@ -848,7 +846,7 @@ const PublicRegistrationForm = () => {
                 className="btn btn-lg w-100"
                 style={{
                   background:
-                    "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+                    "linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)",
                   color: "white",
                   border: "none",
                   borderRadius: 10,
@@ -876,9 +874,9 @@ const PublicRegistrationForm = () => {
         {/* Footer */}
         <div
           className="text-center mt-4"
-          style={{ fontSize: 12, color: "#94a3b8" }}
+          style={{ fontSize: 12, color: "var(--muted-foreground)" }}
         >
-          <i className="bi bi-shield-check me-1" style={{ color: "#a855f7" }} />
+          <i className="bi bi-shield-check me-1" style={{ color: "var(--primary)" }} />
           Powered by Event Management
         </div>
       </div>

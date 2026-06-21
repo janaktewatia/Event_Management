@@ -224,15 +224,19 @@ const CreateEventPage = () => {
       ),
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.eventName || !formData.startDate || !formData.endDate) {
       toast.error("Event Name, From Date, and To Date are required.");
       return;
     }
-    addEvent(formData);
-    toast.success('"' + formData.eventName + '" created.');
-    setFormData(createEmptyForm(userFields, categories));
-    navigate("/events");
+    try {
+      await addEvent(formData);
+      toast.success('"' + formData.eventName + '" created.');
+      setFormData(createEmptyForm(userFields, categories));
+      navigate("/events");
+    } catch (err) {
+      toast.error(err.message || "Failed to create event.");
+    }
   };
 
   const handleEditSave = (eventId) => {
@@ -543,7 +547,7 @@ const CreateEventPage = () => {
               <button
                 type="button"
                 className="btn btn-link btn-sm p-0"
-                style={{ fontSize: 12, color: "#6b7280" }}
+                style={{ fontSize: 12, color: "var(--muted-foreground)" }}
                 onClick={() => navigate(`/events/${editingId}/logs`)}
               >
                 <i className="bi bi-clock-history me-1" />
@@ -931,16 +935,16 @@ const getEventStatus = (event) => {
 const StatusBadge = ({ event }) => {
   const status = getEventStatus(event);
   const colorMap = {
-    Draft: "#f59e0b",
-    Active: "#198754",
-    Completed: "#6c757d",
+    Draft: "var(--warning)",
+    Active: "var(--success)",
+    Completed: "var(--muted-foreground)",
   };
   return (
     <span
       style={{
         fontSize: 12,
         fontWeight: 600,
-        color: colorMap[status] || "#6c757d",
+        color: colorMap[status] || "var(--muted-foreground)",
       }}
     >
       {status}
@@ -953,7 +957,7 @@ const StatusBadge = ({ event }) => {
 const PassStatusBadge = ({ event }) => {
   if (event.passStatus === "sent")
     return (
-      <span style={{ fontSize: 12, fontWeight: 600, color: "#198754" }}>
+      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--success)" }}>
         Sent
       </span>
     );
@@ -961,7 +965,7 @@ const PassStatusBadge = ({ event }) => {
     return (
       <i
         className="bi bi-check-lg"
-        style={{ color: "#198754", fontSize: 16 }}
+        style={{ color: "var(--success)", fontSize: 16 }}
       />
     );
   return <span className="text-muted">—</span>;
@@ -970,14 +974,14 @@ const PassStatusBadge = ({ event }) => {
 // ── EventLogsModal ────────────────────────────────────────────────────────────
 
 const ACTION_META = {
-  "Event Created": { icon: "bi-plus-circle", color: "#198754" },
-  "Event Updated": { icon: "bi-pencil", color: "#0d6efd" },
-  "Event Deleted": { icon: "bi-trash", color: "#dc3545" },
-  "Attendees Imported": { icon: "bi-cloud-upload", color: "#0d6efd" },
-  "Attendee Updated": { icon: "bi-person-check", color: "#fd7e14" },
-  "Attendee Deleted": { icon: "bi-person-x", color: "#dc3545" },
-  "Pass Design Saved": { icon: "bi-qr-code", color: "#6f42c1" },
-  "Passes Downloaded": { icon: "bi-download", color: "#198754" },
+  "Event Created": { icon: "bi-plus-circle", color: "var(--success)" },
+  "Event Updated": { icon: "bi-pencil", color: "var(--info)" },
+  "Event Deleted": { icon: "bi-trash", color: "var(--destructive)" },
+  "Attendees Imported": { icon: "bi-cloud-upload", color: "var(--info)" },
+  "Attendee Updated": { icon: "bi-person-check", color: "var(--warning)" },
+  "Attendee Deleted": { icon: "bi-person-x", color: "var(--destructive)" },
+  "Pass Design Saved": { icon: "bi-qr-code", color: "var(--primary)" },
+  "Passes Downloaded": { icon: "bi-download", color: "var(--success)" },
 };
 
 const fmtDate = (d) => {
@@ -996,7 +1000,7 @@ const renderDiff = (oldData, newData) => {
   if (!oldData && !newData) return null;
   if (!oldData && newData) {
     return (
-      <div className="mt-1" style={{ fontSize: 11, color: "#374151" }}>
+      <div className="mt-1" style={{ fontSize: 11, color: "var(--foreground)" }}>
         {Object.entries(newData).map(([k, v]) => (
           <div key={k}>
             <span className="text-muted">{k}:</span>{" "}
@@ -1008,7 +1012,7 @@ const renderDiff = (oldData, newData) => {
   }
   if (oldData && !newData) {
     return (
-      <div className="mt-1" style={{ fontSize: 11, color: "#dc3545" }}>
+      <div className="mt-1" style={{ fontSize: 11, color: "var(--destructive)" }}>
         {Object.entries(oldData).map(([k, v]) => (
           <div key={k}>
             <span className="text-muted">{k}:</span> {String(v ?? "—")}
@@ -1028,14 +1032,14 @@ const renderDiff = (oldData, newData) => {
           <span className="text-muted" style={{ minWidth: 80 }}>
             {k}:
           </span>
-          <span style={{ color: "#dc3545", textDecoration: "line-through" }}>
+          <span style={{ color: "var(--destructive)", textDecoration: "line-through" }}>
             {String(oldData?.[k] ?? "—")}
           </span>
           <i
             className="bi bi-arrow-right"
-            style={{ fontSize: 9, color: "#94a3b8" }}
+            style={{ fontSize: 9, color: "var(--muted-foreground)" }}
           />
-          <span style={{ color: "#198754" }}>
+          <span style={{ color: "var(--success)" }}>
             {String(newData?.[k] ?? "—")}
           </span>
         </div>
@@ -1095,13 +1099,13 @@ const EventLogsModal = ({ event, onClose }) => {
                   top: 0,
                   bottom: 0,
                   width: 2,
-                  background: "#e2e8f0",
+                  background: "var(--border)",
                 }}
               />
               {logs.map((log) => {
                 const meta = ACTION_META[log.action] || {
                   icon: "bi-circle",
-                  color: "#94a3b8",
+                  color: "var(--muted-foreground)",
                 };
                 return (
                   <div
@@ -1117,7 +1121,7 @@ const EventLogsModal = ({ event, onClose }) => {
                         width: 20,
                         height: 20,
                         borderRadius: "50%",
-                        background: "#fff",
+                        background: "var(--card)",
                         border: `2px solid ${meta.color}`,
                         display: "flex",
                         alignItems: "center",
@@ -1142,14 +1146,14 @@ const EventLogsModal = ({ event, onClose }) => {
                       <span
                         style={{
                           fontSize: 10,
-                          color: "#94a3b8",
+                          color: "var(--muted-foreground)",
                           whiteSpace: "nowrap",
                         }}
                       >
                         {fmtDate(log.changedAt)}
                       </span>
                     </div>
-                    <div style={{ fontSize: 11, color: "#6b7280" }}>
+                    <div style={{ fontSize: 11, color: "var(--muted-foreground)" }}>
                       {log.entityName && <span>{log.entityName}</span>}
                       <span className="ms-2 text-muted">
                         by {log.changedBy}
@@ -1248,8 +1252,8 @@ const ActionDropdown = ({
             top: pos.top,
             right: pos.right,
             zIndex: 9999,
-            background: "#fff",
-            border: "1px solid #e2e8f0",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
             borderRadius: 8,
             boxShadow: "0 8px 28px rgba(15,23,42,0.14)",
             minWidth: 148,
@@ -1271,7 +1275,7 @@ const ActionDropdown = ({
           {!isPast && (
             <React.Fragment>
               <div
-                style={{ borderTop: "1px solid #f1f5f9", margin: "4px 0" }}
+                style={{ borderTop: "1px solid var(--border)", margin: "4px 0" }}
               />
               <button
                 type="button"

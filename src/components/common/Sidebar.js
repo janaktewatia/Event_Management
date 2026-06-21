@@ -36,9 +36,25 @@ const Sidebar = ({ isMobileMenuOpen, onClose }) => {
           active ? "active" : ""
         }`}
         style={{
-          color: active ? "#A855F7" : "#172033",
+          color: active ? "var(--sidebar-primary)" : "var(--sidebar-foreground)",
+          background: active ? "var(--sidebar-primary)" : "transparent",
           fontWeight: active ? 600 : 400,
           textDecoration: "none",
+          borderRadius: "var(--radius)",
+          padding: "0.5rem 0.75rem",
+          transition: "all 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          if (!active) {
+            e.currentTarget.style.background = "var(--sidebar-accent)";
+            e.currentTarget.style.color = "var(--sidebar-accent-foreground)";
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!active) {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "var(--sidebar-foreground)";
+          }
         }}
       >
         <span style={{ fontSize: 16, display: "flex", alignItems: "center" }}>
@@ -51,7 +67,8 @@ const Sidebar = ({ isMobileMenuOpen, onClose }) => {
 
   return (
     <aside
-      className={`sidebar d-flex flex-column p-3 bg-white ${isMobileMenuOpen ? "show" : ""}`}
+      className={`sidebar d-flex flex-column p-3 ${isMobileMenuOpen ? "show" : ""}`}
+      style={{ background: "var(--sidebar)", color: "var(--sidebar-foreground)" }}
       onPointerDown={(e) => {
         // eslint-disable-next-line no-console
         console.debug("Sidebar pointerDown", e.target && e.target.tagName);
@@ -62,11 +79,11 @@ const Sidebar = ({ isMobileMenuOpen, onClose }) => {
         <div>
           <h4
             className="fw-bold mb-1"
-            style={{ color: "#A855F7", fontSize: 16 }}
+            style={{ color: "var(--sidebar-primary)", fontSize: 16 }}
           >
             Event Management
           </h4>
-          <p className="small text-muted mb-0" style={{ fontSize: 11 }}>
+          <p className="small mb-0" style={{ fontSize: 11, color: "var(--sidebar-foreground)", opacity: 0.7 }}>
             Scan · Register · Track
           </p>
         </div>
@@ -112,7 +129,7 @@ const Sidebar = ({ isMobileMenuOpen, onClose }) => {
         {(can("events.view") || can("reports.dashboard")) &&
           can("scan.access") && (
             <div
-              style={{ height: 1, background: "#f1f5f9", margin: "0.6rem 0" }}
+              style={{ height: 1, background: "var(--sidebar-border)", margin: "0.6rem 0" }}
             />
           )}
 
@@ -133,7 +150,7 @@ const Sidebar = ({ isMobileMenuOpen, onClose }) => {
 
         {can("setup.access") && (
           <div
-            style={{ height: 1, background: "#f1f5f9", margin: "0.6rem 0" }}
+            style={{ height: 1, background: "var(--sidebar-border)", margin: "0.6rem 0" }}
           />
         )}
 
@@ -169,25 +186,25 @@ const Sidebar = ({ isMobileMenuOpen, onClose }) => {
 
       {/* Profile & Logout */}
       {user && (
-        <div className="pt-3 border-top mt-auto">
+        <div className="pt-3 mt-auto" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
           <div className="d-flex align-items-center gap-2 mb-2">
             <div
               className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
-              style={{ width: 34, height: 34, background: "#f3e8ff" }}
+              style={{ width: 34, height: 34, background: "var(--sidebar-primary)" }}
             >
               <i
                 className="bi bi-person"
-                style={{ fontSize: 14, color: "#7c3aed" }}
+                style={{ fontSize: 14, color: "var(--sidebar-primary-foreground)" }}
               />
             </div>
             <div className="flex-grow-1 min-w-0">
               <p
-                className="small fw-600 text-dark mb-0"
-                style={{ fontSize: 12 }}
+                className="small fw-600 mb-0"
+                style={{ fontSize: 12, color: "var(--sidebar-foreground)" }}
               >
                 {user.name || "User"}
               </p>
-              <p className="small text-muted mb-0" style={{ fontSize: 11 }}>
+              <p className="small mb-0" style={{ fontSize: 11, color: "var(--sidebar-foreground)", opacity: 0.7 }}>
                 {user.userTypeName || ""}
               </p>
             </div>
@@ -196,14 +213,21 @@ const Sidebar = ({ isMobileMenuOpen, onClose }) => {
             type="button"
             className="btn btn-sm w-100"
             style={{
-              background: "#f1f5f9",
-              color: "#64748b",
-              border: "none",
-              borderRadius: 8,
+              background: "var(--sidebar-accent)",
+              color: "var(--sidebar-accent-foreground)",
+              border: "1px solid var(--sidebar-border)",
+              borderRadius: "var(--radius)",
               fontSize: 12,
               fontWeight: 500,
+              transition: "all 0.2s",
             }}
             onClick={logout}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--sidebar-primary)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--sidebar-accent)";
+            }}
           >
             <i className="bi bi-box-arrow-right me-2" />
             Logout

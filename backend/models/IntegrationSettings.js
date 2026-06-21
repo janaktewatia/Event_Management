@@ -48,6 +48,7 @@ const integrationSettingsSchema = new mongoose.Schema(
       twilioAuthToken: { type: String, default: "" },
       twilioWhatsappNumber: { type: String, default: "" },
       metaBusinessAccountId: { type: String, default: "" },
+      metaPhoneId: { type: String, default: "" },
       metaAccessToken: { type: String, default: "" },
     },
     createdAt: { type: Date, default: Date.now },

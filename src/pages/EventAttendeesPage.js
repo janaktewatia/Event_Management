@@ -51,9 +51,14 @@ const validatePhone = (v) => {
 // ── PhoneInput component ──────────────────────────────────────────────────────
 
 const PhoneInput = ({ value, onChange, isInvalid }) => {
-  const parsed = useMemo(() => parsePhoneValue(value), []); // eslint-disable-line
+  const parsed = useMemo(() => parsePhoneValue(value), [value]);
   const [code, setCode] = useState(parsed.code);
   const [number, setNumber] = useState(parsed.number);
+
+  useEffect(() => {
+    setCode(parsed.code);
+    setNumber(parsed.number);
+  }, [parsed.code, parsed.number]);
 
   const maxDigits = COUNTRY_CODES.find((c) => c.code === code)?.digits || 10;
 
@@ -136,9 +141,9 @@ const getPhoneCol = (row) => {
 };
 
 const DEFAULT_CATEGORIES = [
-  { name: "VIP", color: "#F59E0B" },
-  { name: "General", color: "#3B82F6" },
-  { name: "Staff", color: "#10B981" },
+  { name: "VIP", color: "var(--warning)" },
+  { name: "General", color: "var(--info)" },
+  { name: "Staff", color: "var(--success)" },
   { name: "Speaker", color: "#8B5CF6" },
   { name: "Press", color: "#EF4444" },
 ];
@@ -604,6 +609,7 @@ const CommModal = ({ attendee, onClose, eventId, allAttendees = [] }) => {
     return (
       <SendCommunicationModal
         show={true}
+        initialType={sendModalType}
         onHide={() => {
           setSendModalType(null);
         }}
@@ -790,7 +796,7 @@ const DEFAULT_PASS_LAYOUT = {
     fontWeight: "700",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#ffffff",
+    color: "var(--card)",
   },
   headerSub: {
     x: 18,
@@ -836,7 +842,7 @@ const DEFAULT_PASS_LAYOUT = {
     fontWeight: "400",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#475569",
+    color: "var(--foreground)",
   },
   phone: {
     x: 18,
@@ -847,7 +853,7 @@ const DEFAULT_PASS_LAYOUT = {
     fontWeight: "400",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#475569",
+    color: "var(--foreground)",
   },
   email: {
     x: 18,
@@ -858,7 +864,7 @@ const DEFAULT_PASS_LAYOUT = {
     fontWeight: "400",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#475569",
+    color: "var(--foreground)",
   },
   qr: { x: 135, y: 460, w: 150, h: 150 },
 };
@@ -875,7 +881,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
   const categoryDesign = catDesigns[attendee.category] || catDesigns["Default"];
 
   // Use new format if available
-  const canvas = categoryDesign?.canvas || fullDesign.canvas || { width: 420, height: 640, background: "#ffffff" };
+  const canvas = categoryDesign?.canvas || fullDesign.canvas || { width: 420, height: 640, background: "var(--card)" };
   const elements = categoryDesign?.elements || fullDesign.elements || [];
 
   // For backward compatibility with old format
@@ -887,10 +893,10 @@ const PassViewModal = ({ attendee, event, onClose }) => {
   const previewH = Math.round(passH * S);
 
   // Old format fallback values
-  const primaryColor = design.primaryColor || "#A855F7";
+  const primaryColor = design.primaryColor || "var(--primary)";
   const headerColor = design.headerColor || primaryColor;
   const qrColor = design.qrColor || "#000000";
-  const bgColor = design.bgColor || canvas.background || "#ffffff";
+  const bgColor = design.bgColor || canvas.background || "var(--card)";
   const bgImage = design.bgImage || null;
   const bgOpacity = design.bgOpacity ?? 60;
   const bgFit = design.bgFit || "cover";
@@ -916,7 +922,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
       type: "canvas",
       data: attendee.passId || "PASS",
       dotsOptions: { color: qrColor, type: "square" },
-      backgroundOptions: { color: "#ffffff" },
+      backgroundOptions: { color: "var(--card)" },
       qrOptions: { errorCorrectionLevel: "M" },
     });
     qr.getRawData("png")
@@ -1109,7 +1115,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                     left: (layout.headerTitle?.x || 18) * S,
                     top: (layout.headerTitle?.y || 20) * S,
                     zIndex: 3,
-                    ...elStyle(layout.headerTitle, 19, "700", "#ffffff"),
+                    ...elStyle(layout.headerTitle, 19, "700", "var(--card)"),
                     overflow: "hidden",
                     maxWidth: (passW - (layout.headerTitle?.x || 18)) * S,
                   }}
@@ -1179,7 +1185,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                 width: layout.categoryBadge.w * S,
                 height: layout.categoryBadge.h * S,
                 background: catColor,
-                color: "#fff",
+                color: "var(--card)",
                 borderRadius: (layout.categoryBadge.h / 2) * S,
                 fontSize: (layout.categoryBadge.fontSize || 11) * S,
                 fontWeight: 700,
@@ -1216,7 +1222,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                 zIndex: 3,
                 left: layout.organization.x * S,
                 top: layout.organization.y * S,
-                ...elStyle(layout.organization, 13, "400", "#475569"),
+                ...elStyle(layout.organization, 13, "400", "var(--foreground)"),
               }}
             >
               ⊞ {attendee.organization}
@@ -1229,7 +1235,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                 zIndex: 3,
                 left: layout.phone.x * S,
                 top: layout.phone.y * S,
-                ...elStyle(layout.phone, 13, "400", "#475569"),
+                ...elStyle(layout.phone, 13, "400", "var(--foreground)"),
               }}
             >
               ◉ {attendee.phone}
@@ -1242,7 +1248,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                 zIndex: 3,
                 left: layout.email.x * S,
                 top: layout.email.y * S,
-                ...elStyle(layout.email, 13, "400", "#475569"),
+                ...elStyle(layout.email, 13, "400", "var(--foreground)"),
               }}
             >
               ✉ {attendee.email}
@@ -1283,7 +1289,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                     zIndex: 3,
                     left: el.x * S,
                     top: el.y * S,
-                    ...elStyle(el, 14, "400", "#374151"),
+                    ...elStyle(el, 14, "400", "var(--foreground)"),
                     opacity: el.opacity ?? 1,
                   }}
                 >
@@ -1302,7 +1308,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                   left: 18 * S,
                   right: 18 * S,
                   height: 1,
-                  background: "#e2e8f0",
+                  background: "var(--border)",
                   zIndex: 1,
                 }}
               />
@@ -1314,7 +1320,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                   top: layout.qr.y * S,
                   width: layout.qr.w * S,
                   height: layout.qr.h * S,
-                  background: "#f1f5f9",
+                  background: "var(--border)",
                   borderRadius: 8 * S,
                   overflow: "hidden",
                   display: "flex",
@@ -1329,7 +1335,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
                     style={{ width: "100%", height: "100%", objectFit: "contain" }}
                   />
                 ) : (
-                  <span style={{ fontSize: 8 * S, color: "#94a3b8" }}>
+                  <span style={{ fontSize: 8 * S, color: "var(--muted-foreground)" }}>
                     Generating…
                   </span>
                 )}
@@ -1346,7 +1352,7 @@ const PassViewModal = ({ attendee, event, onClose }) => {
               right: 0,
               textAlign: "center",
               fontSize: 8 * S,
-              color: "#94a3b8",
+              color: "var(--muted-foreground)",
               fontFamily: "monospace",
               zIndex: 1,
             }}
@@ -1448,7 +1454,7 @@ const EventAttendeesPage = () => {
   const getCatColor = (name) => {
     const evtCat = eventCats.find((c) => c.label?.toLowerCase() === name?.toLowerCase());
     if (evtCat?.color) return evtCat.color;
-    return DEFAULT_CATEGORIES.find((c) => c.name.toLowerCase() === name?.toLowerCase())?.color || "#94a3b8";
+    return DEFAULT_CATEGORIES.find((c) => c.name.toLowerCase() === name?.toLowerCase())?.color || "var(--muted-foreground)";
   };
 
   const filtered = useMemo(() => {
@@ -1470,11 +1476,15 @@ const EventAttendeesPage = () => {
     });
   }, [eventAttendees, search, filterCat, filterPass, selectedEvent]);
 
-  const handleImported = (list) => {
+  const handleImported = async (list) => {
     if (!selectedEvent?.id) return;
-    addAttendees(selectedEvent.id, list);
-    toast.success(`${list.length} registrants imported.`);
-    setShowImport(false);
+    try {
+      await addAttendees(selectedEvent.id, list);
+      toast.success(`${list.length} registrants imported.`);
+      setShowImport(false);
+    } catch (err) {
+      toast.error(err.message || "Failed to import registrants.");
+    }
   };
 
   const handleDelete = (a) => {
@@ -1483,16 +1493,24 @@ const EventAttendeesPage = () => {
     toast.success("Registrant removed.");
   };
 
-  const handleEditSave = (data) => {
-    updateAttendee(editTarget.id, data, editTarget);
-    toast.success("Registrant updated.");
-    setEditTarget(null);
+  const handleEditSave = async (data) => {
+    try {
+      await updateAttendee(editTarget.id, data, editTarget);
+      toast.success("Registrant updated.");
+      setEditTarget(null);
+    } catch (err) {
+      toast.error(err.message || "Failed to update registrant.");
+    }
   };
 
-  const handleAddSave = (data) => {
-    addSingleAttendee(selectedEvent.id, data);
-    toast.success("Registrant added.");
-    setShowAddModal(false);
+  const handleAddSave = async (data) => {
+    try {
+      await addSingleAttendee(selectedEvent.id, data);
+      toast.success("Registrant added.");
+      setShowAddModal(false);
+    } catch (err) {
+      toast.error(err.message || "Failed to add registrant.");
+    }
   };
 
   const passGeneratedCount = eventAttendees.filter(
@@ -1622,7 +1640,7 @@ const EventAttendeesPage = () => {
             >
               <i className="bi bi-qr-code-scan me-1" /> Generate Pass
               {selectedEvent?.passDesignSaved && (
-                <i className="bi bi-check-circle-fill ms-1" style={{ color: "#198754", fontSize: 12 }} />
+                <i className="bi bi-check-circle-fill ms-1" style={{ color: "var(--success)", fontSize: 12 }} />
               )}
             </button>
             <button
@@ -1704,7 +1722,7 @@ const EventAttendeesPage = () => {
                           {(selectedEvent?.passDesignSaved || a.passGenerated) ? (
                             <i
                               className="bi bi-eyeglasses"
-                              style={{ cursor: "pointer", fontSize: 16, color: a.passGenerated ? "#198754" : "#343a40" }}
+                              style={{ cursor: "pointer", fontSize: 16, color: a.passGenerated ? "var(--success)" : "#343a40" }}
                               title="Click to preview pass"
                               onClick={() => setPassPreviewTarget(a)}
                             />
@@ -1731,7 +1749,7 @@ const EventAttendeesPage = () => {
                                 <i
                                   className="bi bi-trash"
                                   title="Delete"
-                                  style={{ cursor: "pointer", fontSize: 15, color: "#dc3545" }}
+                                  style={{ cursor: "pointer", fontSize: 15, color: "var(--destructive)" }}
                                   onClick={() => handleDelete(a)}
                                 />
                               </>
@@ -1774,7 +1792,7 @@ const EventAttendeesPage = () => {
                         <i
                           className="bi bi-eyeglasses"
                           title="Click to preview pass"
-                          style={{ fontSize: 16, cursor: "pointer", color: a.passGenerated ? "#198754" : "#343a40" }}
+                          style={{ fontSize: 16, cursor: "pointer", color: a.passGenerated ? "var(--success)" : "#343a40" }}
                           onClick={() => setPassPreviewTarget(a)}
                         />
                       )}
@@ -1783,7 +1801,7 @@ const EventAttendeesPage = () => {
                           className="badge"
                           style={{
                             background: getCatColor(a.category),
-                            color: "#fff",
+                            color: "var(--card)",
                             fontSize: 10,
                           }}
                         >

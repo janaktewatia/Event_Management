@@ -4,14 +4,14 @@ import { useEventData } from "../context/EventDataContext";
 import { fetchEventLogs } from "../services/api";
 
 const ACTION_META = {
-  "Event Created":      { icon: "bi-plus-circle",   color: "#198754" },
-  "Event Updated":      { icon: "bi-pencil",         color: "#0d6efd" },
-  "Event Deleted":      { icon: "bi-trash",          color: "#dc3545" },
-  "Attendees Imported": { icon: "bi-cloud-upload",   color: "#0d6efd" },
-  "Attendee Updated":   { icon: "bi-person-check",   color: "#fd7e14" },
-  "Attendee Deleted":   { icon: "bi-person-x",       color: "#dc3545" },
-  "Pass Design Saved":  { icon: "bi-qr-code",        color: "#6f42c1" },
-  "Passes Downloaded":  { icon: "bi-download",       color: "#198754" },
+  "Event Created":      { icon: "bi-plus-circle",   color: "var(--success)" },
+  "Event Updated":      { icon: "bi-pencil",         color: "var(--info)" },
+  "Event Deleted":      { icon: "bi-trash",          color: "var(--destructive)" },
+  "Attendees Imported": { icon: "bi-cloud-upload",   color: "var(--info)" },
+  "Attendee Updated":   { icon: "bi-person-check",   color: "var(--warning)" },
+  "Attendee Deleted":   { icon: "bi-person-x",       color: "var(--destructive)" },
+  "Pass Design Saved":  { icon: "bi-qr-code",        color: "var(--primary)" },
+  "Passes Downloaded":  { icon: "bi-download",       color: "var(--success)" },
 };
 
 const fmtDate = (d) => {
@@ -41,7 +41,7 @@ const renderValue = (value) => {
         return (
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 4 }}>
             <thead>
-              <tr style={{ fontSize: 10, color: "#9ca3af", textTransform: "uppercase" }}>
+              <tr style={{ fontSize: 10, color: "var(--muted-foreground)", textTransform: "uppercase" }}>
                 <th style={{ fontWeight: 600, paddingBottom: 4, paddingRight: 12 }}>Field</th>
                 <th style={{ fontWeight: 600, paddingBottom: 4, paddingRight: 12 }}>Type</th>
                 <th style={{ fontWeight: 600, paddingBottom: 4, paddingRight: 12 }}>Used</th>
@@ -52,16 +52,16 @@ const renderValue = (value) => {
               {value.map((f, i) => (
                 <tr key={i} style={{ fontSize: 12 }}>
                   <td style={{ paddingRight: 12, paddingBottom: 2, fontWeight: 600 }}>{f.label || f.fieldId}</td>
-                  <td style={{ paddingRight: 12, paddingBottom: 2, color: "#6b7280" }}>{f.type || "—"}</td>
+                  <td style={{ paddingRight: 12, paddingBottom: 2, color: "var(--muted-foreground)" }}>{f.type || "—"}</td>
                   <td style={{ paddingRight: 12, paddingBottom: 2 }}>
                     {f.enabled !== false
                       ? <span style={{ color: "#16a34a", fontWeight: 600 }}>Yes</span>
-                      : <span style={{ color: "#9ca3af" }}>No</span>}
+                      : <span style={{ color: "var(--muted-foreground)" }}>No</span>}
                   </td>
                   <td style={{ paddingBottom: 2 }}>
                     {f.required
                       ? <span style={{ color: "#dc2626", fontWeight: 600 }}>Yes</span>
-                      : <span style={{ color: "#9ca3af" }}>No</span>}
+                      : <span style={{ color: "var(--muted-foreground)" }}>No</span>}
                   </td>
                 </tr>
               ))}
@@ -75,15 +75,15 @@ const renderValue = (value) => {
         value[0]?.label !== undefined && value[0]?.color !== undefined;
       if (isCats) {
         const enabled = value.filter((c) => c.enabled !== false);
-        if (enabled.length === 0) return <span style={{ color: "#9ca3af" }}>None selected</span>;
+        if (enabled.length === 0) return <span style={{ color: "var(--muted-foreground)" }}>None selected</span>;
         return (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
             {enabled.map((c, i) => (
               <span
                 key={i}
                 style={{
-                  background: c.color || "#6b7280",
-                  color: "#fff",
+                  background: c.color || "var(--muted-foreground)",
+                  color: "var(--card)",
                   borderRadius: 4,
                   padding: "1px 8px",
                   fontSize: 11,
@@ -98,7 +98,7 @@ const renderValue = (value) => {
       }
 
       // Generic array of objects — show count
-      return <span style={{ color: "#6b7280" }}>{value.length} item{value.length !== 1 ? "s" : ""}</span>;
+      return <span style={{ color: "var(--muted-foreground)" }}>{value.length} item{value.length !== 1 ? "s" : ""}</span>;
     }
 
     return value.join(", ");
@@ -132,7 +132,7 @@ const RecordBlock = ({ data, type }) => {
     <div
       style={{
         background: isOld ? "#fff5f5" : "#f0fdf4",
-        border: `1px solid ${isOld ? "#fecaca" : "#bbf7d0"}`,
+        border: `1px solid ${isOld ? "var(--destructive)" : "#bbf7d0"}`,
         borderRadius: 8,
         padding: "10px 14px",
         marginTop: 8,
@@ -153,7 +153,7 @@ const RecordBlock = ({ data, type }) => {
       </div>
       {Object.entries(data).map(([k, v]) => (
         <div key={k} style={{ marginBottom: 6 }}>
-          <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 600 }}>
+          <span style={{ fontSize: 11, color: "var(--muted-foreground)", fontWeight: 600 }}>
             {LABEL_MAP[k] || k}:
           </span>
           <div style={{ fontSize: 12, color: isOld ? "#dc2626" : "#16a34a", marginTop: 2 }}>
@@ -211,7 +211,7 @@ const ActivityLogPage = () => {
             {!loading && (
               <span
                 className="badge border"
-                style={{ background: "#f8fafc", color: "#64748b", fontSize: 12 }}
+                style={{ background: "var(--background)", color: "var(--muted-foreground)", fontSize: 12 }}
               >
                 {logs.length} {logs.length === 1 ? "entry" : "entries"}
               </span>
@@ -239,14 +239,14 @@ const ActivityLogPage = () => {
                   top: 0,
                   bottom: 0,
                   width: 2,
-                  background: "#e2e8f0",
+                  background: "var(--border)",
                 }}
               />
 
               {logs.map((log) => {
                 const meta = ACTION_META[log.action] || {
                   icon: "bi-circle",
-                  color: "#94a3b8",
+                  color: "var(--muted-foreground)",
                 };
                 const hasDiff = log.oldData || log.newData;
 
@@ -261,7 +261,7 @@ const ActivityLogPage = () => {
                         width: 26,
                         height: 26,
                         borderRadius: "50%",
-                        background: "#fff",
+                        background: "var(--card)",
                         border: `2px solid ${meta.color}`,
                         display: "flex",
                         alignItems: "center",
@@ -278,8 +278,8 @@ const ActivityLogPage = () => {
                     {/* Card */}
                     <div
                       style={{
-                        background: "#f8fafc",
-                        border: "1px solid #e2e8f0",
+                        background: "var(--background)",
+                        border: "1px solid var(--border)",
                         borderRadius: 10,
                         padding: "12px 16px",
                       }}
@@ -291,13 +291,13 @@ const ActivityLogPage = () => {
                         >
                           {log.action}
                         </span>
-                        <span style={{ fontSize: 11, color: "#94a3b8", whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: 11, color: "var(--muted-foreground)", whiteSpace: "nowrap" }}>
                           {fmtDate(log.changedAt)}
                         </span>
                       </div>
 
                       {/* Entity + who */}
-                      <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
+                      <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 4 }}>
                         {log.entityName && (
                           <span className="fw-semibold text-dark me-1">
                             {log.entityName}
@@ -305,7 +305,7 @@ const ActivityLogPage = () => {
                         )}
                         <span>
                           Modified by{" "}
-                          <strong style={{ color: "#374151" }}>
+                          <strong style={{ color: "var(--foreground)" }}>
                             {log.changedBy || "Admin"}
                           </strong>
                         </span>

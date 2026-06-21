@@ -100,6 +100,10 @@ const integrationSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    metaPhoneId: {
+      type: String,
+      default: "",
+    },
     metaAccessToken: {
       type: String,
       default: "",

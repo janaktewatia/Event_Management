@@ -8,7 +8,11 @@ import {
 } from "react-icons/fi";
 import { useForm } from "../../context/FormContext";
 import { useEventData } from "../../context/EventDataContext";
-import { generateProfessionalFormDesign, generateModernFormDesign, generateMinimalFormDesign } from "../../utils/generateFormDesigns";
+import {
+  generateProfessionalFormDesign,
+  generateModernFormDesign,
+  generateMinimalFormDesign,
+} from "../../utils/generateFormDesigns";
 
 const DYNAMIC_FIELDS = [
   { key: "{{name}}", label: "Attendee Name" },
@@ -1456,23 +1460,33 @@ const PropertiesPanel = ({
               <option value="">— Select a field —</option>
               {(() => {
                 // Get all enabled fields
-                const allFields = (form?.fields || []).filter((f) => f.enabled === true);
+                const allFields = (form?.fields || []).filter(
+                  (f) => f.enabled === true,
+                );
 
                 // Current selected field
-                const currentField = allFields.find((f) => f.fieldId === el.fieldId);
+                const currentField = allFields.find(
+                  (f) => f.fieldId === el.fieldId,
+                );
 
                 // Fields used by selected elements
                 const usedFieldIds = new Set(
                   selectedElements
                     ?.filter((e) => e.fieldId)
-                    .map((e) => e.fieldId) || []
+                    .map((e) => e.fieldId) || [],
                 );
 
                 // Group: Currently selected fields (for this element + others)
-                const selectedFieldsList = allFields.filter((f) => usedFieldIds.has(f.fieldId) || f.fieldId === el.fieldId);
+                const selectedFieldsList = allFields.filter(
+                  (f) =>
+                    usedFieldIds.has(f.fieldId) || f.fieldId === el.fieldId,
+                );
 
                 // Other fields
-                const otherFields = allFields.filter((f) => !usedFieldIds.has(f.fieldId) && f.fieldId !== el.fieldId);
+                const otherFields = allFields.filter(
+                  (f) =>
+                    !usedFieldIds.has(f.fieldId) && f.fieldId !== el.fieldId,
+                );
 
                 return (
                   <>
@@ -1483,9 +1497,10 @@ const PropertiesPanel = ({
                       </option>
                     ))}
                     {/* Separator */}
-                    {selectedFieldsList.length > 0 && otherFields.length > 0 && (
-                      <option disabled>─────────────────</option>
-                    )}
+                    {selectedFieldsList.length > 0 &&
+                      otherFields.length > 0 && (
+                        <option disabled>─────────────────</option>
+                      )}
                     {/* Show other available fields */}
                     {otherFields.map((field) => (
                       <option key={field.fieldId} value={field.fieldId}>
@@ -1944,7 +1959,8 @@ const generateDefaultElements = (form) => {
     w: 600,
     h: 1000,
     label: "Background Image",
-    imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=1000&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=1000&fit=crop",
     objectFit: "cover",
     opacity: 0.25,
     zIndex: zIndex++,
@@ -2087,7 +2103,7 @@ const generateDefaultElements = (form) => {
       w: 230,
       h: 18,
       label: `Label: ${field.label}`,
-      content: `${field.label}${field.required ? ' *' : ''}`,
+      content: `${field.label}${field.required ? " *" : ""}`,
       fontSize: 13,
       fontWeight: "600",
       color: "#333333",
@@ -2188,13 +2204,16 @@ const FormEditor = ({ formId, onBack }) => {
 
   // Get existing elements or generate default design
   const existingElements = getFormElements(formId);
-  const initialElements = existingElements && existingElements.length > 0
-    ? existingElements
-    : generateDefaultElements(form);
+  const initialElements =
+    existingElements && existingElements.length > 0
+      ? existingElements
+      : generateDefaultElements(form);
 
   // Calculate default canvas height based on number of fields
-  const enabledFieldsCount = (form?.fields || []).filter(f => f.enabled !== false).length;
-  const defaultCanvasHeight = 300 + (enabledFieldsCount * 70) + 150;
+  const enabledFieldsCount = (form?.fields || []).filter(
+    (f) => f.enabled !== false,
+  ).length;
+  const defaultCanvasHeight = 300 + enabledFieldsCount * 70 + 150;
 
   const [elements, setElements] = useState(initialElements);
   const [selectedElementIds, setSelectedElementIds] = useState([]);
@@ -2632,8 +2651,17 @@ const FormEditor = ({ formId, onBack }) => {
         }}
       >
         {/* Load Default Designs */}
-        <div style={{ display: "flex", gap: 6, flexShrink: 0, alignItems: "center" }}>
-          <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>Design:</span>
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            flexShrink: 0,
+            alignItems: "center",
+          }}
+        >
+          <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>
+            Design:
+          </span>
           <button
             onClick={() => {
               const designs = generateProfessionalFormDesign(form);
@@ -2712,7 +2740,14 @@ const FormEditor = ({ formId, onBack }) => {
         </div>
 
         {/* Separator */}
-        <div style={{ width: "1px", height: 20, background: "#e2e8f0", flexShrink: 0 }} />
+        <div
+          style={{
+            width: "1px",
+            height: 20,
+            background: "#e2e8f0",
+            flexShrink: 0,
+          }}
+        />
 
         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
           {ELEMENT_BTNS.map(({ type, icon, label }) => (

@@ -18,9 +18,9 @@ import {
 import { AiOutlineCalendar } from "react-icons/ai";
 
 const DEFAULT_CATEGORIES = [
-  { name: "VIP", color: "#F59E0B" },
-  { name: "General", color: "#3B82F6" },
-  { name: "Staff", color: "#10B981" },
+  { name: "VIP", color: "var(--warning)" },
+  { name: "General", color: "var(--info)" },
+  { name: "Staff", color: "var(--success)" },
   { name: "Speaker", color: "#8B5CF6" },
 ];
 
@@ -35,7 +35,7 @@ const DEFAULT_SCAN_CONFIG = {
 
 const getCatColor = (name) =>
   DEFAULT_CATEGORIES.find((c) => c.name.toLowerCase() === name?.toLowerCase())
-    ?.color || "#94a3b8";
+    ?.color || "var(--muted-foreground)";
 
 // ── Event Multi-Select Dropdown ───────────────────────────────────────────────
 
@@ -57,7 +57,7 @@ const EventMultiSelect = ({ events, selectedIds, onChange }) => {
     const newSelected = selectedIds.includes(eventId)
       ? selectedIds.filter((id) => id !== eventId)
       : [...selectedIds, eventId];
-    onChange(newSelected.length > 0 ? newSelected : [null]);
+    onChange(newSelected.length > 0 ? newSelected : []);
   };
 
   const selectedEvents = events.filter((e) => selectedIds.includes(e.id));
@@ -110,11 +110,11 @@ const EventMultiSelect = ({ events, selectedIds, onChange }) => {
                   key={e.id}
                   className="d-flex align-items-center gap-2 px-3 py-2 mb-0 cursor-pointer"
                   style={{
-                    borderBottom: "1px solid #e2e8f0",
+                    borderBottom: "1px solid var(--border)",
                     cursor: "pointer",
                     fontSize: 13,
                   }}
-                  onMouseEnter={(el) => (el.currentTarget.style.background = "#f8fafc")}
+                  onMouseEnter={(el) => (el.currentTarget.style.background = "var(--background)")}
                   onMouseLeave={(el) => (el.currentTarget.style.background = "transparent")}
                 >
                   <input
@@ -164,7 +164,7 @@ const EventSelector = ({ events, loading, today, onSelect, onLogout }) => {
       >
         <div className="card-body p-4">
           <div className="d-flex align-items-center gap-2 mb-1">
-            <AiOutlineCalendar size={22} style={{ color: "#A855F7" }} />
+            <AiOutlineCalendar size={22} style={{ color: "var(--primary)" }} />
             <h5 className="fw-bold mb-0">Select Event</h5>
           </div>
           <p className="text-muted small mb-4">Active events for today.</p>
@@ -266,7 +266,7 @@ const ScanPopup = ({
   }, [config.autoClosePopup, onClose]);
 
   const actionLabel = scanMode === "entry" ? "Check In" : "Check Out";
-  const actionColor = scanMode === "entry" ? "#10B981" : "#F59E0B";
+  const actionColor = scanMode === "entry" ? "var(--success)" : "var(--warning)";
 
   if (!attendee) {
     return (
@@ -325,7 +325,7 @@ const ScanPopup = ({
               className="badge"
               style={{
                 background: getCatColor(attendee.category),
-                color: "#fff",
+                color: "var(--card)",
                 fontSize: 12,
                 padding: "5px 12px",
               }}
@@ -358,7 +358,7 @@ const ScanPopup = ({
         )}
 
         <div className="mb-3">
-          <code style={{ fontSize: 11, color: "#94a3b8" }}>
+          <code style={{ fontSize: 11, color: "var(--muted-foreground)" }}>
             {attendee.passId}
           </code>
         </div>
@@ -381,7 +381,7 @@ const ScanPopup = ({
           className="btn w-100 fw-bold mb-2"
           style={{
             background: actionColor,
-            color: "#fff",
+            color: "var(--card)",
             borderColor: actionColor,
           }}
           onClick={handleConfirmClick}
@@ -493,13 +493,13 @@ const AttendeeList = ({
         >
           {list.map((a) => {
             const eventName = selectedEvents.length > 1
-              ? allAttendees.find(x => x.id === a.id)?.eventName
+              ? selectedEvents.find((e) => e.id === a.eventId)?.eventName
               : null;
             return (
               <div
                 key={a.id}
                 className="border rounded-2 p-2"
-                style={{ background: "#f8fafc", fontSize: 12, borderColor: "#e2e8f0" }}
+                style={{ background: "var(--background)", fontSize: 12, borderColor: "var(--border)" }}
               >
                 <div className="d-flex align-items-start justify-content-between gap-2 mb-1">
                   <div className="min-width-0 flex-grow-1">
@@ -521,7 +521,7 @@ const AttendeeList = ({
                         className="badge"
                         style={{
                           background: getCatColor(a.category),
-                          color: "#fff",
+                          color: "var(--card)",
                           fontSize: 9,
                           padding: "3px 6px",
                         }}
@@ -876,6 +876,23 @@ const Scanner = ({ attendees, events, selectedEvent, onChangeEvent, onEventSelec
                         </button>
                       )}
                     </div>
+                    <div className="d-flex gap-2 mb-3">
+                      <button
+                        type="button"
+                        className={`btn btn-sm flex-fill ${scanMode === "entry" ? "btn-success" : "btn-outline-success"}`}
+                        onClick={() => setScanMode("entry")}
+                      >
+                        <FiArrowDown className="me-1" /> Check In
+                      </button>
+                      <button
+                        type="button"
+                        className={`btn btn-sm flex-fill ${scanMode === "exit" ? "btn-warning" : "btn-outline-warning"}`}
+                        onClick={() => setScanMode("exit")}
+                        disabled={!config.allowCheckout}
+                      >
+                        <FiArrowUp className="me-1" /> Check Out
+                      </button>
+                    </div>
                     <div
                       className="scan-viewport rounded-4 overflow-hidden bg-dark position-relative"
                       style={{ aspectRatio: "4/3" }}
@@ -956,7 +973,7 @@ const Scanner = ({ attendees, events, selectedEvent, onChangeEvent, onEventSelec
                           <div
                             key={a.id}
                             className="border rounded-3 p-3"
-                            style={{ background: "#f8fafc" }}
+                            style={{ background: "var(--background)" }}
                           >
                             <div className="d-flex justify-content-between align-items-start mb-2">
                               <div className="flex-grow-1">
@@ -976,7 +993,7 @@ const Scanner = ({ attendees, events, selectedEvent, onChangeEvent, onEventSelec
                                     className="badge mt-2"
                                     style={{
                                       background: getCatColor(a.category),
-                                      color: "#fff",
+                                      color: "var(--card)",
                                       fontSize: 10,
                                       display: "inline-block",
                                     }}
@@ -1072,8 +1089,8 @@ const Scanner = ({ attendees, events, selectedEvent, onChangeEvent, onEventSelec
                         value: attendees.filter(
                           (a) => !a.status || a.status === "registered",
                         ).length,
-                        color: "#64748b",
-                        bg: "#f8fafc",
+                        color: "var(--muted-foreground)",
+                        bg: "var(--background)",
                       },
                     ].map(({ key, label, value, color, bg }) => (
                       <div key={key} className="col-6 col-sm-3">
@@ -1091,7 +1108,7 @@ const Scanner = ({ attendees, events, selectedEvent, onChangeEvent, onEventSelec
                           <div style={{ fontSize: 22, fontWeight: 700, color }}>
                             {value}
                           </div>
-                          <div style={{ fontSize: 11, color: "#64748b" }}>
+                          <div style={{ fontSize: 11, color: "var(--muted-foreground)" }}>
                             {label}
                           </div>
                         </div>
@@ -1172,8 +1189,11 @@ const ScanPage = () => {
 
   const scanEvents = events.filter((e) => scanEventIds.includes(e.id));
 
-  // Use combined multi-event attendees if multiple selected, otherwise use context attendees
-  const eventAttendees = scanEventIds.length > 1 ? multiEventAttendees : attendees;
+  // Use combined multi-event attendees if multiple selected, otherwise filter by selected events
+  const eventAttendees =
+    scanEventIds.length > 1
+      ? multiEventAttendees
+      : attendees.filter((a) => scanEventIds.includes(a.eventId));
 
   const handleChangeEvent = () => {
     setScanEventIds([]);
@@ -1222,7 +1242,7 @@ const ScanPage = () => {
       >
         <div className="card border-0 shadow-sm" style={{ width: "min(420px, 100%)" }}>
           <div className="card-body p-4 text-center">
-            <AiOutlineCalendar size={48} style={{ color: "#A855F7", marginBottom: 16 }} />
+            <AiOutlineCalendar size={48} style={{ color: "var(--primary)", marginBottom: 16 }} />
             <h5 className="fw-bold mb-2">No Active Events</h5>
             <p className="text-muted small">
               There are no active events today. Check back later!

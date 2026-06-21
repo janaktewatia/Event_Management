@@ -46,9 +46,9 @@ const OTPInput = ({ value, onChange, disabled }) => {
           style={{
             width: 46, height: 52, fontSize: 22, fontWeight: 700,
             textAlign: "center", borderRadius: 10, outline: "none",
-            border: d ? "2px solid #A855F7" : "2px solid #e2e8f0",
-            background: d ? "#faf5ff" : "#f8fafc",
-            color: "#1e1b4b", transition: "all 0.15s",
+            border: d ? "2px solid var(--primary)" : "2px solid var(--border)",
+            background: d ? "var(--accent)" : "var(--background)",
+            color: "var(--foreground)", transition: "all 0.15s",
           }}
         />
       ))}
@@ -63,7 +63,7 @@ const LeftPanel = () => (
     style={{
       width: "45%",
       minHeight: "100vh",
-      background: "linear-gradient(145deg, #1e1b4b 0%, #4c1d95 50%, #7c3aed 100%)",
+      background: "linear-gradient(145deg, var(--foreground) 0%, #4c1d95 50%, var(--primary) 100%)",
       position: "relative",
       overflow: "hidden",
     }}
@@ -100,7 +100,7 @@ const LeftPanel = () => (
       {/* Main heading */}
       <h1 style={{ color: "#fff", fontWeight: 800, fontSize: 36, lineHeight: 1.2, marginBottom: 16 }}>
         Manage Events<br />
-        <span style={{ color: "#c4b5fd" }}>Smarter & Faster</span>
+        <span style={{ color: "var(--accent)" }}>Smarter & Faster</span>
       </h1>
       <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 15, lineHeight: 1.7, maxWidth: 320 }}>
         Scan passes, register attendees, track activity and manage your events all from one place.
@@ -188,30 +188,30 @@ const LoginPage = () => {
   };
 
   const inputStyle = {
-    height: 46, borderRadius: 10, border: "2px solid #e2e8f0",
+    height: 46, borderRadius: 10, border: "2px solid var(--border)",
     fontSize: 14, paddingLeft: 14, outline: "none", width: "100%",
-    transition: "border-color 0.15s", background: "#fff",
+    transition: "border-color 0.15s", background: "var(--card)",
   };
 
   return (
-    <div className="d-flex" style={{ minHeight: "100vh", background: "#f8fafc" }}>
+    <div className="d-flex" style={{ minHeight: "100vh", background: "var(--background)" }}>
       <LeftPanel />
 
       {/* Right: form panel */}
       <div
         className="d-flex flex-column align-items-center justify-content-center flex-grow-1 p-4"
-        style={{ background: "#f8fafc" }}
+        style={{ background: "var(--background)" }}
       >
         {/* Mobile logo */}
         <div className="d-flex d-lg-none align-items-center gap-2 mb-6" style={{ marginBottom: 32 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
-            background: "linear-gradient(135deg,#7c3aed,#a855f7)",
+            background: "linear-gradient(135deg,var(--primary),var(--primary))",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <i className="bi bi-calendar-event-fill" style={{ color: "#fff", fontSize: 16 }} />
           </div>
-          <span style={{ fontWeight: 700, fontSize: 16, color: "#1e1b4b" }}>Event Management</span>
+          <span style={{ fontWeight: 700, fontSize: 16, color: "var(--foreground)" }}>Event Management</span>
         </div>
 
         <div style={{ width: "100%", maxWidth: 400 }}>
@@ -220,18 +220,18 @@ const LoginPage = () => {
           {step === "credentials" && (
             <>
               <div className="mb-4">
-                <h2 style={{ fontWeight: 800, fontSize: 28, color: "#1e1b4b", marginBottom: 6 }}>Welcome back</h2>
-                <p style={{ color: "#94a3b8", fontSize: 14, margin: 0 }}>Sign in to your account to continue</p>
+                <h2 style={{ fontWeight: 800, fontSize: 28, color: "var(--foreground)", marginBottom: 6 }}>Welcome back</h2>
+                <p style={{ color: "var(--muted-foreground)", fontSize: 14, margin: 0 }}>Sign in to your account to continue</p>
               </div>
 
               <form onSubmit={handleCredentials} noValidate>
                 <div className="mb-3">
-                  <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: "var(--foreground)", display: "block", marginBottom: 6 }}>
                     User ID
                   </label>
                   <div style={{ position: "relative" }}>
                     <i className="bi bi-person-badge"
-                      style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#94a3b8", fontSize: 16 }} />
+                      style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--muted-foreground)", fontSize: 16 }} />
                     <input
                       type="text"
                       placeholder="Enter your User ID"
@@ -239,30 +239,30 @@ const LoginPage = () => {
                       onChange={(e) => setForm((p) => ({ ...p, userId: e.target.value.replace(/\s/g, "") }))}
                       autoFocus
                       style={{ ...inputStyle, paddingLeft: 40 }}
-                      onFocus={(e) => e.target.style.borderColor = "#A855F7"}
-                      onBlur={(e) => e.target.style.borderColor = "#e2e8f0"}
+                      onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
+                      onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                     />
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: "var(--foreground)", display: "block", marginBottom: 6 }}>
                     Password
                   </label>
                   <div style={{ position: "relative" }}>
                     <i className="bi bi-lock"
-                      style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#94a3b8", fontSize: 16 }} />
+                      style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--muted-foreground)", fontSize: 16 }} />
                     <input
                       type={showPw ? "text" : "password"}
                       placeholder="Enter your password"
                       value={form.password}
                       onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
                       style={{ ...inputStyle, paddingLeft: 40, paddingRight: 44 }}
-                      onFocus={(e) => e.target.style.borderColor = "#A855F7"}
-                      onBlur={(e) => e.target.style.borderColor = "#e2e8f0"}
+                      onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
+                      onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                     />
                     <button type="button" onClick={() => setShowPw((v) => !v)}
-                      style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#94a3b8", padding: 0 }}>
+                      style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--muted-foreground)", padding: 0 }}>
                       <i className={`bi ${showPw ? "bi-eye-slash" : "bi-eye"}`} style={{ fontSize: 16 }} />
                     </button>
                   </div>
@@ -270,7 +270,7 @@ const LoginPage = () => {
 
                 {error && (
                   <div className="d-flex align-items-center gap-2 mb-3 p-3 rounded-3"
-                    style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", fontSize: 13 }}>
+                    style={{ background: "oklch(var(--destructive-h) var(--destructive-s) var(--destructive-l) / 10%)", border: "1px solid var(--destructive)", color: "var(--destructive)", fontSize: 13 }}>
                     <i className="bi bi-exclamation-circle-fill flex-shrink-0" />
                     {error}
                   </div>
@@ -278,9 +278,9 @@ const LoginPage = () => {
 
                 <button type="submit" disabled={loading}
                   style={{
-                    width: "100%", height: 48, borderRadius: 12, border: "none", cursor: "pointer",
-                    background: loading ? "#c4b5fd" : "linear-gradient(135deg, #7c3aed, #a855f7)",
-                    color: "#fff", fontWeight: 700, fontSize: 15, letterSpacing: 0.3,
+                    width: "100%", height: 48, borderRadius: "var(--radius)", border: "none", cursor: "pointer",
+                    background: loading ? "var(--accent)" : "linear-gradient(135deg, var(--primary), var(--primary))",
+                    color: "var(--card)", fontWeight: 700, fontSize: 15, letterSpacing: 0.3,
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                     transition: "all 0.2s",
                     boxShadow: loading ? "none" : "0 4px 15px rgba(168,85,247,0.35)",
@@ -291,7 +291,7 @@ const LoginPage = () => {
                 </button>
               </form>
 
-              <p className="text-center mt-4" style={{ color: "#94a3b8", fontSize: 12 }}>
+              <p className="text-center mt-4" style={{ color: "var(--muted-foreground)", fontSize: 12 }}>
                 Contact your administrator if you don't have an account.
               </p>
             </>
@@ -301,7 +301,7 @@ const LoginPage = () => {
           {step === "2fa_setup" && (
             <>
               <button onClick={() => setStep("credentials")}
-                style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", padding: 0, marginBottom: 24, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
+                style={{ background: "none", border: "none", color: "var(--muted-foreground)", cursor: "pointer", padding: 0, marginBottom: 24, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
                 <i className="bi bi-arrow-left" /> Back to login
               </button>
 
@@ -313,24 +313,24 @@ const LoginPage = () => {
                 }}>
                   <i className="bi bi-shield-lock-fill" style={{ color: "#d97706", fontSize: 24 }} />
                 </div>
-                <h2 style={{ fontWeight: 800, fontSize: 24, color: "#1e1b4b", marginBottom: 6 }}>Set up 2FA</h2>
-                <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>
+                <h2 style={{ fontWeight: 800, fontSize: 24, color: "var(--foreground)", marginBottom: 6 }}>Set up 2FA</h2>
+                <p style={{ color: "var(--muted-foreground)", fontSize: 13, margin: 0 }}>
                   Your account requires two-factor authentication. Scan the QR code once to get started.
                 </p>
               </div>
 
               {/* QR card */}
               <div style={{
-                background: "#fff", borderRadius: 16, padding: 20, textAlign: "center",
-                border: "1px solid #e2e8f0", marginBottom: 20,
+                background: "var(--card)", borderRadius: 16, padding: 20, textAlign: "center",
+                border: "1px solid var(--border)", marginBottom: 20,
                 boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
               }}>
                 <img src={twoFAData.qrCodeUrl} alt="2FA QR"
                   style={{ width: 160, height: 160, borderRadius: 8, marginBottom: 12 }} />
-                <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 6 }}>Can't scan? Enter manually:</div>
+                <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginBottom: 6 }}>Can't scan? Enter manually:</div>
                 <code style={{
-                  fontSize: 11, letterSpacing: 2, color: "#7c3aed",
-                  background: "#f5f3ff", padding: "4px 10px", borderRadius: 6,
+                  fontSize: 11, letterSpacing: 2, color: "var(--primary)",
+                  background: "var(--accent)", padding: "4px 10px", borderRadius: 6,
                   wordBreak: "break-all", display: "block",
                 }}>
                   {twoFAData.secret}
@@ -347,17 +347,17 @@ const LoginPage = () => {
                   <div key={i} className="d-flex align-items-center gap-3 mb-2">
                     <span style={{
                       width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
-                      background: "linear-gradient(135deg,#7c3aed,#a855f7)",
-                      color: "#fff", fontSize: 11, fontWeight: 700,
+                      background: "linear-gradient(135deg,var(--primary),var(--primary))",
+                      color: "var(--card)", fontSize: 11, fontWeight: 700,
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}>{i + 1}</span>
-                    <span style={{ fontSize: 13, color: "#475569" }}>{txt}</span>
+                    <span style={{ fontSize: 13, color: "var(--foreground)" }}>{txt}</span>
                   </div>
                 ))}
               </div>
 
               <div className="mb-3">
-                <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 10, textAlign: "center" }}>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--foreground)", display: "block", marginBottom: 10, textAlign: "center" }}>
                   Confirm setup code
                 </label>
                 <OTPInput value={otpValue} onChange={setOtpValue} disabled={loading} />
@@ -365,7 +365,7 @@ const LoginPage = () => {
 
               {error && (
                 <div className="d-flex align-items-center gap-2 mb-3 p-3 rounded-3"
-                  style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", fontSize: 13 }}>
+                  style={{ background: "oklch(var(--destructive-h) var(--destructive-s) var(--destructive-l) / 10%)", border: "1px solid var(--destructive)", color: "var(--destructive)", fontSize: 13 }}>
                   <i className="bi bi-exclamation-circle-fill flex-shrink-0" />{error}
                 </div>
               )}
@@ -373,8 +373,8 @@ const LoginPage = () => {
               <button onClick={handleSetupConfirm} disabled={loading || otpValue.length < 6}
                 style={{
                   width: "100%", height: 48, borderRadius: 12, border: "none", cursor: otpValue.length < 6 ? "not-allowed" : "pointer",
-                  background: otpValue.length < 6 ? "#e2e8f0" : "linear-gradient(135deg,#7c3aed,#a855f7)",
-                  color: otpValue.length < 6 ? "#94a3b8" : "#fff", fontWeight: 700, fontSize: 15,
+                  background: otpValue.length < 6 ? "var(--border)" : "linear-gradient(135deg,var(--primary),var(--primary))",
+                  color: otpValue.length < 6 ? "var(--muted-foreground)" : "var(--card)", fontWeight: 700, fontSize: 15,
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   boxShadow: otpValue.length === 6 ? "0 4px 15px rgba(168,85,247,0.35)" : "none",
                   transition: "all 0.2s",
@@ -388,24 +388,24 @@ const LoginPage = () => {
           {step === "2fa_verify" && (
             <>
               <button onClick={() => setStep("credentials")}
-                style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", padding: 0, marginBottom: 24, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
+                style={{ background: "none", border: "none", color: "var(--muted-foreground)", cursor: "pointer", padding: 0, marginBottom: 24, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
                 <i className="bi bi-arrow-left" /> Back to login
               </button>
 
               <div className="mb-4 text-center">
                 <div style={{
                   width: 64, height: 64, borderRadius: 18, margin: "0 auto 16px",
-                  background: "linear-gradient(135deg,#f5f3ff,#ede9fe)",
+                  background: "linear-gradient(135deg,var(--accent),var(--accent))",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   boxShadow: "0 4px 20px rgba(139,92,246,0.15)",
                 }}>
-                  <i className="bi bi-shield-lock-fill" style={{ color: "#7c3aed", fontSize: 28 }} />
+                  <i className="bi bi-shield-lock-fill" style={{ color: "var(--primary)", fontSize: 28 }} />
                 </div>
-                <h2 style={{ fontWeight: 800, fontSize: 24, color: "#1e1b4b", marginBottom: 8 }}>
+                <h2 style={{ fontWeight: 800, fontSize: 24, color: "var(--foreground)", marginBottom: 8 }}>
                   Two-Factor Auth
                 </h2>
-                <p style={{ color: "#94a3b8", fontSize: 13 }}>
-                  Open your authenticator app and enter the<br />6-digit code for <strong style={{ color: "#7c3aed" }}>Event Management</strong>
+                <p style={{ color: "var(--muted-foreground)", fontSize: 13 }}>
+                  Open your authenticator app and enter the<br />6-digit code for <strong style={{ color: "var(--primary)" }}>Event Management</strong>
                 </p>
               </div>
 
@@ -415,7 +415,7 @@ const LoginPage = () => {
 
               {error && (
                 <div className="d-flex align-items-center gap-2 mb-3 p-3 rounded-3"
-                  style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", fontSize: 13 }}>
+                  style={{ background: "oklch(var(--destructive-h) var(--destructive-s) var(--destructive-l) / 10%)", border: "1px solid var(--destructive)", color: "var(--destructive)", fontSize: 13 }}>
                   <i className="bi bi-exclamation-circle-fill flex-shrink-0" />{error}
                 </div>
               )}
@@ -423,8 +423,8 @@ const LoginPage = () => {
               <button onClick={handleVerify} disabled={loading || otpValue.length < 6}
                 style={{
                   width: "100%", height: 48, borderRadius: 12, border: "none", cursor: otpValue.length < 6 ? "not-allowed" : "pointer",
-                  background: otpValue.length < 6 ? "#e2e8f0" : "linear-gradient(135deg,#7c3aed,#a855f7)",
-                  color: otpValue.length < 6 ? "#94a3b8" : "#fff", fontWeight: 700, fontSize: 15,
+                  background: otpValue.length < 6 ? "var(--border)" : "linear-gradient(135deg,var(--primary),var(--primary))",
+                  color: otpValue.length < 6 ? "var(--muted-foreground)" : "var(--card)", fontWeight: 700, fontSize: 15,
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   boxShadow: otpValue.length === 6 ? "0 4px 15px rgba(168,85,247,0.35)" : "none",
                   transition: "all 0.2s",
@@ -432,7 +432,7 @@ const LoginPage = () => {
                 {loading ? <><span className="spinner-border spinner-border-sm" /> Verifying…</> : <><i className="bi bi-shield-check" /> Verify & Sign In</>}
               </button>
 
-              <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", marginTop: 16 }}>
+              <p style={{ textAlign: "center", fontSize: 12, color: "var(--muted-foreground)", marginTop: 16 }}>
                 Code refreshes every 30 seconds
               </p>
             </>

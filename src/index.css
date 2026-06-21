@@ -1,6 +1,18 @@
 /* src/index.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* Default theme variables (Clean Slate) */
+:root {
+  --primary: #0085A8;
+  --primary-foreground: #ffffff;
+  --background: #F7FBFE;
+  --surface: #FFFFFF;
+  --foreground: #40474D;
+  --pill: #E8EFF5;
+  --pill-text: #40474D;
+  --tab-track: #EBF2F8;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -10,6 +22,8 @@
 body {
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 ::-webkit-scrollbar {

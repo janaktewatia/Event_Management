@@ -47,9 +47,10 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const event = await Event.findByIdAndDelete(req.params.id);
+    const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ error: "Event not found" });
     await Attendee.deleteMany({ eventId: req.params.id });
+    await Event.findByIdAndDelete(req.params.id);
     res.json({ message: "Event deleted" });
   } catch (err) {
     res.status(500).json({ error: err.message });

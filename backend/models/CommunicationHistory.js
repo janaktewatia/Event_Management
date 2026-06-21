@@ -23,7 +23,7 @@ const communicationHistorySchema = new mongoose.Schema(
         error: String,
       },
     ],
-    sentBy: mongoose.Schema.Types.ObjectId,
+    sentBy: { type: mongoose.Schema.Types.ObjectId, ref: "AppUser" },
     sentAt: { type: Date, default: Date.now },
   },
   { collection: "communicationHistory" }

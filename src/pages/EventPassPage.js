@@ -18,9 +18,9 @@ const CT_FIELDS = {
 };
 
 const DEFAULT_CATEGORIES = [
-  { id: 1, name: "VIP", color: "#F59E0B" },
-  { id: 2, name: "General", color: "#3B82F6" },
-  { id: 3, name: "Staff", color: "#10B981" },
+  { id: 1, name: "VIP", color: "var(--warning)" },
+  { id: 2, name: "General", color: "var(--info)" },
+  { id: 3, name: "Staff", color: "var(--success)" },
   { id: 4, name: "Speaker", color: "#8B5CF6" },
 ];
 
@@ -85,7 +85,7 @@ const generateQRBlob = async (data, color) => {
     type: "canvas",
     data: data || "PASS",
     dotsOptions: { color: color || "#000000", type: "square" },
-    backgroundOptions: { color: "#ffffff" },
+    backgroundOptions: { color: "var(--card)" },
     qrOptions: { errorCorrectionLevel: "M" },
   });
   return await qr.getRawData("png");
@@ -108,11 +108,11 @@ const renderPassToCanvas = async (attendee, event, config) => {
       ctx.fillStyle = "rgba(255,255,255,0.82)";
       ctx.fillRect(0, 0, W, H);
     } catch {
-      ctx.fillStyle = config.bgColor || "#ffffff";
+      ctx.fillStyle = config.bgColor || "var(--card)";
       ctx.fillRect(0, 0, W, H);
     }
   } else {
-    ctx.fillStyle = config.bgColor || "#ffffff";
+    ctx.fillStyle = config.bgColor || "var(--card)";
     ctx.fillRect(0, 0, W, H);
   }
 
@@ -126,7 +126,7 @@ const renderPassToCanvas = async (attendee, event, config) => {
   ctx.fillRect(0, 94, W, 14);
 
   // Event name
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "var(--card)";
   ctx.font = `bold 19px "Segoe UI", Arial, sans-serif`;
   ctx.fillText(truncate(event?.eventName || "Event", 38), 18, 38);
 
@@ -151,7 +151,7 @@ const renderPassToCanvas = async (attendee, event, config) => {
     return found?.color || config.primaryColor;
   })();
   drawRoundedRect(ctx, 18, 118, 116, 28, 14, catColor);
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "var(--card)";
   ctx.font = `bold 12px "Segoe UI", Arial, sans-serif`;
   ctx.textAlign = "center";
   ctx.fillText(truncate(attendee.category || "General", 16), 76, 136);
@@ -172,7 +172,7 @@ const renderPassToCanvas = async (attendee, event, config) => {
   ].filter(Boolean);
 
   ctx.font = `13px "Segoe UI", Arial, sans-serif`;
-  ctx.fillStyle = "#475569";
+  ctx.fillStyle = "var(--foreground)";
   let infoY = 215;
   infoLines.forEach(({ icon, val }) => {
     ctx.fillText(`${icon}  ${truncate(val, 34)}`, 18, infoY);
@@ -180,7 +180,7 @@ const renderPassToCanvas = async (attendee, event, config) => {
   });
 
   // Divider
-  ctx.strokeStyle = "#e2e8f0";
+  ctx.strokeStyle = "var(--border)";
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(18, H - 175);
@@ -191,7 +191,7 @@ const renderPassToCanvas = async (attendee, event, config) => {
   const qrBoxSize = 150;
   const qrX = (W - qrBoxSize) / 2;
   const qrY = H - 168;
-  drawRoundedRect(ctx, qrX - 4, qrY - 4, qrBoxSize + 8, qrBoxSize + 8, 8, "#f1f5f9");
+  drawRoundedRect(ctx, qrX - 4, qrY - 4, qrBoxSize + 8, qrBoxSize + 8, 8, "var(--border)");
 
   // QR code image
   try {
@@ -201,9 +201,9 @@ const renderPassToCanvas = async (attendee, event, config) => {
     URL.revokeObjectURL(qrUrl);
     ctx.drawImage(qrImg, qrX, qrY, qrBoxSize, qrBoxSize);
   } catch {
-    ctx.fillStyle = "#e2e8f0";
+    ctx.fillStyle = "var(--border)";
     ctx.fillRect(qrX, qrY, qrBoxSize, qrBoxSize);
-    ctx.fillStyle = "#94a3b8";
+    ctx.fillStyle = "var(--muted-foreground)";
     ctx.font = "11px monospace";
     ctx.textAlign = "center";
     ctx.fillText("QR Error", W / 2, qrY + qrBoxSize / 2);
@@ -211,7 +211,7 @@ const renderPassToCanvas = async (attendee, event, config) => {
   }
 
   // Pass ID
-  ctx.fillStyle = "#94a3b8";
+  ctx.fillStyle = "var(--muted-foreground)";
   ctx.font = `10px "Courier New", monospace`;
   ctx.textAlign = "center";
   ctx.fillText(truncate(attendee.passId, 40), W / 2, H - 12);
@@ -247,7 +247,7 @@ const PassPreview = ({ attendee, event, config, qrDataUrl }) => {
     <div
       className="pass-card mx-auto"
       style={{
-        background: config.bgColor || "#fff",
+        background: config.bgColor || "var(--card)",
         backgroundImage: config.bgImage ? `url(${config.bgImage})` : undefined,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -301,7 +301,7 @@ const PassPreview = ({ attendee, event, config, qrDataUrl }) => {
             style={{
               display: "inline-block",
               background: catColor,
-              color: "#fff",
+              color: "var(--card)",
               borderRadius: 12,
               padding: "3px 12px",
               fontSize: 11,
@@ -318,7 +318,7 @@ const PassPreview = ({ attendee, event, config, qrDataUrl }) => {
           </div>
 
           {/* Info lines */}
-          <div style={{ fontSize: 12, color: "#475569", lineHeight: 1.9 }}>
+          <div style={{ fontSize: 12, color: "var(--foreground)", lineHeight: 1.9 }}>
             {attendee.title && <div>◈&nbsp; {attendee.title}</div>}
             {attendee.organization && <div>⊞&nbsp; {attendee.organization}</div>}
             {attendee.phone && <div>◉&nbsp; {attendee.phone}</div>}
@@ -326,7 +326,7 @@ const PassPreview = ({ attendee, event, config, qrDataUrl }) => {
           </div>
 
           {/* Divider */}
-          <div style={{ borderTop: "1px solid #e2e8f0", margin: "12px 0" }} />
+          <div style={{ borderTop: "1px solid var(--border)", margin: "12px 0" }} />
 
           {/* QR + Pass ID */}
           <div style={{ textAlign: "center" }}>
@@ -337,28 +337,28 @@ const PassPreview = ({ attendee, event, config, qrDataUrl }) => {
                 style={{
                   width: 130, height: 130,
                   borderRadius: 8,
-                  border: "1px solid #e2e8f0",
+                  border: "1px solid var(--border)",
                   padding: 4,
-                  background: "#fff",
+                  background: "var(--card)",
                 }}
               />
             ) : (
               <div
                 style={{
                   width: 130, height: 130,
-                  background: "#f1f5f9",
+                  background: "var(--border)",
                   borderRadius: 8,
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#94a3b8",
+                  color: "var(--muted-foreground)",
                   fontSize: 11,
                 }}
               >
                 Generating…
               </div>
             )}
-            <div style={{ fontSize: 9, color: "#94a3b8", marginTop: 4, letterSpacing: 1 }}>
+            <div style={{ fontSize: 9, color: "var(--muted-foreground)", marginTop: 4, letterSpacing: 1 }}>
               {attendee.passId}
             </div>
           </div>
@@ -376,8 +376,8 @@ const EventPassPage = () => {
   const [fieldMap, setFieldMap] = useState({
     name: -1, phone: -1, email: -1, title: -1, organization: -1, category: -1,
   });
-  const [primaryColor, setPrimaryColor] = useState("#A855F7");
-  const [bgColor, setBgColor] = useState("#ffffff");
+  const [primaryColor, setPrimaryColor] = useState("var(--primary)");
+  const [bgColor, setBgColor] = useState("var(--card)");
   const [bgImage, setBgImage] = useState(null);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [newCatName, setNewCatName] = useState("");

@@ -16,21 +16,21 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const THEME = "#A855F7";
-const COLORS = ["#A855F7", "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#06B6D4", "#8B5CF6", "#EC4899"];
+const THEME = "var(--primary)";
+const COLORS = ["var(--primary)", "var(--info)", "var(--success)", "var(--warning)", "#EF4444", "#06B6D4", "#8B5CF6", "#EC4899"];
 
 const StatCard = ({ icon, label, value, trend, color }) => (
   <div
-    className="card border-0 shadow-sm h-100"
-    style={{ borderRadius: 10, background: "#fff", overflow: "hidden" }}
+    className="card border shadow-sm h-100"
+    style={{ borderRadius: "var(--radius)", background: "var(--card)", borderColor: "var(--border)", overflow: "hidden" }}
   >
     <div className="card-body p-3 d-flex align-items-center gap-3">
       <div
         style={{
           width: 44,
           height: 44,
-          borderRadius: 10,
-          background: color + "1a",
+          borderRadius: "var(--radius)",
+          background: `color-mix(in oklch, ${color} 15%, transparent)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -40,15 +40,15 @@ const StatCard = ({ icon, label, value, trend, color }) => (
         <i className={`bi ${icon}`} style={{ fontSize: 20, color }} />
       </div>
       <div className="flex-grow-1 min-w-0">
-        <div className="text-muted" style={{ fontSize: 12 }}>
+        <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
           {label}
         </div>
-        <div className="fw-bold" style={{ fontSize: 24, color: "#172033", lineHeight: 1.2 }}>
+        <div className="fw-bold" style={{ fontSize: 24, color: "var(--foreground)", lineHeight: 1.2 }}>
           {value}
         </div>
       </div>
       {trend && (
-        <span style={{ color: trend > 0 ? "#10B981" : "#EF4444", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+        <span style={{ color: trend > 0 ? "var(--success)" : "var(--destructive)", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
           {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}%
         </span>
       )}
@@ -57,9 +57,9 @@ const StatCard = ({ icon, label, value, trend, color }) => (
 );
 
 const ChartCard = ({ title, children }) => (
-  <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff" }}>
+  <div className="card border shadow-sm" style={{ borderRadius: "var(--radius)", background: "var(--card)", borderColor: "var(--border)" }}>
     <div className="card-body p-4">
-      <h6 className="card-title fw-bold mb-4" style={{ fontSize: 14, color: "#172033" }}>
+      <h6 className="card-title fw-bold mb-4" style={{ fontSize: 14, color: "var(--foreground)" }}>
         {title}
       </h6>
       {children}
@@ -187,10 +187,10 @@ const DashboardPage = () => {
   }, [last7DaysEvents, events]);
 
   return (
-    <div className="container-fluid p-3" style={{ background: "#f8fafc", minHeight: "100vh" }}>
+    <div className="container-fluid p-3" style={{ background: "var(--background)", minHeight: "100vh" }}>
       {/* Header */}
       <div className="mb-4">
-        <h2 className="fw-bold mb-1" style={{ fontSize: 28, color: "#172033" }}>
+        <h2 className="fw-bold mb-1" style={{ fontSize: 28, color: "var(--foreground)" }}>
           Analytics & Insights
         </h2>
         <p className="text-muted mb-0" style={{ fontSize: 14 }}>
@@ -213,7 +213,7 @@ const DashboardPage = () => {
             icon="bi-people"
             label="Total Registrants"
             value={totalRegistrants}
-            color="#3B82F6"
+            color="var(--info)"
           />
         </div>
         <div className="col-6 col-md-3">
@@ -221,7 +221,7 @@ const DashboardPage = () => {
             icon="bi-person-check"
             label="Total Attendees"
             value={totalAttendees}
-            color="#10B981"
+            color="var(--success)"
           />
         </div>
         <div className="col-6 col-md-3">
@@ -229,7 +229,7 @@ const DashboardPage = () => {
             icon="bi-percent"
             label="Attendance Rate"
             value={`${attendeePercentage}%`}
-            color="#F59E0B"
+            color="var(--warning)"
           />
         </div>
       </div>
@@ -238,18 +238,18 @@ const DashboardPage = () => {
       <div className="row g-3 mb-4">
         {/* Event Type Distribution */}
         <div className="col-12 col-lg-6">
-          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff", height: 420 }}>
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "var(--card)", height: 420 }}>
             <div className="card-body p-4 d-flex flex-column" style={{ height: "100%" }}>
               <div className="d-flex align-items-center justify-content-between mb-4">
-                <h6 className="card-title fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
+                <h6 className="card-title fw-bold mb-0" style={{ fontSize: 14, color: "var(--foreground)" }}>
                   Event Type Distribution
                 </h6>
                 <button
                   type="button"
                   className="btn btn-sm"
                   style={{
-                    background: showEventTypeTable ? THEME : "#f3f4f6",
-                    color: showEventTypeTable ? "#fff" : "#64748b",
+                    background: showEventTypeTable ? THEME : "var(--secondary)",
+                    color: showEventTypeTable ? "var(--card)" : "var(--muted-foreground)",
                     border: "none",
                     fontSize: 11,
                   }}
@@ -263,7 +263,7 @@ const DashboardPage = () => {
                 showEventTypeTable ? (
                   <div className="table-responsive flex-grow-1" style={{ overflowY: "auto" }}>
                     <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
-                      <thead style={{ background: "#f8fafc", position: "sticky", top: 0 }}>
+                      <thead style={{ background: "var(--background)", position: "sticky", top: 0 }}>
                         <tr>
                           <th>Event Type</th>
                           <th className="text-end">Count</th>
@@ -294,8 +294,8 @@ const DashboardPage = () => {
                                 <span
                                   className="badge"
                                   style={{
-                                    background: "#f0fdf4",
-                                    color: "#10B981",
+                                    background: "oklch(var(--success-h) var(--success-s) var(--success-l) / 10%)",
+                                    color: "var(--success)",
                                     fontSize: 11,
                                   }}
                                 >
@@ -332,7 +332,7 @@ const DashboardPage = () => {
                         formatter={(value, entry) => `${entry.payload.name}: ${entry.payload.count}`}
                       />
                       <Tooltip
-                        contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
+                        contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
                         formatter={(value) => `${value} event${value > 1 ? 's' : ''}`}
                       />
                     </PieChart>
@@ -347,18 +347,18 @@ const DashboardPage = () => {
 
         {/* Last 7 Days Events */}
         <div className="col-12 col-lg-6">
-          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "#fff", height: 420 }}>
+          <div className="card border-0 shadow-sm" style={{ borderRadius: 12, background: "var(--card)", height: 420 }}>
             <div className="card-body p-4 d-flex flex-column" style={{ height: "100%" }}>
               <div className="d-flex align-items-center justify-content-between mb-4">
-                <h6 className="card-title fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
+                <h6 className="card-title fw-bold mb-0" style={{ fontSize: 14, color: "var(--foreground)" }}>
                   Last 7 Days - Events Created
                 </h6>
                 <button
                   type="button"
                   className="btn btn-sm"
                   style={{
-                    background: showLast7DaysTable ? THEME : "#f3f4f6",
-                    color: showLast7DaysTable ? "#fff" : "#64748b",
+                    background: showLast7DaysTable ? THEME : "var(--secondary)",
+                    color: showLast7DaysTable ? "var(--card)" : "var(--muted-foreground)",
                     border: "none",
                     fontSize: 11,
                   }}
@@ -371,7 +371,7 @@ const DashboardPage = () => {
               {showLast7DaysTable ? (
                 <div className="table-responsive flex-grow-1" style={{ overflowY: "auto" }}>
                   <table className="table table-sm align-middle mb-0" style={{ fontSize: 12 }}>
-                    <thead style={{ background: "#f8fafc", position: "sticky", top: 0 }}>
+                    <thead style={{ background: "var(--background)", position: "sticky", top: 0 }}>
                       <tr>
                         <th>Date</th>
                         <th>Event Name</th>
@@ -398,11 +398,11 @@ const DashboardPage = () => {
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={last7DaysTimeline}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                    <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: 11 }} />
-                    <YAxis stroke="#94a3b8" style={{ fontSize: 11 }} allowDecimals={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                    <XAxis dataKey="date" stroke="var(--muted-foreground)" style={{ fontSize: 11 }} />
+                    <YAxis stroke="var(--muted-foreground)" style={{ fontSize: 11 }} allowDecimals={false} />
                     <Tooltip
-                      contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8 }}
+                      contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
                       formatter={(value) => [`${value} event${value > 1 ? 's' : ''}`, 'Count']}
                     />
                     <Bar dataKey="events" fill={THEME} radius={[6, 6, 0, 0]} barSize={20} />
@@ -421,15 +421,15 @@ const DashboardPage = () => {
         <div className="col-12">
           <div className="card border-0 shadow-sm" style={{ borderRadius: 12 }}>
             <div className="card-body p-0">
-              <div className="px-4 py-3" style={{ borderBottom: "1px solid #e2e8f0" }}>
-                <h6 className="fw-bold mb-0" style={{ fontSize: 14, color: "#172033" }}>
+              <div className="px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: 14, color: "var(--foreground)" }}>
                   Event-wise Attendance Details
                 </h6>
               </div>
               <div className="table-responsive">
                 <table className="table table-hover align-middle mb-0" style={{ fontSize: 13 }}>
                   <thead>
-                    <tr style={{ background: "#f8fafc" }}>
+                    <tr style={{ background: "var(--background)" }}>
                       <th>Event Name</th>
                       <th className="text-end">Registered</th>
                       <th className="text-end">Attended</th>
@@ -451,14 +451,14 @@ const DashboardPage = () => {
                           <td className="text-end fw-semibold">{row.registered}</td>
                           <td className="text-end fw-semibold">{row.attended}</td>
                           <td className="text-end">
-                            <span className="badge" style={{ background: "#f0fdf4", color: "#10B981" }}>
+                            <span className="badge" style={{ background: "oklch(var(--success-h) var(--success-s) var(--success-l) / 10%)", color: "var(--success)" }}>
                               {row.percentage}%
                             </span>
                           </td>
                           <td>
                             <div
                               style={{
-                                background: "#e2e8f0",
+                                background: "var(--border)",
                                 borderRadius: 8,
                                 height: 24,
                                 overflow: "hidden",
@@ -466,7 +466,7 @@ const DashboardPage = () => {
                             >
                               <div
                                 style={{
-                                  background: row.percentage >= 80 ? "#10B981" : row.percentage >= 50 ? "#F59E0B" : THEME,
+                                  background: row.percentage >= 80 ? "var(--success)" : row.percentage >= 50 ? "var(--warning)" : THEME,
                                   height: "100%",
                                   width: `${row.percentage}%`,
                                   transition: "width 0.3s ease",

@@ -59,9 +59,9 @@ const PASS_PRESETS = [
 ];
 
 const DEFAULT_CATEGORIES = [
-  { name: "VIP", color: "#F59E0B" },
-  { name: "General", color: "#3B82F6" },
-  { name: "Staff", color: "#10B981" },
+  { name: "VIP", color: "var(--warning)" },
+  { name: "General", color: "var(--info)" },
+  { name: "Staff", color: "var(--success)" },
   { name: "Speaker", color: "#8B5CF6" },
   { name: "Press", color: "#EF4444" },
 ];
@@ -77,7 +77,7 @@ const DEFAULT_LAYOUT = {
     fontWeight: "700",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#ffffff",
+    color: "var(--card)",
   },
   headerSub: {
     x: 18,
@@ -124,7 +124,7 @@ const DEFAULT_LAYOUT = {
     fontWeight: "400",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#475569",
+    color: "var(--foreground)",
   },
   phone: {
     x: 18,
@@ -135,7 +135,7 @@ const DEFAULT_LAYOUT = {
     fontWeight: "400",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#475569",
+    color: "var(--foreground)",
   },
   email: {
     x: 18,
@@ -146,7 +146,7 @@ const DEFAULT_LAYOUT = {
     fontWeight: "400",
     fontStyle: "normal",
     fontFamily: "Segoe UI",
-    color: "#475569",
+    color: "var(--foreground)",
   },
   qr: { x: 135, y: 460, w: 150, h: 150 },
 };
@@ -188,7 +188,7 @@ const getCatColor = (name, eventCats = []) => {
   return (
     DEFAULT_CATEGORIES.find(
       (c) => c.name.toLowerCase() === (name || "").toLowerCase(),
-    )?.color || "#94a3b8"
+    )?.color || "var(--muted-foreground)"
   );
 };
 
@@ -245,7 +245,7 @@ const genQRBlob = (data, color) => {
     type: "canvas",
     data: data || "PASS",
     dotsOptions: { color: color || "#000000", type: "square" },
-    backgroundOptions: { color: "#ffffff" },
+    backgroundOptions: { color: "var(--card)" },
     qrOptions: { errorCorrectionLevel: "M" },
   });
   return qr.getRawData("png");
@@ -296,21 +296,21 @@ const renderPass = async (attendee, event, cfg, layout) => {
       ctx.fillStyle = `rgba(255,255,255,${(100 - (cfg.bgOpacity ?? 60)) / 100})`;
       ctx.fillRect(0, 0, W, H);
     } catch {
-      ctx.fillStyle = cfg.bgColor || "#fff";
+      ctx.fillStyle = cfg.bgColor || "var(--card)";
       ctx.fillRect(0, 0, W, H);
     }
   } else {
-    ctx.fillStyle = cfg.bgColor || "#fff";
+    ctx.fillStyle = cfg.bgColor || "var(--card)";
     ctx.fillRect(0, 0, W, H);
   }
 
   const RX = cfg.passRadius ?? 14;
 
   // Border
-  drawRRStroke(ctx, 1, 1, W - 2, H - 2, RX, cfg.primaryColor || "#A855F7", 2.5);
+  drawRRStroke(ctx, 1, 1, W - 2, H - 2, RX, cfg.primaryColor || "var(--primary)", 2.5);
 
   // Header band
-  const hdrColor = cfg.headerColor || cfg.primaryColor || "#A855F7";
+  const hdrColor = cfg.headerColor || cfg.primaryColor || "var(--primary)";
   if (HDR > 0) {
     drawRR(ctx, 0, 0, W, HDR, RX, hdrColor);
     ctx.fillStyle = hdrColor;
@@ -327,7 +327,7 @@ const renderPass = async (attendee, event, cfg, layout) => {
         fontSize: 19,
         fontWeight: "700",
       };
-      ctx.fillStyle = ht.color || "#ffffff";
+      ctx.fillStyle = ht.color || "var(--card)";
       ctx.font = ctxFont(ht, 19, "700");
       ctx.fillText(
         trunc(hdr.customTitle || event?.eventName || "Event", 38),
@@ -383,7 +383,7 @@ const renderPass = async (attendee, event, cfg, layout) => {
       14,
       getCatColor(attendee.category, event?.categories || []),
     );
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = "var(--card)";
     ctx.font = `bold 12px "Segoe UI", Arial, sans-serif`;
     ctx.textAlign = "center";
     ctx.fillText(
@@ -406,7 +406,7 @@ const renderPass = async (attendee, event, cfg, layout) => {
   const renderField = (key, prefix, val) => {
     if (!val || layout[key]?.visible === false) return;
     const el = layout[key];
-    ctx.fillStyle = el.color || "#475569";
+    ctx.fillStyle = el.color || "var(--foreground)";
     ctx.font = ctxFont(el, 13, "400");
     ctx.fillText(`${prefix}${trunc(val, 34)}`, el.x, el.y + el.h * 0.82);
   };
@@ -417,13 +417,13 @@ const renderPass = async (attendee, event, cfg, layout) => {
   // QR
   if (layout.qr?.visible !== false) {
     const qr = layout.qr;
-    ctx.strokeStyle = "#e2e8f0";
+    ctx.strokeStyle = "var(--border)";
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(18, qr.y - 12);
     ctx.lineTo(W - 18, qr.y - 12);
     ctx.stroke();
-    drawRR(ctx, qr.x - 4, qr.y - 4, qr.w + 8, qr.h + 8, 8, "#f1f5f9");
+    drawRR(ctx, qr.x - 4, qr.y - 4, qr.w + 8, qr.h + 8, 8, "var(--border)");
     try {
       const blob = await genQRBlob(attendee.passId, cfg.qrColor || "#000000");
       const url = URL.createObjectURL(blob);
@@ -431,7 +431,7 @@ const renderPass = async (attendee, event, cfg, layout) => {
       URL.revokeObjectURL(url);
       ctx.drawImage(img, qr.x, qr.y, qr.w, qr.h);
     } catch {
-      ctx.fillStyle = "#e2e8f0";
+      ctx.fillStyle = "var(--border)";
       ctx.fillRect(qr.x, qr.y, qr.w, qr.h);
     }
   }
@@ -463,13 +463,13 @@ const renderPass = async (attendee, event, cfg, layout) => {
     if (!key.startsWith("ct_")) continue;
     const el = layout[key];
     ctx.globalAlpha = el.opacity ?? 1;
-    ctx.fillStyle = el.color || "#374151";
+    ctx.fillStyle = el.color || "var(--foreground)";
     ctx.font = ctxFont(el, 14, "400");
     ctx.fillText(el.content || "", el.x, el.y + (el.h || 20) * 0.82);
     ctx.globalAlpha = 1;
   }
 
-  ctx.fillStyle = "#94a3b8";
+  ctx.fillStyle = "var(--muted-foreground)";
   ctx.font = `10px "Courier New", monospace`;
   ctx.textAlign = "center";
   ctx.fillText(trunc(attendee.passId, 40), W / 2, H - 12);
@@ -600,7 +600,7 @@ const PassPreview = ({
   };
 
   const hdr = config.headerConfig || DEFAULT_HEADER;
-  const hdrColor = config.headerColor || config.primaryColor || "#A855F7";
+  const hdrColor = config.headerColor || config.primaryColor || "var(--primary)";
 
   const renderElem = (key) => {
     if (!availableElems.has(key)) return null;
@@ -681,12 +681,12 @@ const PassPreview = ({
           style={{
             width: "100%",
             height: "100%",
-            border: `1.5px dashed #94a3b8`,
+            border: `1.5px dashed var(--muted-foreground)`,
             borderRadius: 4 * scale,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#94a3b8",
+            color: "var(--muted-foreground)",
             fontSize: 9 * scale,
           }}
         >
@@ -705,12 +705,12 @@ const PassPreview = ({
           style={{
             width: "100%",
             height: "100%",
-            border: `1.5px dashed #94a3b8`,
+            border: `1.5px dashed var(--muted-foreground)`,
             borderRadius: 4 * scale,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#94a3b8",
+            color: "var(--muted-foreground)",
             fontSize: 9 * scale,
           }}
         >
@@ -721,7 +721,7 @@ const PassPreview = ({
       inner = (
         <span
           style={{
-            ...textStyle(14, "400", "#374151"),
+            ...textStyle(14, "400", "var(--foreground)"),
             opacity: pos.opacity ?? 1,
           }}
         >
@@ -730,7 +730,7 @@ const PassPreview = ({
       );
     } else if (key === "headerTitle") {
       inner = (
-        <span style={textStyle(19, "700", "#ffffff")}>
+        <span style={textStyle(19, "700", "var(--card)")}>
           {hdr.customTitle || event?.eventName || "Event"}
         </span>
       );
@@ -760,7 +760,7 @@ const PassPreview = ({
               attendee?.category,
               event?.categories || [],
             ),
-            color: "#fff",
+            color: "var(--card)",
             borderRadius: ((pos.h || 28) / 2) * scale,
             fontSize: (pos.fontSize || 11) * scale,
             fontWeight: 700,
@@ -787,7 +787,7 @@ const PassPreview = ({
           style={textStyle(
             13,
             "400",
-            attendee?.organization ? "#475569" : "#cbd5e1",
+            attendee?.organization ? "var(--foreground)" : "#cbd5e1",
           )}
         >
           ⊞ {attendee?.organization || "Organization"}
@@ -796,7 +796,7 @@ const PassPreview = ({
     } else if (key === "phone") {
       inner = (
         <span
-          style={textStyle(13, "400", attendee?.phone ? "#475569" : "#cbd5e1")}
+          style={textStyle(13, "400", attendee?.phone ? "var(--foreground)" : "#cbd5e1")}
         >
           ◉ {attendee?.phone || "Phone"}
         </span>
@@ -804,7 +804,7 @@ const PassPreview = ({
     } else if (key === "email") {
       inner = (
         <span
-          style={textStyle(13, "400", attendee?.email ? "#475569" : "#cbd5e1")}
+          style={textStyle(13, "400", attendee?.email ? "var(--foreground)" : "#cbd5e1")}
         >
           ✉ {attendee?.email || "Email"}
         </span>
@@ -815,7 +815,7 @@ const PassPreview = ({
           style={{
             width: "100%",
             height: "100%",
-            background: "#f1f5f9",
+            background: "var(--border)",
             borderRadius: 8 * scale,
             overflow: "hidden",
             display: "flex",
@@ -830,7 +830,7 @@ const PassPreview = ({
               style={{ width: "100%", height: "100%", objectFit: "contain" }}
             />
           ) : (
-            <span style={{ fontSize: 11 * scale, color: "#94a3b8" }}>QR</span>
+            <span style={{ fontSize: 11 * scale, color: "var(--muted-foreground)" }}>QR</span>
           )}
         </div>
       );
@@ -875,7 +875,7 @@ const PassPreview = ({
         style={{
           position: "absolute",
           inset: 0,
-          background: config.bgColor || "#fff",
+          background: config.bgColor || "var(--card)",
           backgroundImage: config.bgImage
             ? `url(${config.bgImage})`
             : undefined,
@@ -929,7 +929,7 @@ const PassPreview = ({
           left: 18 * scale,
           right: 18 * scale,
           height: 1,
-          background: "#e2e8f0",
+          background: "var(--border)",
           zIndex: 1,
         }}
       />
@@ -943,7 +943,7 @@ const PassPreview = ({
           right: 0,
           textAlign: "center",
           fontSize: 8 * scale,
-          color: "#94a3b8",
+          color: "var(--muted-foreground)",
           fontFamily: "monospace",
           zIndex: 1,
         }}
@@ -962,7 +962,7 @@ const PassPreview = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#94a3b8",
+            color: "var(--muted-foreground)",
             fontSize: 13 * scale,
             paddingTop: hdrH * scale,
           }}
@@ -978,7 +978,7 @@ const PassPreview = ({
             bottom: 20 * scale,
             right: 4 * scale,
             background: "rgba(0,0,0,0.6)",
-            color: "#fff",
+            color: "var(--card)",
             borderRadius: 4,
             fontSize: 9 * scale,
             padding: "2px 5px",
@@ -1000,7 +1000,7 @@ const PassPreview = ({
 const ColorPickerWidget = ({ label, value, onChange }) => {
   const [open, setOpen] = useState(false);
   const [pickerColor, setPickerColor] = useState(value || "#000000");
-  const hexValue = /^#[0-9a-fA-F]{6}$/.test(value) ? value : "#ffffff";
+  const hexValue = /^#[0-9a-fA-F]{6}$/.test(value) ? value : "var(--card)";
 
   // Sync picker to current value each time the panel opens
   useEffect(() => {
@@ -1084,7 +1084,7 @@ const TextStyleControls = ({ keys, layout, onLayoutChange, primaryColor }) => {
   const curBold = (firstEl.fontWeight || "400") === "700";
   const curItalic = (firstEl.fontStyle || "normal") === "italic";
   const curFont = firstEl.fontFamily || "Segoe UI";
-  const curColor = firstEl.color || "#374151";
+  const curColor = firstEl.color || "var(--foreground)";
   const isSingleKey = keys.length === 1;
 
   return (
@@ -1116,7 +1116,7 @@ const TextStyleControls = ({ keys, layout, onLayoutChange, primaryColor }) => {
         >
           Size: {curSize}px{" "}
           {!isSingleKey && (
-            <span style={{ color: "#94a3b8" }}>(all selected)</span>
+            <span style={{ color: "var(--muted-foreground)" }}>(all selected)</span>
           )}
         </label>
         <input
@@ -1384,7 +1384,7 @@ const AccordionPanel = ({ id, title, open, onToggle, badge, children }) => (
         cursor: "pointer",
         fontSize: 12,
         fontWeight: 600,
-        color: "#374151",
+        color: "var(--foreground)",
         padding: "9px 14px",
         minHeight: 38,
       }}
@@ -1403,7 +1403,7 @@ const AccordionPanel = ({ id, title, open, onToggle, badge, children }) => (
           display: "inline-block",
           transform: open ? "rotate(180deg)" : "rotate(0deg)",
           transition: "transform 0.2s ease",
-          color: "#94a3b8",
+          color: "var(--muted-foreground)",
           lineHeight: 1,
         }}
       >
@@ -1431,7 +1431,7 @@ const contrastColor = (hex) => {
   const b = parseInt(h.substr(4, 2), 16);
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.55
     ? "#1e293b"
-    : "#ffffff";
+    : "var(--card)";
 };
 
 const CategoryTab = ({ cat, color, isActive, hasDesign, onSwitch }) => {
@@ -1496,8 +1496,8 @@ const CategoryTab = ({ cat, color, isActive, hasDesign, onSwitch }) => {
             top: "calc(100% + 4px)",
             left: "50%",
             transform: "translateX(-50%)",
-            background: "#fff",
-            border: "1px solid #e2e8f0",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
             borderRadius: 5,
             boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
             padding: "3px 8px",
@@ -1507,7 +1507,7 @@ const CategoryTab = ({ cat, color, isActive, hasDesign, onSwitch }) => {
             fontSize: 11,
             whiteSpace: "nowrap",
             zIndex: 1000,
-            color: "#374151",
+            color: "var(--foreground)",
           }}
         >
           {color}
@@ -1519,7 +1519,7 @@ const CategoryTab = ({ cat, color, isActive, hasDesign, onSwitch }) => {
               border: "none",
               padding: 0,
               cursor: "pointer",
-              color: copied ? "#16a34a" : "#6b7280",
+              color: copied ? "#16a34a" : "var(--muted-foreground)",
               display: "flex",
               alignItems: "center",
             }}
@@ -1555,13 +1555,13 @@ const PassDesignerPage = () => {
   const saved = selectedEvent?.passDesign;
 
   const [primaryColor, setPrimaryColor] = useState(
-    saved?.primaryColor || "#A855F7",
+    saved?.primaryColor || "var(--primary)",
   );
   const [headerColor, setHeaderColor] = useState(
-    saved?.headerColor || "#A855F7",
+    saved?.headerColor || "var(--primary)",
   );
   const [qrColor, setQrColor] = useState(saved?.qrColor || "#000000");
-  const [bgColor, setBgColor] = useState(saved?.bgColor || "#ffffff");
+  const [bgColor, setBgColor] = useState(saved?.bgColor || "var(--card)");
   const [bgOpacity, setBgOpacity] = useState(saved?.bgOpacity ?? 60);
   const [bgImage, setBgImage] = useState(saved?.bgImage || null);
   const [bgFit, setBgFit] = useState(saved?.bgFit || "cover");
@@ -1795,7 +1795,7 @@ const PassDesignerPage = () => {
         fontWeight: "400",
         fontStyle: "normal",
         fontFamily: "Segoe UI",
-        color: "#374151",
+        color: "var(--foreground)",
         opacity: 1,
         content: "Custom Text",
       },
@@ -1913,7 +1913,7 @@ const PassDesignerPage = () => {
 
       setPassW(canvas.width || 400);
       setPassH(canvas.height || 600);
-      setBgColor(canvas.background || "#ffffff");
+      setBgColor(canvas.background || "var(--card)");
 
       const newLayout = {};
 
@@ -1923,13 +1923,13 @@ const PassDesignerPage = () => {
 
         if (el.type === "header") {
           setShowHeader(true);
-          setHeaderColor(el.bg || "#A855F7");
+          setHeaderColor(el.bg || "var(--primary)");
           setHeaderHeight(el.h);
           newLayout.headerTitle = {
             ...base,
             fontSize: el.fontSize || 19,
             fontWeight: el.fontWeight || "700",
-            color: el.color || "#ffffff",
+            color: el.color || "var(--card)",
             fontFamily: el.fontFamily || "Segoe UI",
           };
         } else if (el.type === "qr") {
@@ -2274,7 +2274,7 @@ const PassDesignerPage = () => {
                 );
                 const color =
                   cat === "Default"
-                    ? "#94a3b8"
+                    ? "var(--muted-foreground)"
                     : eventCat?.color || getCatColor(cat);
                 return (
                   <CategoryTab
@@ -2434,7 +2434,7 @@ const PassDesignerPage = () => {
                 style={{
                   fontSize: 10,
                   fontWeight: 600,
-                  color: "#94a3b8",
+                  color: "var(--muted-foreground)",
                   textTransform: "uppercase",
                   letterSpacing: 0.5,
                   marginBottom: 3,
@@ -2455,7 +2455,7 @@ const PassDesignerPage = () => {
                       key={key}
                       className="d-flex align-items-center gap-2 rounded mb-1"
                       style={{
-                        background: isSel ? "#f3e8ff" : "#f8fafc",
+                        background: isSel ? "#f3e8ff" : "var(--background)",
                         border: `1px solid ${isSel ? primaryColor : "transparent"}`,
                         cursor: "pointer",
                         padding: "4px 8px",
@@ -2472,12 +2472,12 @@ const PassDesignerPage = () => {
                     >
                       <Icon
                         size={12}
-                        color={isSel ? primaryColor : "#6b7280"}
+                        color={isSel ? primaryColor : "var(--muted-foreground)"}
                       />
                       <span
                         style={{
                           fontSize: 12,
-                          color: isSel ? primaryColor : "#374151",
+                          color: isSel ? primaryColor : "var(--foreground)",
                           fontWeight: isSel ? 600 : 400,
                         }}
                       >
@@ -2487,7 +2487,7 @@ const PassDesignerPage = () => {
                         type="button"
                         className="ms-auto btn btn-link p-0 d-flex align-items-center"
                         style={{
-                          color: isHidden ? "#94a3b8" : "#6b7280",
+                          color: isHidden ? "var(--muted-foreground)" : "var(--muted-foreground)",
                           lineHeight: 1,
                         }}
                         onClick={(e) => {
@@ -2560,13 +2560,13 @@ const PassDesignerPage = () => {
               {showLogoProps && (
                 <div
                   className="mt-2 pt-2"
-                  style={{ borderTop: "1px solid #f1f5f9" }}
+                  style={{ borderTop: "1px solid var(--border)" }}
                 >
                   <div
                     className="fw-semibold mb-2"
                     style={{
                       fontSize: 11,
-                      color: "#6b7280",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.4,
                     }}
@@ -2606,13 +2606,13 @@ const PassDesignerPage = () => {
               {hdrTextSelected.length > 0 && (
                 <div
                   className="mt-2 pt-2"
-                  style={{ borderTop: "1px solid #f1f5f9" }}
+                  style={{ borderTop: "1px solid var(--border)" }}
                 >
                   <div
                     className="fw-semibold mb-2"
                     style={{
                       fontSize: 11,
-                      color: "#6b7280",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.4,
                     }}
@@ -2667,7 +2667,7 @@ const PassDesignerPage = () => {
                       key={key}
                       className="d-flex align-items-center gap-2 rounded mb-1"
                       style={{
-                        background: isSel ? "#f3e8ff" : "#f8fafc",
+                        background: isSel ? "#f3e8ff" : "var(--background)",
                         border: `1px solid ${isSel ? primaryColor : "transparent"}`,
                         cursor: "pointer",
                         padding: "4px 8px",
@@ -2684,12 +2684,12 @@ const PassDesignerPage = () => {
                     >
                       <Icon
                         size={12}
-                        color={isSel ? primaryColor : "#6b7280"}
+                        color={isSel ? primaryColor : "var(--muted-foreground)"}
                       />
                       <span
                         style={{
                           fontSize: 12,
-                          color: isSel ? primaryColor : "#374151",
+                          color: isSel ? primaryColor : "var(--foreground)",
                           fontWeight: isSel ? 600 : 400,
                           flexGrow: 1,
                         }}
@@ -2705,7 +2705,7 @@ const PassDesignerPage = () => {
                           border: "none",
                           padding: 0,
                           cursor: "pointer",
-                          color: isHidden ? "#94a3b8" : "#6b7280",
+                          color: isHidden ? "var(--muted-foreground)" : "var(--muted-foreground)",
                           display: "flex",
                           alignItems: "center",
                         }}
@@ -2732,13 +2732,13 @@ const PassDesignerPage = () => {
               {showCatBadgeProps && (
                 <div
                   className="mt-2 pt-2"
-                  style={{ borderTop: "1px solid #f1f5f9" }}
+                  style={{ borderTop: "1px solid var(--border)" }}
                 >
                   <div
                     className="fw-semibold mb-2"
                     style={{
                       fontSize: 11,
-                      color: "#6b7280",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.4,
                     }}
@@ -2759,13 +2759,13 @@ const PassDesignerPage = () => {
               {bodyTextSelected.length > 0 && (
                 <div
                   className="mt-2 pt-2"
-                  style={{ borderTop: "1px solid #f1f5f9" }}
+                  style={{ borderTop: "1px solid var(--border)" }}
                 >
                   <div
                     className="fw-semibold mb-2"
                     style={{
                       fontSize: 11,
-                      color: "#6b7280",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.4,
                     }}
@@ -2800,13 +2800,13 @@ const PassDesignerPage = () => {
               {showQRProps && (
                 <div
                   className="mt-2 pt-2"
-                  style={{ borderTop: "1px solid #f1f5f9" }}
+                  style={{ borderTop: "1px solid var(--border)" }}
                 >
                   <div
                     className="fw-semibold mb-2"
                     style={{
                       fontSize: 11,
-                      color: "#6b7280",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.4,
                     }}
@@ -2890,7 +2890,7 @@ const PassDesignerPage = () => {
                       key={key}
                       className="d-flex align-items-center gap-2 rounded mb-1"
                       style={{
-                        background: isSel ? "#f3e8ff" : "#f8fafc",
+                        background: isSel ? "#f3e8ff" : "var(--background)",
                         border: `1px solid ${isSel ? primaryColor : "transparent"}`,
                         cursor: "pointer",
                         padding: "4px 8px",
@@ -2906,12 +2906,12 @@ const PassDesignerPage = () => {
                     >
                       <Icon
                         size={12}
-                        color={isSel ? primaryColor : "#6b7280"}
+                        color={isSel ? primaryColor : "var(--muted-foreground)"}
                       />
                       <span
                         style={{
                           fontSize: 12,
-                          color: isSel ? primaryColor : "#374151",
+                          color: isSel ? primaryColor : "var(--foreground)",
                           fontWeight: isSel ? 600 : 400,
                         }}
                         className="flex-grow-1 text-truncate"
@@ -2927,7 +2927,7 @@ const PassDesignerPage = () => {
                           deleteCustomElem(key);
                         }}
                       >
-                        <FiTrash2 size={10} color="#ef4444" />
+                        <FiTrash2 size={10} color="#EF4444" />
                       </button>
                     </div>
                   );
@@ -2937,13 +2937,13 @@ const PassDesignerPage = () => {
               {showCustomTextProps && (
                 <div
                   className="mt-2 pt-2"
-                  style={{ borderTop: "1px solid #f1f5f9" }}
+                  style={{ borderTop: "1px solid var(--border)" }}
                 >
                   <div
                     className="fw-semibold mb-2"
                     style={{
                       fontSize: 11,
-                      color: "#6b7280",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.4,
                     }}
@@ -3041,13 +3041,13 @@ const PassDesignerPage = () => {
               {showCustomImgProps && (
                 <div
                   className="mt-2 pt-2"
-                  style={{ borderTop: "1px solid #f1f5f9" }}
+                  style={{ borderTop: "1px solid var(--border)" }}
                 >
                   <div
                     className="fw-semibold mb-2"
                     style={{
                       fontSize: 11,
-                      color: "#6b7280",
+                      color: "var(--muted-foreground)",
                       textTransform: "uppercase",
                       letterSpacing: 0.4,
                     }}
@@ -3261,7 +3261,7 @@ const PassDesignerPage = () => {
                   />
                 </div>
                 <div
-                  style={{ paddingBottom: 6, color: "#94a3b8", fontSize: 12 }}
+                  style={{ paddingBottom: 6, color: "var(--muted-foreground)", fontSize: 12 }}
                 >
                   ×
                 </div>
@@ -3341,7 +3341,7 @@ const PassDesignerPage = () => {
                           border: "none",
                           padding: 0,
                           cursor: "pointer",
-                          color: "#6b7280",
+                          color: "var(--muted-foreground)",
                           display: "flex",
                           alignItems: "center",
                         }}

@@ -39,7 +39,7 @@ const FIELD_TYPES = [
 const PERMISSION_GROUPS = [
   {
     group: "Events",
-    color: "#3B82F6",
+    color: "var(--info)",
     bg: "#eff6ff",
     permissions: [
       { key: "events.view", label: "View Events" },
@@ -50,7 +50,7 @@ const PERMISSION_GROUPS = [
   },
   {
     group: "Attendees",
-    color: "#10B981",
+    color: "var(--success)",
     bg: "#f0fdf4",
     permissions: [
       { key: "attendees.view", label: "View Attendees" },
@@ -63,7 +63,7 @@ const PERMISSION_GROUPS = [
   },
   {
     group: "Pass",
-    color: "#F59E0B",
+    color: "var(--warning)",
     bg: "#fffbeb",
     permissions: [
       { key: "pass.design", label: "Design Pass" },
@@ -73,7 +73,7 @@ const PERMISSION_GROUPS = [
   },
   {
     group: "Scan",
-    color: "#A855F7",
+    color: "var(--primary)",
     bg: "#faf5ff",
     permissions: [
       { key: "scan.access", label: "Access Scan Page" },
@@ -96,8 +96,8 @@ const PERMISSION_GROUPS = [
   },
   {
     group: "Setup",
-    color: "#64748B",
-    bg: "#f8fafc",
+    color: "var(--muted-foreground)",
+    bg: "var(--background)",
     permissions: [
       { key: "setup.access", label: "Access Setup" },
       { key: "setup.userTypes", label: "Manage User Types" },
@@ -161,7 +161,7 @@ const INITIAL_FIELD_FORM = {
   active: true,
   options: "",
 };
-const INITIAL_CATEGORY_FORM = { label: "", color: "#0d6efd", active: true };
+const INITIAL_CATEGORY_FORM = { label: "", color: "var(--info)", active: true };
 const INITIAL_EVENT_TYPE_FORM = { label: "", active: true };
 const INITIAL_USER_TYPE_FORM = {
   name: "",
@@ -939,8 +939,8 @@ const SetupPage = () => {
                       <span
                         className="badge rounded-pill ms-1"
                         style={{
-                          background: "#A855F7",
-                          color: "#fff",
+                          background: "var(--primary)",
+                          color: "var(--card)",
                           fontSize: 10,
                         }}
                       >
@@ -986,9 +986,9 @@ const SetupPage = () => {
                         {userTypeLogs.map((log) => {
                           const dot =
                             log.action === "created"
-                              ? "#10B981"
+                              ? "var(--success)"
                               : log.action === "updated"
-                                ? "#3B82F6"
+                                ? "var(--info)"
                                 : "#EF4444";
                           return (
                             <div
@@ -1034,7 +1034,7 @@ const SetupPage = () => {
                                     )}
                                     {log.changes?.added?.length > 0 && (
                                       <div className="d-flex flex-wrap gap-1 align-items-center">
-                                        <span style={{ color: "#10B981" }}>
+                                        <span style={{ color: "var(--success)" }}>
                                           + Added:
                                         </span>
                                         {log.changes.added.map((k) => (
@@ -1115,10 +1115,10 @@ const SetupPage = () => {
                 <div
                   className="rounded-3 p-3 mb-3"
                   style={{
-                    background: editingUT ? "#fffbeb" : "#f8fafc",
+                    background: editingUT ? "#fffbeb" : "var(--background)",
                     border: editingUT
                       ? "1px solid #fde68a"
-                      : "1px solid #e2e8f0",
+                      : "1px solid var(--border)",
                   }}
                 >
                   <div className="d-flex justify-content-between align-items-center mb-3">
@@ -1209,7 +1209,7 @@ const SetupPage = () => {
                                   />
                                   <span
                                     className="form-check-label"
-                                    style={{ fontSize: 11, color: "#64748b" }}
+                                    style={{ fontSize: 11, color: "var(--muted-foreground)" }}
                                   >
                                     All
                                   </span>
@@ -1249,8 +1249,8 @@ const SetupPage = () => {
                     style={{
                       background: userTypeForm.requiresTwoFactor
                         ? "#fffbeb"
-                        : "#f8fafc",
-                      border: `1px solid ${userTypeForm.requiresTwoFactor ? "#fde68a" : "#e2e8f0"}`,
+                        : "var(--background)",
+                      border: `1px solid ${userTypeForm.requiresTwoFactor ? "#fde68a" : "var(--border)"}`,
                       transition: "all 0.2s",
                     }}
                   >
@@ -1261,7 +1261,7 @@ const SetupPage = () => {
                           style={{
                             color: userTypeForm.requiresTwoFactor
                               ? "#d97706"
-                              : "#94a3b8",
+                              : "var(--muted-foreground)",
                           }}
                         />
                         Require Two-Factor Authentication (2FA)
@@ -1333,7 +1333,7 @@ const SetupPage = () => {
                         className="table table-sm table-hover align-middle mb-0"
                         style={{ fontSize: 13 }}
                       >
-                        <thead style={{ background: "#f8fafc" }}>
+                        <thead style={{ background: "var(--background)" }}>
                           <tr>
                             <th
                               className="fw-semibold"
@@ -1369,7 +1369,7 @@ const SetupPage = () => {
                                 <div className="d-flex align-items-center gap-2">
                                   <FiShield
                                     size={14}
-                                    style={{ color: "#A855F7", flexShrink: 0 }}
+                                    style={{ color: "var(--primary)", flexShrink: 0 }}
                                   />
                                   <div className="flex-grow-1">
                                     <div className="fw-semibold">{ut.name}</div>
@@ -1494,8 +1494,8 @@ const SetupPage = () => {
                       <span
                         className="badge rounded-pill ms-1"
                         style={{
-                          background: "#A855F7",
-                          color: "#fff",
+                          background: "var(--primary)",
+                          color: "var(--card)",
                           fontSize: 10,
                         }}
                       >
@@ -1549,7 +1549,7 @@ const SetupPage = () => {
                             style={{
                               borderBottom:
                                 idx < userEditLogs.length - 1
-                                  ? "1px solid #e2e8f0"
+                                  ? "1px solid var(--border)"
                                   : "none",
                             }}
                           >
@@ -1567,7 +1567,7 @@ const SetupPage = () => {
                                 >
                                   <i
                                     className="bi bi-person"
-                                    style={{ color: "#A855F7", fontSize: 13 }}
+                                    style={{ color: "var(--primary)", fontSize: 13 }}
                                   />
                                 </span>
                                 <div>
@@ -1597,7 +1597,7 @@ const SetupPage = () => {
                                   </span>
                                   <span
                                     className="fw-semibold ms-1"
-                                    style={{ color: "#A855F7", fontSize: 12 }}
+                                    style={{ color: "var(--primary)", fontSize: 12 }}
                                   >
                                     {log.changedBy}
                                   </span>
@@ -1624,15 +1624,15 @@ const SetupPage = () => {
                                     key={field}
                                     className="d-flex align-items-center gap-2 flex-wrap p-2 rounded-2"
                                     style={{
-                                      background: "#fff",
-                                      border: "1px solid #e2e8f0",
+                                      background: "var(--card)",
+                                      border: "1px solid var(--border)",
                                       fontSize: 12,
                                     }}
                                   >
                                     <span
                                       className="badge fw-semibold"
                                       style={{
-                                        background: "#ede9fe",
+                                        background: "var(--accent)",
                                         color: "#6d28d9",
                                         fontSize: 11,
                                       }}
@@ -1652,7 +1652,7 @@ const SetupPage = () => {
                                     </span>
                                     <i
                                       className="bi bi-arrow-right"
-                                      style={{ color: "#94a3b8" }}
+                                      style={{ color: "var(--muted-foreground)" }}
                                     />
                                     <span
                                       className="px-2 py-1 rounded-2 fw-semibold"
@@ -1679,8 +1679,8 @@ const SetupPage = () => {
                     <div
                       className="rounded-3 p-3 mb-4"
                       style={{
-                        background: "#f8fafc",
-                        border: "1px solid #e2e8f0",
+                        background: "var(--background)",
+                        border: "1px solid var(--border)",
                       }}
                     >
                       {/* Row 1 */}
@@ -1864,7 +1864,7 @@ const SetupPage = () => {
                           className="table table-sm table-hover align-middle mb-0"
                           style={{ fontSize: 13 }}
                         >
-                          <thead style={{ background: "#f8fafc" }}>
+                          <thead style={{ background: "var(--background)" }}>
                             <tr>
                               <th className="fw-semibold" style={{ width: 36 }}>
                                 #
@@ -1921,7 +1921,7 @@ const SetupPage = () => {
                                         <i
                                           className="bi bi-person"
                                           style={{
-                                            color: "#A855F7",
+                                            color: "var(--primary)",
                                             fontSize: 13,
                                           }}
                                         />
@@ -2047,7 +2047,7 @@ const SetupPage = () => {
                 <div className="modal-content border-0 shadow">
                   <div className="modal-header border-0 pb-0">
                     <h6 className="modal-title fw-semibold d-flex align-items-center gap-2">
-                      <i className="bi bi-key" style={{ color: "#A855F7" }} />
+                      <i className="bi bi-key" style={{ color: "var(--primary)" }} />
                       Change Password
                     </h6>
                     <button
@@ -2119,7 +2119,7 @@ const SetupPage = () => {
                     <h6 className="modal-title fw-semibold d-flex align-items-center gap-2">
                       <i
                         className="bi bi-pencil-square"
-                        style={{ color: "#A855F7" }}
+                        style={{ color: "var(--primary)" }}
                       />
                       Edit User
                       <span
@@ -2268,8 +2268,8 @@ const SetupPage = () => {
                           style={{
                             background: autoScheme.isAuto
                               ? "#f0fdf4"
-                              : "#f8fafc",
-                            border: `1px solid ${autoScheme.isAuto ? "#86efac" : "#e2e8f0"}`,
+                              : "var(--background)",
+                            border: `1px solid ${autoScheme.isAuto ? "#86efac" : "var(--border)"}`,
                             transition: "all 0.2s",
                           }}
                         >
@@ -2453,7 +2453,7 @@ const SetupPage = () => {
                             <span
                               className="badge rounded-pill"
                               style={{
-                                background: "#ede9fe",
+                                background: "var(--accent)",
                                 color: "#6d28d9",
                                 fontSize: 12,
                               }}
@@ -2559,8 +2559,8 @@ const SetupPage = () => {
                       key={key}
                       className="d-flex justify-content-between align-items-center p-3 rounded-3"
                       style={{
-                        background: "#f8fafc",
-                        border: "1px solid #e2e8f0",
+                        background: "var(--background)",
+                        border: "1px solid var(--border)",
                       }}
                     >
                       <div>

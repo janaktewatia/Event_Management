@@ -1,4 +1,61 @@
 import Integration from "../models/Integration.js";
+import IntegrationSettings from "../models/IntegrationSettings.js";
+
+const syncIntegrationToSettings = async (integration) => {
+  if (!integration?.enabled) return;
+
+  let settings = await IntegrationSettings.findOne();
+  if (!settings) {
+    settings = new IntegrationSettings();
+  }
+
+  const data = integration.toObject ? integration.toObject() : integration;
+  const { type, provider, enabled } = data;
+
+  if (type === "email") {
+    settings.email = {
+      provider: provider || settings.email.provider,
+      enabled,
+      sendgridApiKey: data.sendgridApiKey || settings.email.sendgridApiKey,
+      fromEmail: data.fromEmail || settings.email.fromEmail,
+      zohoSmtpUser: data.zohoSmtpUser || settings.email.zohoSmtpUser,
+      zohoSmtpPassword: data.zohoSmtpPassword || settings.email.zohoSmtpPassword,
+      zohoSmtpHost: data.zohoSmtpHost || settings.email.zohoSmtpHost,
+      zohoSmtpPort: data.zohoSmtpPort || settings.email.zohoSmtpPort,
+      smtpHost: data.smtpHost || settings.email.smtpHost,
+      smtpPort: data.smtpPort || settings.email.smtpPort,
+      smtpUser: data.smtpUser || settings.email.smtpUser,
+      smtpPassword: data.smtpPassword || settings.email.smtpPassword,
+    };
+  } else if (type === "sms") {
+    settings.sms = {
+      provider: provider || settings.sms.provider,
+      enabled,
+      twilioAccountSid: data.twilioAccountSid || settings.sms.twilioAccountSid,
+      twilioAuthToken: data.twilioAuthToken || settings.sms.twilioAuthToken,
+      twilioPhoneNumber: data.twilioPhoneNumber || settings.sms.twilioPhoneNumber,
+      vonageApiKey: data.vonageApiKey || settings.sms.vonageApiKey,
+      vonageApiSecret: data.vonageApiSecret || settings.sms.vonageApiSecret,
+      vonageFromNumber: data.vonageFromNumber || settings.sms.vonageFromNumber,
+    };
+  } else if (type === "whatsapp") {
+    settings.whatsapp = {
+      provider: provider || settings.whatsapp.provider,
+      enabled,
+      twilioAccountSid: data.twilioAccountSid || settings.whatsapp.twilioAccountSid,
+      twilioAuthToken: data.twilioAuthToken || settings.whatsapp.twilioAuthToken,
+      twilioWhatsappNumber:
+        data.twilioWhatsappNumber || settings.whatsapp.twilioWhatsappNumber,
+      metaBusinessAccountId:
+        data.metaBusinessAccountId || settings.whatsapp.metaBusinessAccountId,
+      metaPhoneId: data.metaPhoneId || settings.whatsapp.metaPhoneId,
+      metaAccessToken: data.metaAccessToken || settings.whatsapp.metaAccessToken,
+    };
+  }
+
+  settings.updatedAt = Date.now();
+  await settings.save();
+};
 
 // Get all integrations grouped by type
 export const getAllIntegrations = async (req, res) => {
@@ -61,6 +118,7 @@ export const createIntegration = async (req, res) => {
     });
 
     await integration.save();
+    await syncIntegrationToSettings(integration);
     res.status(201).json({
       success: true,
       message: "Integration created successfully",
@@ -85,6 +143,8 @@ export const updateIntegration = async (req, res) => {
     if (!integration) {
       return res.status(404).json({ error: "Integration not found" });
     }
+
+    await syncIntegrationToSettings(integration);
 
     res.json({
       success: true,

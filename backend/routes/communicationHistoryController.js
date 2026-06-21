@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import CommunicationHistory from "../models/CommunicationHistory.js";
 
 export const getCommunicationHistory = async (req, res) => {
@@ -16,8 +17,11 @@ export const getCommunicationHistory = async (req, res) => {
 export const getEventCommunicationStats = async (req, res) => {
   try {
     const { eventId } = req.params;
+    if (!mongoose.isValidObjectId(eventId)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
     const stats = await CommunicationHistory.aggregate([
-      { $match: { eventId: mongoose.Types.ObjectId(eventId) } },
+      { $match: { eventId: new mongoose.Types.ObjectId(eventId) } },
       {
         $group: {
           _id: "$type",
@@ -37,6 +41,10 @@ export const getEventCommunicationStats = async (req, res) => {
 export const logCommunication = async (req, res) => {
   try {
     const { eventId, type, template, subject, message, recipients, sentBy } = req.body;
+
+    if (!Array.isArray(recipients) || recipients.length === 0) {
+      return res.status(400).json({ error: "recipients array is required" });
+    }
 
     const recipientList = recipients.map((r) => ({
       ...r,

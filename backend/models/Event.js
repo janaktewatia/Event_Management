@@ -33,6 +33,7 @@ const eventSchema = new mongoose.Schema(
     imported: { type: Boolean, default: false },
     importedCount: { type: Number, default: 0 },
     attendeeCount: { type: Number, default: 0 },
+    registrationSequence: { type: Number, default: 0 },
     attendeeFields: [attendeeFieldSettingSchema],
     categories: [categorySettingSchema],
     eventType: { type: String, default: "" },

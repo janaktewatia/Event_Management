@@ -634,9 +634,9 @@ const ImportQRPage = () => {
                     htmlFor="excelInput"
                     className="bulk-file-input-button me-2"
                     style={{
-                      height: "36px", // Reduced height
-                      fontSize: "0.9rem", // Optional: slightly smaller font
-                      borderRadius: "5px", // Optional: rounded corners
+                      height: "36px",
+                      fontSize: "0.9rem",
+                      borderRadius: "var(--radius)",
                     }}
                   >
                     <BiCloudUpload className="me-2" />
@@ -705,7 +705,7 @@ const ImportQRPage = () => {
                       width: 56,
                       height: 40,
                       padding: 0,
-                      borderRadius: 8,
+                      borderRadius: "var(--radius)",
                     }}
                   />
                 </div>

@@ -1,14 +1,22 @@
 import { sendNotification, createEmailTemplate, createSmsTemplate } from "./notificationHelper.js";
 
+const formatEventDate = (event) => {
+  if (!event?.startDate) return "TBD";
+  const parsed = new Date(event.startDate);
+  return Number.isNaN(parsed.getTime()) ? "TBD" : parsed.toLocaleDateString();
+};
+
+const buildEventData = (attendee, event) => ({
+  attendeeName: attendee.firstName || attendee.name || "Attendee",
+  eventName: event.eventName || event.name || "Event",
+  eventDate: formatEventDate(event),
+  eventTime: event.time || "TBD",
+  eventLocation: event.venue || event.location || "TBD",
+});
+
 export const sendEventConfirmationNotification = async (attendee, event) => {
   try {
-    const emailData = {
-      attendeeName: attendee.firstName || attendee.name || "Attendee",
-      eventName: event.name,
-      eventDate: new Date(event.date).toLocaleDateString(),
-      eventTime: event.time || "TBD",
-      eventLocation: event.location || "TBD"
-    };
+    const emailData = buildEventData(attendee, event);
 
     const emailTemplate = createEmailTemplate("eventConfirmation", emailData);
     const smsMessage = createSmsTemplate("eventConfirmation", emailData);
@@ -17,7 +25,9 @@ export const sendEventConfirmationNotification = async (attendee, event) => {
     const phoneNumbers = [];
 
     if (attendee.email) recipients.push(attendee.email);
-    if (attendee.phoneNumber) phoneNumbers.push(attendee.phoneNumber);
+    if (attendee.phone || attendee.phoneNumber) {
+      phoneNumbers.push(attendee.phone || attendee.phoneNumber);
+    }
 
     if (recipients.length === 0 && phoneNumbers.length === 0) {
       console.warn(`No email or phone for attendee ${attendee._id}`);
@@ -31,7 +41,7 @@ export const sendEventConfirmationNotification = async (attendee, event) => {
       subject: emailTemplate.subject,
       message: smsMessage,
       html: emailTemplate.html,
-      text: emailTemplate.text
+      text: emailTemplate.text,
     });
   } catch (error) {
     console.error("Error sending event confirmation:", error);
@@ -43,26 +53,24 @@ export const sendEventReminderNotification = async (attendees, event) => {
   try {
     const emailData = {
       attendeeName: "{attendeeName}",
-      eventName: event.name,
-      eventDate: new Date(event.date).toLocaleDateString(),
+      eventName: event.eventName || event.name || "Event",
+      eventDate: formatEventDate(event),
       eventTime: event.time || "TBD",
-      eventLocation: event.location || "TBD"
+      eventLocation: event.venue || event.location || "TBD",
     };
 
     const emailTemplate = createEmailTemplate("eventReminder", emailData);
     const smsMessage = createSmsTemplate("eventReminder", emailData);
 
-    const emails = attendees
-      .filter(a => a.email)
-      .map(a => a.email);
+    const emails = attendees.filter((a) => a.email).map((a) => a.email);
 
     const phones = attendees
-      .filter(a => a.phoneNumber)
-      .map(a => a.phoneNumber);
+      .filter((a) => a.phone || a.phoneNumber)
+      .map((a) => a.phone || a.phoneNumber);
 
     const results = {
       email: null,
-      sms: null
+      sms: null,
     };
 
     if (emails.length > 0) {
@@ -71,7 +79,7 @@ export const sendEventReminderNotification = async (attendees, event) => {
         to: emails,
         subject: emailTemplate.subject,
         html: emailTemplate.html,
-        text: emailTemplate.text
+        text: emailTemplate.text,
       });
     }
 
@@ -79,7 +87,7 @@ export const sendEventReminderNotification = async (attendees, event) => {
       results.sms = await sendNotification({
         type: ["sms"],
         phoneNumbers: phones,
-        message: smsMessage
+        message: smsMessage,
       });
     }
 
@@ -93,9 +101,8 @@ export const sendEventReminderNotification = async (attendees, event) => {
 export const sendAttendanceConfirmationNotification = async (attendee, event, checkInTime) => {
   try {
     const emailData = {
-      attendeeName: attendee.firstName || attendee.name || "Attendee",
-      eventName: event.name,
-      checkInTime: new Date(checkInTime).toLocaleTimeString()
+      ...buildEventData(attendee, event),
+      checkInTime: new Date(checkInTime).toLocaleTimeString(),
     };
 
     const emailTemplate = createEmailTemplate("attendanceConfirmation", emailData);
@@ -105,7 +112,9 @@ export const sendAttendanceConfirmationNotification = async (attendee, event, ch
     const phoneNumbers = [];
 
     if (attendee.email) recipients.push(attendee.email);
-    if (attendee.phoneNumber) phoneNumbers.push(attendee.phoneNumber);
+    if (attendee.phone || attendee.phoneNumber) {
+      phoneNumbers.push(attendee.phone || attendee.phoneNumber);
+    }
 
     if (recipients.length === 0 && phoneNumbers.length === 0) {
       return { skipped: true };
@@ -118,7 +127,7 @@ export const sendAttendanceConfirmationNotification = async (attendee, event, ch
       subject: emailTemplate.subject,
       message: smsMessage,
       html: emailTemplate.html,
-      text: emailTemplate.text
+      text: emailTemplate.text,
     });
   } catch (error) {
     console.error("Error sending attendance confirmation:", error);
@@ -126,16 +135,17 @@ export const sendAttendanceConfirmationNotification = async (attendee, event, ch
   }
 };
 
-export const sendPassGeneratedNotification = async (attendee, event, passData) => {
+export const sendPassGeneratedNotification = async (attendee, event) => {
   try {
-    const subject = `Your ${event.name} Pass is Ready`;
-    const message = `Your pass for ${event.name} has been generated. Download it now!`;
+    const eventName = event.eventName || event.name || "Event";
+    const subject = `Your ${eventName} Pass is Ready`;
+    const message = `Your pass for ${eventName} has been generated. Download it now!`;
     const html = `
       <h2>Your Pass is Ready</h2>
       <p>Hi ${attendee.firstName || attendee.name},</p>
-      <p>Your pass for <strong>${event.name}</strong> has been generated successfully.</p>
+      <p>Your pass for <strong>${eventName}</strong> has been generated successfully.</p>
       <p>Please keep it safe and present it during check-in.</p>
-      <p>Event Date: ${new Date(event.date).toLocaleDateString()}</p>
+      <p>Event Date: ${formatEventDate(event)}</p>
       <p>Thank you!</p>
     `;
 
@@ -143,7 +153,9 @@ export const sendPassGeneratedNotification = async (attendee, event, passData) =
     const phoneNumbers = [];
 
     if (attendee.email) recipients.push(attendee.email);
-    if (attendee.phoneNumber) phoneNumbers.push(attendee.phoneNumber);
+    if (attendee.phone || attendee.phoneNumber) {
+      phoneNumbers.push(attendee.phone || attendee.phoneNumber);
+    }
 
     return await sendNotification({
       type: recipients.length > 0 ? ["email", "sms"] : ["sms"],
@@ -152,7 +164,7 @@ export const sendPassGeneratedNotification = async (attendee, event, passData) =
       subject,
       message,
       html,
-      text: message
+      text: message,
     });
   } catch (error) {
     console.error("Error sending pass generated notification:", error);
